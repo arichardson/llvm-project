@@ -42,6 +42,11 @@ public:
   bool assignCalleeSavedSpillSlots(MachineFunction &MF, const
     TargetRegisterInfo *TRI, std::vector<CalleeSavedInfo> &CSI) const override;
 
+  // Possibly spill MIPS register to CHERI registers instead of the stack
+  // This should avoid unfair advantages for CHERI codegen.
+  void processFunctionBeforeFrameFinalized(MachineFunction &MF,
+                                           RegScavenger *RS) const override;
+
 private:
   void emitInterruptEpilogueStub(MachineFunction &MF,
                                  MachineBasicBlock &MBB) const;

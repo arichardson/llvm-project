@@ -170,6 +170,17 @@ const uint32_t *MipsRegisterInfo::getMips16RetHelperMask() {
   return CSR_Mips16RetHelper_RegMask;
 }
 
+template <std::size_t N>
+inline void addReservedCheriRegs(BitVector &Reserved,
+                                 const MCPhysReg (&Regs)[N]) {
+  for (const uint16_t R : Regs) {
+    Reserved.set(R);
+    if (R >= Mips::CNULL && R <= Mips::C31) {
+      Reserved.set(Mips::CNULL_ADDR + (R - Mips::CNULL));
+    }
+  }
+}
+
 BitVector MipsRegisterInfo::
 getReservedRegs(const MachineFunction &MF) const {
   static const MCPhysReg ReservedGPR32[] = {
@@ -180,7 +191,7 @@ getReservedRegs(const MachineFunction &MF) const {
     Mips::ZERO_64, Mips::K0_64, Mips::K1_64
   };
 
-  static const uint16_t ReservedCheriRegs[] = {
+  static const MCPhysReg ReservedCheriRegs[] = {
       Mips::CNULL,
       Mips::DDC,
       Mips::C25,
@@ -202,17 +213,15 @@ getReservedRegs(const MachineFunction &MF) const {
   };
 
   // C1-C7, C11, C12, C17-C23 allowed
-  static const uint16_t ReservedCheri16Regs[] = {
-    Mips::C8, Mips::C9, Mips::C10, Mips::C13, Mips::C14, Mips::C15, Mips::C16,
-    Mips::C24
-  };
+  static const MCPhysReg ReservedCheri16Regs[] = {
+      Mips::C8,  Mips::C9,  Mips::C10, Mips::C13,
+      Mips::C14, Mips::C15, Mips::C16, Mips::C24};
 
   // C1-C3, C11, C12, C17-C19 allowed
-  static const uint16_t ReservedCheri8Regs[] = {
-    Mips::C4, Mips::C5, Mips::C6, Mips::C7, Mips::C8, Mips::C9, Mips::C10,
-    Mips::C13, Mips::C14, Mips::C15, Mips::C16, Mips::C20, Mips::C21,
-    Mips::C22, Mips::C23, Mips::C24
-  };
+  static const MCPhysReg ReservedCheri8Regs[] = {
+      Mips::C4,  Mips::C5,  Mips::C6,  Mips::C7,  Mips::C8,  Mips::C9,
+      Mips::C10, Mips::C13, Mips::C14, Mips::C15, Mips::C16, Mips::C20,
+      Mips::C21, Mips::C22, Mips::C23, Mips::C24};
 
   BitVector Reserved(getNumRegs());
   const MipsSubtarget &Subtarget = MF.getSubtarget<MipsSubtarget>();
@@ -253,8 +262,7 @@ getReservedRegs(const MachineFunction &MF) const {
   }
 
   if (Subtarget.isCheri()) {
-    for (unsigned I = 0; I < array_lengthof(ReservedCheriRegs); ++I)
-      Reserved.set(ReservedCheriRegs[I]);
+    addReservedCheriRegs(Reserved, ReservedCheriRegs);
     auto &ABI = Subtarget.getABI();
     auto *FL =
       static_cast<const MipsFrameLowering*>(Subtarget.getFrameLowering());
@@ -269,11 +277,9 @@ getReservedRegs(const MachineFunction &MF) const {
 
     }
     if (Cheri8)
-      for (unsigned I = 0; I < array_lengthof(ReservedCheri8Regs); ++I)
-        Reserved.set(ReservedCheri8Regs[I]);
+      addReservedCheriRegs(Reserved, ReservedCheri8Regs);
     if (Cheri16)
-      for (unsigned I = 0; I < array_lengthof(ReservedCheri16Regs); ++I)
-        Reserved.set(ReservedCheri16Regs[I]);
+      addReservedCheriRegs(Reserved, ReservedCheri16Regs);
   } else
     Reserved.set(Mips::DDC);
 

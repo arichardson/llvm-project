@@ -319,7 +319,9 @@ def CGetSealed : CheriFmt2Op<5, (outs GPR64Opnd:$r1), (ins CheriOpnd:$r2),
                              "cgetsealed\t$r1, $r2",
                              [(set GPR64Opnd:$r1, (CapSealedGet CheriOpnd:$r2))]>;
 def CGetOffset : CheriFmtCGet<6, "offset">;
-def CGetAddr   : CheriFmtCGet<0xf, "addr", "address">;
+def CGetAddr   : CheriFmtCGet<0xf, "addr", "address"> {
+  let isExtractSubreg = 1;
+}
 def CGetFlags  : CheriFmtCGet<0x12, "flags">;
 // Versions of property setters that take immediate operands
 // We allow CIncOffset $c1, 10 as an alias for CIncOffset $c1, $c1, 10, and the same for CSetBounds
@@ -356,7 +358,9 @@ def CIncOffset : CheriFmtCSet<0x11, "offset", "offset", "inc", "increment">;
 def CClearTag  : CheriFmt2Op<0xb, (outs CheriOpnd:$r1), (ins CheriOpnd:$r2),
                               "ccleartag\t$r1, $r2",
                               [(set CheriOpnd:$r1, (int_cheri_cap_tag_clear CheriOpnd:$r2))]>;
-def CSetAddr : CheriFmtCSet<0x22, "addr", "address">;
+def CSetAddr : CheriFmtCSet<0x22, "addr", "address"> {
+  let isInsertSubreg = 1;
+}
 
 // CRoundRepresentableLength (a.k.a. CRoundArchitecturalPrecision)
 def CRAP : CheriFmt2Op<0x10, (outs GPR64Opnd:$r1), (ins GPR64Opnd:$r2),

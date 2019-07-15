@@ -82,26 +82,33 @@ class HWR<bits<16> Enc, string n> : MipsReg<Enc, n>;
 class CheriHWR<bits<16> Enc, string n> : MipsReg<Enc, n>;
 
 // CHERI capability registers
-// Uncomment the subregs lines to pretend we are super-registers of the MIPS
-// integer registers. This is not true but could simulate a merged register file
-class CAP<bits<16> Enc, string n, list<Register> subregs = []>
-  // : MipsRegWithSubRegs<Enc, n, subregs> {
-  : MipsRegWithSubRegs<Enc, n, []> {
-  // Pretend that we have sub-registers for the purpose of register allocation
-  // let SubRegIndices = [sub_64];
-  let SubRegIndices = [];
+multiclass CAP<bits<16> Enc, string n, list<Register> subregs = []> {
+  // Add fake integer register that can be used to avoid stack spills in hybrid ABI
+  def #NAME#_ADDR : MipsReg<Enc, !strconcat(n, "_addr")>;
+  // If we had a merged register file we could use the MIPS registers instead of the fake int register
+  def #NAME  : MipsRegWithSubRegs<Enc, n, [!cast<Register>(NAME#_ADDR)]> {
+    let SubRegIndices = [sub_64];
+    let Aliases = [!cast<Register>(NAME#_ADDR)];
+  }
 }
 
 // A capability register that "aliases" one of the MIPS registers
 // We use this to simulate a merged register file for the purpose of regalloc.
 // Note: This is a poor approximation, but if we mark the callee-saved registers
 // as aliased we should no longer get large performance wins over MIPS
-class AliasCAP<bits<16> Enc, string n, list<Register> aliases = []>
-    : MipsRegWithSubRegs<Enc, n, []> {
-  // Pretend that we have sub-registers for the purpose of register allocation
-  // Unfortunately, this means that $s0 will also be saved if we write to $c18
-  // There must be an easier way to tell regalloc to avoid allocating one
-  // let Aliases = aliases;
+multiclass AliasCAP<bits<16> Enc, string n, list<Register> aliases = []> {
+  // Add fake integer register that can be used to avoid stack spills
+  def #NAME#_ADDR : MipsReg<Enc, !strconcat(n, "_addr")> {
+    // Pretend that we have alias with the MIPS register for the purpose of register allocation
+    // Unfortunately, this means that $s0 will also be saved if we write to $c18
+    // There must be an easier way to tell regalloc to avoid allocating one
+    // let Aliases = aliases;
+  }
+  def #NAME  : MipsRegWithSubRegs<Enc, n, [!cast<Register>(NAME#_ADDR)]> {
+    // If we had a merged register file we could use the MIPS registers instead
+    let SubRegIndices = [sub_64];
+    let Aliases = [!cast<Register>(NAME#_ADDR)];
+  }
 }
 
 //===----------------------------------------------------------------------===//
@@ -292,46 +299,44 @@ let Namespace = "Mips" in {
 
   // Capability registers
 
-  def DDC : CAP<0, "DDC">, DwarfRegNum<[72]> { // TODO: this == CAPHWR0
-    let SubRegIndices = [];
-  }
+  def DDC : MipsReg<0, "DDC">, DwarfRegNum<[72]>;
   // CNULL and DDC share the same encoding register number since some instructions
   // use reg = 0 to mean $ddc (loads/stores/cfromptr/ctoptr/cbuildcap)
   // For compatibility with GDB keep the DwarfRegNum for DDC as 72 and assign
   // the next one to cnull (not very useful in GDB anyway since it will always
   // be null).
-  def CNULL : CAP<0, "CNULL", []>, DwarfRegNum<[104]>;
-  def C1  : CAP<1, "C1", []>, DwarfRegNum<[73]>;
-  def C2  : CAP<2, "C2", []>, DwarfRegNum<[74]>;
-  def C3  : CAP<3, "C3", []>, DwarfRegNum<[75]>;
-  def C4  : CAP<4, "C4", []>, DwarfRegNum<[76]>;
-  def C5  : CAP<5, "C5", []>, DwarfRegNum<[77]>;
-  def C6  : CAP<6, "C6", []>, DwarfRegNum<[78]>;
-  def C7  : CAP<7, "C7", []>, DwarfRegNum<[79]>;
-  def C8  : CAP<8, "C8", []>, DwarfRegNum<[80]>;
-  def C9  : CAP<9, "C9", []>, DwarfRegNum<[81]>;
-  def C10 : CAP<10, "C10", []>, DwarfRegNum<[82]>;
-  def C11 : CAP<11, "C11", []>, DwarfRegNum<[83]>;
-  def C12 : CAP<12, "C12", []>, DwarfRegNum<[84]>;
-  def C13 : CAP<13, "C13", []>, DwarfRegNum<[85]>;
-  def C14 : CAP<14, "C14", []>, DwarfRegNum<[86]>;
-  def C15 : CAP<15, "C15", []>, DwarfRegNum<[87]>;
-  def C16 : CAP<16, "C16", []>, DwarfRegNum<[88]>;
-  def C17 : AliasCAP<17, "C17", [RA_64]>, DwarfRegNum<[89]>;
-  def C18 : AliasCAP<18, "C18", [S0_64]>, DwarfRegNum<[90]>;
-  def C19 : AliasCAP<19, "C19", [S1_64]>, DwarfRegNum<[91]>;
-  def C20 : AliasCAP<20, "C20", [S2_64]>, DwarfRegNum<[92]>;
-  def C21 : AliasCAP<21, "C21", [S3_64]>, DwarfRegNum<[93]>;
-  def C22 : AliasCAP<22, "C22", [S4_64]>, DwarfRegNum<[94]>;
-  def C23 : AliasCAP<23, "C23", [S5_64]>, DwarfRegNum<[95]>;
-  def C24 : AliasCAP<24, "C24", [FP_64]>, DwarfRegNum<[96]>;
-  def C25 : CAP<25, "C25", []>, DwarfRegNum<[97]>;
-  def C26 : AliasCAP<26, "C26", [GP_64]>, DwarfRegNum<[98]>;
-  def C27 : AliasCAP<27, "C27", [K0_64]>, DwarfRegNum<[99]>;
-  def C28 : AliasCAP<28, "C28", [K1_64]>, DwarfRegNum<[100]>;
-  def C29 : CAP<29, "C29", []>, DwarfRegNum<[101]>;
-  def C30 : CAP<30, "C30", []>, DwarfRegNum<[102]>;
-  def C31 : CAP<31, "C31", []>, DwarfRegNum<[103]>;
+  defm CNULL : CAP<0, "CNULL", []>, DwarfRegNum<[104]>;
+  defm C1  : CAP<1, "C1", []>, DwarfRegNum<[73]>;
+  defm C2  : CAP<2, "C2", []>, DwarfRegNum<[74]>;
+  defm C3  : CAP<3, "C3", []>, DwarfRegNum<[75]>;
+  defm C4  : CAP<4, "C4", []>, DwarfRegNum<[76]>;
+  defm C5  : CAP<5, "C5", []>, DwarfRegNum<[77]>;
+  defm C6  : CAP<6, "C6", []>, DwarfRegNum<[78]>;
+  defm C7  : CAP<7, "C7", []>, DwarfRegNum<[79]>;
+  defm C8  : CAP<8, "C8", []>, DwarfRegNum<[80]>;
+  defm C9  : CAP<9, "C9", []>, DwarfRegNum<[81]>;
+  defm C10 : CAP<10, "C10", []>, DwarfRegNum<[82]>;
+  defm C11 : CAP<11, "C11", []>, DwarfRegNum<[83]>;
+  defm C12 : CAP<12, "C12", []>, DwarfRegNum<[84]>;
+  defm C13 : CAP<13, "C13", []>, DwarfRegNum<[85]>;
+  defm C14 : CAP<14, "C14", []>, DwarfRegNum<[86]>;
+  defm C15 : CAP<15, "C15", []>, DwarfRegNum<[87]>;
+  defm C16 : CAP<16, "C16", []>, DwarfRegNum<[88]>;
+  defm C17 : AliasCAP<17, "C17", [RA_64]>, DwarfRegNum<[89]>;
+  defm C18 : AliasCAP<18, "C18", [S0_64]>, DwarfRegNum<[90]>;
+  defm C19 : AliasCAP<19, "C19", [S1_64]>, DwarfRegNum<[91]>;
+  defm C20 : AliasCAP<20, "C20", [S2_64]>, DwarfRegNum<[92]>;
+  defm C21 : AliasCAP<21, "C21", [S3_64]>, DwarfRegNum<[93]>;
+  defm C22 : AliasCAP<22, "C22", [S4_64]>, DwarfRegNum<[94]>;
+  defm C23 : AliasCAP<23, "C23", [S5_64]>, DwarfRegNum<[95]>;
+  defm C24 : AliasCAP<24, "C24", [FP_64]>, DwarfRegNum<[96]>;
+  defm C25 : CAP<25, "C25", []>, DwarfRegNum<[97]>;
+  defm C26 : AliasCAP<26, "C26", [GP_64]>, DwarfRegNum<[98]>;
+  defm C27 : AliasCAP<27, "C27", [K0_64]>, DwarfRegNum<[99]>;
+  defm C28 : AliasCAP<28, "C28", [K1_64]>, DwarfRegNum<[100]>;
+  defm C29 : CAP<29, "C29", []>, DwarfRegNum<[101]>;
+  defm C30 : CAP<30, "C30", []>, DwarfRegNum<[102]>;
+  defm C31 : CAP<31, "C31", []>, DwarfRegNum<[103]>;
 
 
   // TODO: assign DWARF register numbers to the special hwregs
@@ -444,7 +449,14 @@ def GPR64 : RegisterClass<"Mips", [i64], 64, (add
   // Not preserved across procedure calls
   T8_64, T9_64,
   // Reserved
-  K0_64, K1_64, GP_64, SP_64, FP_64, RA_64)>;
+  K0_64, K1_64, GP_64, SP_64, FP_64, RA_64)> {
+    // Give GPR64 higher priority than the fake integer registers:
+    let AllocationPriority = 7;
+}
+def CheriIntPseudoRegs : RegisterClass<"Mips", [i64], 64, (sequence "C%u_ADDR", 1, 31)> {
+  let AllocationPriority = 1;
+  let Size = 64;
+}
 
 def CPU16Regs : RegisterClass<"Mips", [i32], 32, (add
   // Return Values and Arguments
