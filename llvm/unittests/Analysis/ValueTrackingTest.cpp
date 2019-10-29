@@ -75,6 +75,7 @@ class ComputeKnownBitsTest : public ValueTrackingTest {
 protected:
   void expectKnownBits(uint64_t Zero, uint64_t One) {
     auto Known = computeKnownBits(A, M->getDataLayout());
+    M->dump();
     ASSERT_FALSE(Known.hasConflict());
     EXPECT_EQ(Known.One.getZExtValue(), One);
     EXPECT_EQ(Known.Zero.getZExtValue(), Zero);
