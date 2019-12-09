@@ -5734,6 +5734,13 @@ SDValue SelectionDAG::getMemBasePlusOffset(SDValue Base, int64_t Offset,
   return getNode(ISD::ADD, DL, VT, Base, getConstant(Offset, DL, VT));
 }
 
+SDValue SelectionDAG::getMemBasePlusOffset(SDValue Ptr, SDValue Offset,
+                                           const SDLoc &DL) {
+  assert(Offset.getValueType().isInteger());
+  EVT BasePtrVT = Ptr.getValueType();
+  return getNode(ISD::ADD, DL, BasePtrVT, Ptr, Offset);
+}
+
 /// Returns true if memcpy source is constant data.
 static bool isMemSrcFromConstant(SDValue Src, ConstantDataArraySlice &Slice) {
   uint64_t SrcDelta = 0;
