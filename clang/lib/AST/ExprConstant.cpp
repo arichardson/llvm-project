@@ -10539,6 +10539,32 @@ bool IntExprEvaluator::VisitCallExpr(const CallExpr *E) {
   return ExprEvaluatorBaseTy::VisitCallExpr(E);
 }
 
+static bool getBuiltinAlignArguments(const CallExpr *E, EvalInfo &Info,
+                                     APSInt &Val, APSInt &Alignment,
+                                     unsigned *ValWidth) {
+  Expr::EvalResult ExprResult;
+  if (!E->getArg(0)->EvaluateAsInt(ExprResult, Info.Ctx))
+    return false;
+  Val = ExprResult.Val.getInt();
+  if (!E->getArg(1)->EvaluateAsInt(ExprResult, Info.Ctx))
+    return false;
+  Alignment = ExprResult.Val.getInt();
+  if (Alignment < 0)
+    return false;
+  // XXX: can this ever happen? Will we end up here even if Sema gives an error?
+  // I guess this additional check doesn't do any harm.
+  if (!Alignment.isPowerOf2())
+    return false;
+  // Ensure both values have the same bit width so that we don't assert later.
+  *ValWidth = Val.getBitWidth();
+  if (Val.isUnsigned())
+    Val = Val.zextOrSelf(Alignment.getBitWidth());
+  else
+    Val = Val.sextOrSelf(Alignment.getBitWidth());
+  Alignment = Alignment.zextOrSelf(Val.getBitWidth());
+  return true;
+}
+
 bool IntExprEvaluator::VisitBuiltinCallExpr(const CallExpr *E,
                                             unsigned BuiltinOp) {
   switch (unsigned BuiltinOp = E->getBuiltinCallee()) {
@@ -10579,6 +10605,36 @@ bool IntExprEvaluator::VisitBuiltinCallExpr(const CallExpr *E,
     analyze_os_log::OSLogBufferLayout Layout;
     analyze_os_log::computeOSLogBufferLayout(Info.Ctx, E, Layout);
     return Success(Layout.size().getQuantity(), E);
+  }
+
+  case Builtin::BI__builtin_is_aligned: {
+    APSInt Val;
+    APSInt Alignment;
+    unsigned ValWidth = -1;
+    if (!getBuiltinAlignArguments(E, Info, Val, Alignment, &ValWidth))
+      return false;
+    return Success((Val & (Alignment - 1)) == 0 ? 1 : 0, E);
+  }
+  case Builtin::BI__builtin_align_up: {
+    APSInt Val;
+    APSInt Alignment;
+    unsigned ValWidth = -1;
+    if (!getBuiltinAlignArguments(E, Info, Val, Alignment, &ValWidth))
+      return false;
+    // #define roundup2(x, y) (((x)+((y)-1))&(~((y)-1)))
+    APSInt Result =
+        APSInt((Val + (Alignment - 1)) & ~(Alignment - 1), Val.isUnsigned());
+    return Success(Result.extOrTrunc(ValWidth), E);
+  }
+  case Builtin::BI__builtin_align_down: {
+    APSInt Val;
+    APSInt Alignment;
+    unsigned ValWidth = -1;
+    if (!getBuiltinAlignArguments(E, Info, Val, Alignment, &ValWidth))
+      return false;
+    // #define rounddown2(x, y) ((x)&(~((y)-1)))
+    APSInt Result = APSInt(Val & ~(Alignment - 1), Val.isUnsigned());
+    return Success(Result.extOrTrunc(ValWidth), E);
   }
 
   case Builtin::BI__builtin_bswap16:

@@ -201,6 +201,72 @@ static bool SemaBuiltinPreserveAI(Sema &S, CallExpr *TheCall) {
   return false;
 }
 
+static bool SemaBuiltinAlignment(Sema &S, CallExpr *TheCall, unsigned ID) {
+  TheCall->dumpColor();
+  if (checkArgCount(S, TheCall, 2))
+    return true;
+
+  clang::Expr *Source = TheCall->getArg(0);
+  clang::Expr *AlignOp = TheCall->getArg(1);
+  bool IsBooleanAlignBuiltin = ID == Builtin::BI__builtin_is_aligned;
+
+  auto IsValidIntegerType = [](QualType Ty) {
+    return Ty->isIntegerType() && !Ty->isEnumeralType() && !Ty->isBooleanType();
+  };
+  if (!IsValidIntegerType(AlignOp->getType())) {
+    S.Diag(AlignOp->getExprLoc(), diag::err_typecheck_expect_int)
+        << AlignOp->getType();
+    return true;
+  }
+
+  QualType SrcTy = Source->getType();
+  // Should also be able to use it with arrays (but not functions!)
+  bool IsArrayToPointerDecay =
+      SrcTy->canDecayToPointerType() && SrcTy->isArrayType();
+  if ((!SrcTy->isPointerType() && !IsArrayToPointerDecay &&
+      !IsValidIntegerType(SrcTy)) || SrcTy->isFunctionPointerType()) {
+    // TODO: this is not quite the right error message since we don't allow
+    // floating point types, or member pointers
+    S.Diag(AlignOp->getExprLoc(), diag::err_typecheck_expect_scalar_operand)
+        << SrcTy;
+    return true;
+  }
+  Expr::EvalResult AlignResult;
+  unsigned MaxAlignmentBits = S.Context.getIntWidth(SrcTy) - 1;
+  // Can't check validity of alignment if it is type dependent
+  if (!AlignOp->isInstantiationDependent() &&
+      AlignOp->EvaluateAsInt(AlignResult, S.Context,
+                             Expr::SE_AllowSideEffects)) {
+    llvm::APSInt AlignValue = AlignResult.Val.getInt();
+    llvm::APSInt MaxValue(
+        llvm::APInt::getOneBitSet(MaxAlignmentBits + 1, MaxAlignmentBits));
+    if (AlignValue < 1) {
+      S.Diag(AlignOp->getExprLoc(), diag::err_alignment_too_small) << 1;
+      return true;
+    } else if (llvm::APSInt::compareValues(AlignValue, MaxValue) > 0) {
+      S.Diag(AlignOp->getExprLoc(), diag::err_alignment_too_big)
+          << MaxValue.toString(10);
+      return true;
+    } else if (AlignValue == 1) {
+      S.Diag(AlignOp->getExprLoc(), diag::warn_alignment_builtin_useless)
+          << IsBooleanAlignBuiltin;
+    } else if (!AlignValue.isPowerOf2()) {
+      S.Diag(AlignOp->getExprLoc(), diag::err_alignment_not_power_of_two);
+      return true;
+    }
+  }
+
+  TheCall->setArg(0, Source);
+  TheCall->setArg(1, AlignOp);
+  QualType RetTy = SrcTy;
+  if (IsArrayToPointerDecay)
+    RetTy = S.Context.getDecayedType(RetTy);
+  llvm::errs() << "RetTy: "; RetTy->dump();
+  // __builtin_is_aligned() returns bool instead of the same type as Arg1
+  TheCall->setType(IsBooleanAlignBuiltin ? S.Context.BoolTy : RetTy);
+  return false;
+}
+
 static bool SemaBuiltinOverflow(Sema &S, CallExpr *TheCall) {
   if (checkArgCount(S, TheCall, 3))
     return true;
@@ -1352,6 +1418,12 @@ Sema::CheckBuiltinFunctionCall(FunctionDecl *FDecl, unsigned BuiltinID,
     break;
   case Builtin::BI__builtin_addressof:
     if (SemaBuiltinAddressof(*this, TheCall))
+      return ExprError();
+    break;
+  case Builtin::BI__builtin_is_aligned:
+  case Builtin::BI__builtin_align_up:
+  case Builtin::BI__builtin_align_down:
+    if (SemaBuiltinAlignment(*this, TheCall, BuiltinID))
       return ExprError();
     break;
   case Builtin::BI__builtin_add_overflow:
