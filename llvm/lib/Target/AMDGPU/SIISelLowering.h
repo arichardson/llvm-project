@@ -257,7 +257,8 @@ public:
                           unsigned SrcAlign, bool IsMemset,
                           bool ZeroMemset,
                           bool MemcpyStrSrc,
-                          const AttributeList &FuncAttributes) const override;
+                          const AttributeList &FuncAttributes,
+                          bool MustPreserveCheriCapabilities) const override;
 
   bool isMemOpUniform(const SDNode *N) const;
   bool isMemOpHasNoClobberedMemOperand(const SDNode *N) const;

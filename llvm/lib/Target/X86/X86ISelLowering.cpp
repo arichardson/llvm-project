@@ -2253,7 +2253,8 @@ unsigned X86TargetLowering::getByValTypeAlignment(Type *Ty,
 EVT X86TargetLowering::getOptimalMemOpType(
     uint64_t Size, unsigned DstAlign, unsigned SrcAlign, bool IsMemset,
     bool ZeroMemset, bool MemcpyStrSrc,
-    const AttributeList &FuncAttributes) const {
+    const AttributeList &FuncAttributes,
+    bool MustPreserveCheriCapabilities) const {
   if (!FuncAttributes.hasFnAttribute(Attribute::NoImplicitFloat)) {
     if (Size >= 16 && (!Subtarget.isUnalignedMem16Slow() ||
                        ((DstAlign == 0 || DstAlign >= 16) &&

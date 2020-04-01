@@ -198,9 +198,10 @@ TargetLowering::findOptimalMemOpLowering(std::vector<EVT> &MemOps,
   if (!(SrcAlign == 0 || SrcAlign >= DstAlign))
     return false;
 
+  // FIXME: handle CHERI:
   EVT VT = getOptimalMemOpType(Size, DstAlign, SrcAlign,
                                IsMemset, ZeroMemset, MemcpyStrSrc,
-                               FuncAttributes);
+                               FuncAttributes, MustPreserveCheriCapabilities);
   // XXXAR: (ab)use MVT::isVoid to indicate that a memcpy call must be made
   if (VT == MVT::isVoid) {
     return false; // cannot lower as memops

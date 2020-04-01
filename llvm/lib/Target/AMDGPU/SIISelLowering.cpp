@@ -1322,7 +1322,8 @@ bool SITargetLowering::allowsMisalignedMemoryAccesses(
 EVT SITargetLowering::getOptimalMemOpType(
     uint64_t Size, unsigned DstAlign, unsigned SrcAlign, bool IsMemset,
     bool ZeroMemset, bool MemcpyStrSrc,
-    const AttributeList &FuncAttributes) const {
+    const AttributeList &FuncAttributes,
+    bool MustPreserveCheriCapabilities) const {
   // FIXME: Should account for address space here.
 
   // The default fallback uses the private pointer size as a guess for a type to

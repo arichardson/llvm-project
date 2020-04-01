@@ -351,7 +351,8 @@ class VectorType;
                             unsigned DstAlign, unsigned SrcAlign,
                             bool IsMemset, bool ZeroMemset,
                             bool MemcpyStrSrc,
-                            const AttributeList &FuncAttributes) const override;
+                            const AttributeList &FuncAttributes,
+                            bool MustPreserveCheriCapabilities) const override;
 
     bool isTruncateFree(Type *SrcTy, Type *DstTy) const override;
     bool isTruncateFree(EVT SrcVT, EVT DstVT) const override;

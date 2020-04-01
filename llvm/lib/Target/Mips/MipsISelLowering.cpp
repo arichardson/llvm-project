@@ -5651,7 +5651,8 @@ MipsTargetLowering::isOffsetFoldingLegal(const GlobalAddressSDNode *GA) const {
 EVT MipsTargetLowering::getOptimalMemOpType(
     uint64_t Size, unsigned DstAlign, unsigned SrcAlign, bool IsMemset,
     bool ZeroMemset, bool MemcpyStrSrc,
-    const AttributeList &FuncAttributes) const {
+    const AttributeList &FuncAttributes,
+    bool MustPreserveCheriCapabilities) const {
   // If the source alignment is 32 then we are copying something that may
   // contain capabilities.  If the destination alignment is 32, then we are
   // copying to something that may contain capabilities.  If both of these is
@@ -5674,7 +5675,7 @@ EVT MipsTargetLowering::getOptimalMemOpType(
     // If this is going to include a capability, then pretend that we have to
     // copy it using single bytes, which will cause SelectionDAG to decide to
     // do the memcpy call.
-    if (!IsMemset && (Size >= CapSize) && (Align < CapSize) && Align != 0) {
+    if (!IsMemset && MustPreserveCheriCapabilities && (Size >= CapSize) && (Align < CapSize) && Align != 0) {
       // llvm_unreachable("This function should not be called for underaligned "
       //                  "memcpy greater than CAP_SIZE");
       // return MVT::i8; // INVALID_SIMPLE_VALUE_TYPE

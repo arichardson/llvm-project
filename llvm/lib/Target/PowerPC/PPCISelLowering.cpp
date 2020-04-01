@@ -15151,7 +15151,8 @@ bool PPCTargetLowering::getTgtMemIntrinsic(IntrinsicInfo &Info,
 EVT PPCTargetLowering::getOptimalMemOpType(
     uint64_t Size, unsigned DstAlign, unsigned SrcAlign, bool IsMemset,
     bool ZeroMemset, bool MemcpyStrSrc,
-    const AttributeList &FuncAttributes) const {
+    const AttributeList &FuncAttributes,
+    bool MustPreserveCheriCapabilities) const {
   if (getTargetMachine().getOptLevel() != CodeGenOpt::None) {
     // When expanding a memset, require at least two QPX instructions to cover
     // the cost of loading the value to be stored from the constant pool.

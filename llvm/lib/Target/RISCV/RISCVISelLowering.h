@@ -173,7 +173,8 @@ public:
 
   EVT getOptimalMemOpType(uint64_t Size, unsigned DstAlign, unsigned SrcAlign,
                           bool IsMemset, bool ZeroMemset, bool MemcpyStrSrc,
-                          const AttributeList &FuncAttributes) const override;
+                          const AttributeList &FuncAttributes,
+                          bool MustPreserveCheriCapabilities) const override;
 
 private:
   void analyzeInputArgs(MachineFunction &MF, CCState &CCInfo,

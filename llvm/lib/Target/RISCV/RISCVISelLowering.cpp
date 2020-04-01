@@ -3171,7 +3171,8 @@ Instruction *RISCVTargetLowering::emitTrailingFence(IRBuilder<> &Builder,
 EVT RISCVTargetLowering::getOptimalMemOpType(
     uint64_t Size, unsigned DstAlign, unsigned SrcAlign, bool IsMemset,
     bool ZeroMemset, bool MemcpyStrSrc,
-    const AttributeList &FuncAttributes) const {
+    const AttributeList &FuncAttributes,
+    bool MustPreserveCheriCapabilities) const {
   // CHERI memcpy/memmove must be tag-preserving, either through explicit
   // capability loads/stores or by making a runtime library call. We can't use
   // capability stores as an optimisation for memset unless zeroing.
@@ -3189,14 +3190,14 @@ EVT RISCVTargetLowering::getOptimalMemOpType(
       // memcpy/memmove call, since it could still contain a capability if
       // sufficiently aligned at runtime. Zeroing memsets can fall back on
       // non-capability loads/stores.
-      if (!IsMemset)
+      if (!IsMemset && MustPreserveCheriCapabilities)
         return MVT::isVoid;
     }
   }
 
   return TargetLowering::getOptimalMemOpType(
       Size, DstAlign, SrcAlign, IsMemset, ZeroMemset, MemcpyStrSrc,
-      FuncAttributes);
+      FuncAttributes, MustPreserveCheriCapabilities);
 }
 
 TargetLowering::AtomicExpansionKind

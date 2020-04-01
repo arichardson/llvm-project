@@ -840,7 +840,8 @@ extern bool LargeCapTable;
                             unsigned SrcAlign,
                             bool IsMemset, bool ZeroMemset,
                             bool MemcpyStrSrc,
-                            const AttributeList &FuncAttributes) const override;
+                            const AttributeList &FuncAttributes,
+                            bool MustPreserveCheriCapabilities) const override;
 
     /// isFPImmLegal - Returns true if the target can instruction select the
     /// specified FP immediate natively. If false, the legalizer will

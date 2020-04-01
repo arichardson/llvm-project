@@ -1562,7 +1562,8 @@ public:
   getOptimalMemOpType(uint64_t /*Size*/, unsigned /*DstAlign*/,
                       unsigned /*SrcAlign*/, bool /*IsMemset*/,
                       bool /*ZeroMemset*/, bool /*MemcpyStrSrc*/,
-                      const AttributeList & /*FuncAttributes*/) const {
+                      const AttributeList & /*FuncAttributes*/,
+                      bool MustPreserveCheriCapabilities) const {
     return MVT::Other;
   }
 
@@ -1572,7 +1573,8 @@ public:
   getOptimalMemOpLLT(uint64_t /*Size*/, unsigned /*DstAlign*/,
                      unsigned /*SrcAlign*/, bool /*IsMemset*/,
                      bool /*ZeroMemset*/, bool /*MemcpyStrSrc*/,
-                     const AttributeList & /*FuncAttributes*/) const {
+                     const AttributeList & /*FuncAttributes*/,
+                     bool MustPreserveCheriCapabilities) const {
     return LLT();
   }
 

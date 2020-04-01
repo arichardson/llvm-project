@@ -514,7 +514,7 @@ namespace llvm {
 
       // Vector float to bfloat16.
       // Convert TWO packed single data to one packed BF16 data
-      CVTNE2PS2BF16, 
+      CVTNE2PS2BF16,
       // Convert packed single data to packed BF16 data
       CVTNEPS2BF16,
       // Masked version of above.
@@ -768,7 +768,8 @@ namespace llvm {
     /// target-independent logic.
     EVT getOptimalMemOpType(uint64_t Size, unsigned DstAlign, unsigned SrcAlign,
                             bool IsMemset, bool ZeroMemset, bool MemcpyStrSrc,
-                            const AttributeList &FuncAttributes) const override;
+                            const AttributeList &FuncAttributes,
+                            bool MustPreserveCheriCapabilities) const override;
 
     /// Returns true if it's safe to use load / store of the
     /// specified type to expand memcpy / memset inline. This is mostly true

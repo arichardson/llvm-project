@@ -101,7 +101,8 @@ private:
 
   EVT getOptimalMemOpType(uint64_t Size, unsigned DstAlign, unsigned SrcAlign,
                           bool IsMemset, bool ZeroMemset, bool MemcpyStrSrc,
-                          const AttributeList &FuncAttributes) const override {
+                          const AttributeList &FuncAttributes,
+                          bool MustPreserveCheriCapabilities) const override {
     return Size >= 8 ? MVT::i64 : MVT::i32;
   }
 
