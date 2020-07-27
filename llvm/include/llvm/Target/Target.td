@@ -531,6 +531,11 @@ class Instruction : InstructionEncoding {
   bit mayLoad      = ?;     // Is it possible for this inst to read memory?
   bit mayStore     = ?;     // Is it possible for this inst to write memory?
   bit mayRaiseFPException = 0; // Can this raise a floating-point exception?
+  bit mayTrap = 0;          // Can this instruction trap?
+  bit mayTrapOnSealedInput = ?; // Can this trap if the input is a sealed capability?
+  bit mayTrapOnUntaggedInput = ?; // Can this trap if the input is an untagged capability?
+  bit defMayBeSealed = 0;    // Result can be a sealed capability (e.g. CSeal)
+  bit defIsAlwaysTagged = 0; // Result is always a valid tagged capability
   bit isConvertibleToThreeAddress = 0;  // Can this 2-addr instruction promote?
   bit isCommutable = 0;     // Is this 3 operand instruction commutable?
   bit isTerminator = 0;     // Is this part of the terminator for a basic block?
