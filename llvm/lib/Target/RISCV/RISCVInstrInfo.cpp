@@ -676,20 +676,27 @@ bool RISCVInstrInfo::isGuaranteedNotToTrap(const MachineInstr &MI) const {
   auto BoundedOp = MI.getOperand(1);
   Optional<int64_t> RequestedSize = getIntImmediate(MI.getOperand(2), MRI);
   Optional<int64_t> ObjectOffset = 0;
-  if (BoundedOp.isReg() && BoundedOp.getReg().isVirtual()) {
+  while (BoundedOp.isReg() && BoundedOp.getReg().isVirtual()) {
     auto *Def = MRI.getUniqueVRegDef(BoundedOp.getReg());
     if (Def->getOpcode() == RISCV::CIncOffsetImm ||
         Def->getOpcode() == RISCV::CIncOffset) {
       BoundedOp = Def->getOperand(1);
-      ObjectOffset = getIntImmediate(Def->getOperand(2), MRI);
+      if (auto NewOffset = getIntImmediate(Def->getOperand(2), MRI)) {
+        ObjectOffset = *ObjectOffset + *NewOffset;
+        continue; // Try to accumulate CIncOffset sequences
+      } else {
+        ObjectOffset = None; // CIncOffset with unknown offset
+      }
+    } else {
+      ObjectOffset = None; // Not a CSetBounds -> offset is unknown
     }
-    // TODO: make this a loop
+    break;
   }
   LLVM_DEBUG(dbgs() << "CSetBounds Size=" << RequestedSize
                     << " offset=" << ObjectOffset << " object=";
              BoundedOp.dump());
 
-  if (!RequestedSize.hasValue() || !ObjectOffset.hasValue()) {
+  if (!RequestedSize || !ObjectOffset) {
     LLVM_DEBUG(dbgs() << "unknown bounds/offset -> CSetBounds may trap";
                MI.dump());
     return false;
@@ -700,7 +707,7 @@ bool RISCVInstrInfo::isGuaranteedNotToTrap(const MachineInstr &MI) const {
     const auto &MFI = MI.getMF()->getFrameInfo();
     ObjectSize = MFI.getObjectSize(BoundedOp.getIndex());
   }
-  if (!ObjectSize.hasValue()) {
+  if (!ObjectSize) {
     LLVM_DEBUG(dbgs() << "unknown object size -> CSetBounds may trap";
                MI.dump());
     return false;
