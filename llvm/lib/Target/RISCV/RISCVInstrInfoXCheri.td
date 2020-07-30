@@ -260,7 +260,7 @@ def CSetAddr        : Cheri_rr<0x10, "csetaddr">;
 def CIncOffset      : Cheri_rr<0x11, "cincoffset">;
 def CIncOffsetImm   : Cheri_ri<0x1, "cincoffset", 1>;
 // Note: mayTrap is optimized in RISCVInstrInfo::isGuaranteedNotToTrap()
-let defIsAlwaysTagged = 1, Constraints = "@traps_if_sealed $rs1,@traps_if_untagged $rs1" in {
+let defIsAlwaysTagged = 1, mayTrap = 1 in {
 def CSetBounds      : Cheri_rr<0x8, "csetbounds">;
 def CSetBoundsExact : Cheri_rr<0x9, "csetboundsexact">;
 def CSetBoundsImm   : Cheri_ri<0x2, "csetbounds", 0>;
