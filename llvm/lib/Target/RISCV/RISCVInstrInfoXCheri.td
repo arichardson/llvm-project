@@ -230,7 +230,7 @@ multiclass CAMO_C_rr_aq_rl<string clenstr, bits<5> funct5, bits<3> funct3,
 // Capability-Inspection Instructions
 //===----------------------------------------------------------------------===//
 
-let Predicates = [HasCheri] in {
+let Predicates = [HasCheri], isReMaterializable = 1, isAsCheapAsAMove = 1 in {
 def CGetPerm   : Cheri_r<0x0, "cgetperm">;
 def CGetType   : Cheri_r<0x1, "cgettype">;
 def CGetBase   : Cheri_r<0x2, "cgetbase">;
@@ -247,6 +247,7 @@ def CGetAddr   : Cheri_r<0xf, "cgetaddr">;
 //===----------------------------------------------------------------------===//
 
 let Predicates = [HasCheri] in {
+let isReMaterializable = 1, isAsCheapAsAMove = 1 in {
 let Constraints = "@traps_if_sealed $rs1" in {
 let mayTrap = 1 in {
 def CSeal           : Cheri_rr<0xb, "cseal", GPCR, GPCR>;
@@ -276,6 +277,7 @@ def CCSeal          : Cheri_rr<0x1f, "ccseal", GPCR, GPCR>;
 let defMayBeSealed = 1, defIsAlwaysTagged = 1 in
 def CSealEntry      : Cheri_r<0x11, "csealentry", GPCR>;
 } // let mayTrap = 1
+} // let isReMaterializable = 1, isAsCheapAsAMove = 1
 
 def : InstAlias<"cincoffsetimm $cd, $cs1, $imm",
                 (CIncOffsetImm GPCR:$cd, GPCR:$cs1, simm12:$imm), 0>;
@@ -293,7 +295,7 @@ def CToPtr      : Cheri_rr<0x12, "ctoptr", GPR, GPCRC0IsDDC>;
 let Constraints = "@traps_if_sealed $rs1,@traps_if_untagged $rs1" in
 def CFromPtr    : Cheri_rr<0x13, "cfromptr", GPCR, GPR, GPCRC0IsDDC>;
 def CSub        : Cheri_rr<0x14, "csub", GPR, GPCR>;
-let defMayBeSealed = 1 in
+let defMayBeSealed = 1, isMoveReg = 1 in
 def CMove       : Cheri_r<0xa, "cmove", GPCR>;
 }
 
@@ -337,7 +339,7 @@ def PseudoCapTAILIndirect : Pseudo<(outs), (ins GPCRTC:$rs1),
 // Assertion Instructions
 //===----------------------------------------------------------------------===//
 
-let Predicates = [HasCheri] in {
+let Predicates = [HasCheri], isReMaterializable = 1, isAsCheapAsAMove = 1 in {
 def CTestSubset : Cheri_rr<0x20, "ctestsubset", GPR, GPCR>;
 }
 
@@ -371,8 +373,10 @@ def FPClear : Cheri_clear<0x10, "fpclear">;
 //===----------------------------------------------------------------------===//
 
 let Predicates = [HasCheri] in {
+let isReMaterializable = 1, isAsCheapAsAMove = 1 in {
 def CRRL : Cheri_r<0x8, "croundrepresentablelength", GPR, GPR>;
 def CRAM : Cheri_r<0x9, "crepresentablealignmentmask", GPR, GPR>;
+}
 
 def : InstAlias<"crrl $rd, $rs1", (CRRL GPR:$rd, GPR:$rs1)>;
 def : InstAlias<"cram $rd, $rs1", (CRAM GPR:$rd, GPR:$rs1)>;
