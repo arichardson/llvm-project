@@ -247,22 +247,35 @@ def CGetAddr   : Cheri_r<0xf, "cgetaddr">;
 //===----------------------------------------------------------------------===//
 
 let Predicates = [HasCheri] in {
+let Constraints = "@traps_if_sealed $rs1" in {
+let mayTrap = 1 in {
 def CSeal           : Cheri_rr<0xb, "cseal", GPCR, GPCR>;
 def CUnseal         : Cheri_rr<0xc, "cunseal", GPCR, GPCR>;
+let defIsAlwaysTagged = 1 in
 def CAndPerm        : Cheri_rr<0xd, "candperm">;
+} // let mayTrap = 1
 def CSetFlags       : Cheri_rr<0xe, "csetflags">;
 def CSetOffset      : Cheri_rr<0xf, "csetoffset">;
 def CSetAddr        : Cheri_rr<0x10, "csetaddr">;
 def CIncOffset      : Cheri_rr<0x11, "cincoffset">;
 def CIncOffsetImm   : Cheri_ri<0x1, "cincoffset", 1>;
+// Note: mayTrap is optimized in RISCVInstrInfo::isGuaranteedNotToTrap()
+let defIsAlwaysTagged = 1, Constraints = "@traps_if_sealed $rs1,@traps_if_untagged $rs1" in {
 def CSetBounds      : Cheri_rr<0x8, "csetbounds">;
 def CSetBoundsExact : Cheri_rr<0x9, "csetboundsexact">;
 def CSetBoundsImm   : Cheri_ri<0x2, "csetbounds", 0>;
+} // let defIsAlwaysTagged = 1, mayTrap = 1
+} // let Constraints = "@traps_if_sealed $rs1"
 def CClearTag       : Cheri_r<0xb, "ccleartag", GPCR>;
+let mayTrap = 1 in {
+let defMayBeSealed = 1 in
 def CBuildCap       : Cheri_rr<0x1d, "cbuildcap", GPCR, GPCR>;
 def CCopyType       : Cheri_rr<0x1e, "ccopytype", GPCR, GPCR>;
+let defMayBeSealed = 1 in
 def CCSeal          : Cheri_rr<0x1f, "ccseal", GPCR, GPCR>;
+let defMayBeSealed = 1, defIsAlwaysTagged = 1 in
 def CSealEntry      : Cheri_r<0x11, "csealentry", GPCR>;
+} // let mayTrap = 1
 
 def : InstAlias<"cincoffsetimm $cd, $cs1, $imm",
                 (CIncOffsetImm GPCR:$cd, GPCR:$cs1, simm12:$imm), 0>;
@@ -275,9 +288,12 @@ def : InstAlias<"csetboundsimm $cd, $cs1, $imm",
 //===----------------------------------------------------------------------===//
 
 let Predicates = [HasCheri] in {
+let Constraints = "@traps_if_sealed $rs2,@traps_if_untagged $rs2" in
 def CToPtr      : Cheri_rr<0x12, "ctoptr", GPR, GPCRC0IsDDC>;
+let Constraints = "@traps_if_sealed $rs1,@traps_if_untagged $rs1" in
 def CFromPtr    : Cheri_rr<0x13, "cfromptr", GPCR, GPR, GPCRC0IsDDC>;
 def CSub        : Cheri_rr<0x14, "csub", GPR, GPCR>;
+let defMayBeSealed = 1 in
 def CMove       : Cheri_r<0xa, "cmove", GPCR>;
 }
 
