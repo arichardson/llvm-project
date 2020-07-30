@@ -119,6 +119,13 @@ public:
              isReallyTriviallyReMaterializableGeneric(MI, AA)));
   }
 
+  /// For instructions that are marked as mayTrap/mayTrapOnSealed/
+  /// mayTrapOnUntagged this hook can be used to check if certain instructions
+  /// are really safe (e.g. an immediate setbounds on a stack slot.
+  virtual bool isGuaranteedNotToTrap(const MachineInstr &MI) const {
+    return false;
+  }
+
 protected:
   /// For instructions with opcodes for which the M_REMATERIALIZABLE flag is
   /// set, this hook lets the target specify whether the instruction is actually

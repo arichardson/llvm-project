@@ -83,6 +83,8 @@ public:
 
   bool isAsCheapAsAMove(const MachineInstr &MI) const override;
 
+  bool isGuaranteedNotToTrap(const MachineInstr &MI) const override;
+
   bool verifyInstruction(const MachineInstr &MI,
                          StringRef &ErrInfo) const override;
 

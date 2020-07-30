@@ -1418,7 +1418,11 @@ bool MachineInstr::hasUnmodeledSideEffects() const {
 
 bool MachineInstr::mayTrap() const {
   if (hasProperty(MCID::MayTrap)) {
-    // TODO: Query TII whether this instruction can really trap
+    if (const MachineFunction *MF = getMFIfAvailable(*this)) {
+      auto *TII = MF->getSubtarget().getInstrInfo();
+      if (TII->isGuaranteedNotToTrap(*this))
+        return false;
+    }
     return true;
   }
   if (hasProperty(MCID::MayTrapOnSealedInput)) {
@@ -1446,6 +1450,9 @@ bool MachineInstr::mayTrap() const {
               continue;
             }
           }
+          if (TII->isGuaranteedNotToTrap(*this)) {
+            return false;
+          }
         }
         return true;
       }
@@ -1465,6 +1472,9 @@ bool MachineInstr::mayTrap() const {
               // Must be a valid capability (e.g. CSetBounds result)
               continue;
             }
+          }
+          if (TII->isGuaranteedNotToTrap(*this)) {
+            return false;
           }
         }
         return true;

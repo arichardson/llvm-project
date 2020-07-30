@@ -32,6 +32,8 @@ using namespace llvm;
 #define GET_INSTRINFO_CTOR_DTOR
 #include "RISCVGenInstrInfo.inc"
 
+#define DEBUG_TYPE "riscv-isntrinfo"
+
 RISCVInstrInfo::RISCVInstrInfo(RISCVSubtarget &STI)
     : RISCVGenInstrInfo(RISCVABI::isCheriPureCapABI(STI.getTargetABI())
                             ? RISCV::ADJCALLSTACKDOWNCAP
@@ -633,6 +635,91 @@ bool RISCVInstrInfo::isAsCheapAsAMove(const MachineInstr &MI) const {
       return (MI.getOperand(1).isReg() && MI.getOperand(1).getReg() == RISCV::X0);
   }
   return MI.isAsCheapAsAMove();
+}
+
+static Optional<int64_t> getIntImmediate(MachineOperand Op,
+                                         const MachineRegisterInfo &MRI) {
+  if (Op.isImm())
+    return Op.getImm();
+  if (Op.isReg()) {
+    Register Reg = Op.getReg();
+    if (Reg == RISCV::X0)
+      return 0;
+    if (Reg.isVirtual()) {
+      auto *Def = MRI.getUniqueVRegDef(Reg);
+      switch (Def->getOpcode()) {
+      default:
+        return None; // Unknown immediate
+      case RISCV::ADDI:
+      case RISCV::ADDIW:
+      case RISCV::ORI:
+        if (Def->getOperand(1).getReg() == RISCV::X0)
+          return Def->getOperand(2).getImm();
+        return None;
+      }
+    }
+  }
+  return None; // Unknown immediate
+}
+
+bool RISCVInstrInfo::isGuaranteedNotToTrap(const MachineInstr &MI) const {
+  const unsigned Opcode = MI.getOpcode();
+  switch (Opcode) {
+  default:
+    return false;
+  case RISCV::CSetBounds:
+  case RISCV::CSetBoundsExact:
+  case RISCV::CSetBoundsImm:
+    break;
+  }
+  const auto &MRI = MI.getMF()->getRegInfo();
+  auto BoundedOp = MI.getOperand(1);
+  Optional<int64_t> RequestedSize = getIntImmediate(MI.getOperand(2), MRI);
+  Optional<int64_t> ObjectOffset = 0;
+  if (BoundedOp.isReg() && BoundedOp.getReg().isVirtual()) {
+    auto *Def = MRI.getUniqueVRegDef(BoundedOp.getReg());
+    if (Def->getOpcode() == RISCV::CIncOffsetImm ||
+        Def->getOpcode() == RISCV::CIncOffset) {
+      BoundedOp = Def->getOperand(1);
+      ObjectOffset = getIntImmediate(Def->getOperand(2), MRI);
+    }
+    // TODO: make this a loop
+  }
+  LLVM_DEBUG(dbgs() << "CSetBounds Size=" << RequestedSize
+                    << " offset=" << ObjectOffset << " object=";
+             BoundedOp.dump());
+
+  if (!RequestedSize.hasValue() || !ObjectOffset.hasValue()) {
+    LLVM_DEBUG(dbgs() << "unknown bounds/offset -> CSetBounds may trap";
+               MI.dump());
+    return false;
+  }
+  Optional<int64_t> ObjectSize;
+  // TODO: handle global vars
+  if (BoundedOp.isFI()) {
+    const auto &MFI = MI.getMF()->getFrameInfo();
+    ObjectSize = MFI.getObjectSize(BoundedOp.getIndex());
+  }
+  if (!ObjectSize.hasValue()) {
+    LLVM_DEBUG(dbgs() << "unknown object size -> CSetBounds may trap";
+               MI.dump());
+    return false;
+  }
+  if (*ObjectOffset < 0 || *RequestedSize < 0) {
+    LLVM_DEBUG(
+        dbgs() << "negative object offset/req size -> CSetBounds may trap";
+        MI.dump());
+    return false;
+  }
+  if (*ObjectSize >= *RequestedSize + *ObjectOffset) {
+    LLVM_DEBUG(dbgs() << "In-bounds CSetBounds cannot trap (object size="
+                      << ObjectSize << "offset=" << ObjectOffset
+                      << " req size=" << RequestedSize << ")";
+               MI.dump());
+    return true;
+  }
+  LLVM_DEBUG(dbgs() << "potentially OOB CSetBounds may trap"; MI.dump());
+  return false;
 }
 
 bool RISCVInstrInfo::verifyInstruction(const MachineInstr &MI,
