@@ -1457,6 +1457,16 @@ bool MachineInstr::mayTrap() const {
       if (OpInfo.mustBeTaggedCapability() && Op.maybeUntagged()) {
         // TODO: Check whether the def is safe (e.g. produced by a previous
         // CSetBounds, etc).
+        if (const MachineFunction *MF = getMFIfAvailable(*this)) {
+          auto *TII = MF->getSubtarget().getInstrInfo();
+          if (Op.isReg() && Op.getReg().isVirtual()) {
+            auto *Def = MF->getRegInfo().getUniqueVRegDef(Op.getReg());
+            if (Def->hasProperty(MCID::DefIsAlwaysTagged)) {
+              // Must be a valid capability (e.g. CSetBounds result)
+              continue;
+            }
+          }
+        }
         return true;
       }
     }
