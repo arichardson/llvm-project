@@ -102,16 +102,10 @@ entry:
 define void @memcpy_no_preserve(%struct.pair addrspace(200)* %a, %struct.pair addrspace(200)* %b) addrspace(200) nounwind {
 ; CHECK-LABEL: memcpy_no_preserve:
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    cincoffset csp, csp, -16
-; CHECK-NEXT:    csc cra, 0(csp)
-; CHECK-NEXT:  .LBB4_1: # %entry
-; CHECK-NEXT:    # Label of block must be emitted
-; CHECK-NEXT:    auipcc ca3, %captab_pcrel_hi(memcpy)
-; CHECK-NEXT:    clc ca3, %pcrel_lo(.LBB4_1)(ca3)
-; CHECK-NEXT:    addi a2, zero, 16
-; CHECK-NEXT:    cjalr ca3
-; CHECK-NEXT:    clc cra, 0(csp)
-; CHECK-NEXT:    cincoffset csp, csp, 16
+; CHECK-NEXT:    cld a2, 8(ca1)
+; CHECK-NEXT:    csd a2, 8(ca0)
+; CHECK-NEXT:    cld a1, 0(ca1)
+; CHECK-NEXT:    csd a1, 0(ca0)
 ; CHECK-NEXT:    cret
 entry:
   %a_i8 = bitcast %struct.pair addrspace(200)* %a to i8 addrspace(200)*
@@ -123,16 +117,10 @@ entry:
 define void @memmove_no_preserve(%struct.pair addrspace(200)* %a, %struct.pair addrspace(200)* %b) addrspace(200) nounwind {
 ; CHECK-LABEL: memmove_no_preserve:
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    cincoffset csp, csp, -16
-; CHECK-NEXT:    csc cra, 0(csp)
-; CHECK-NEXT:  .LBB5_1: # %entry
-; CHECK-NEXT:    # Label of block must be emitted
-; CHECK-NEXT:    auipcc ca3, %captab_pcrel_hi(memmove)
-; CHECK-NEXT:    clc ca3, %pcrel_lo(.LBB5_1)(ca3)
-; CHECK-NEXT:    addi a2, zero, 16
-; CHECK-NEXT:    cjalr ca3
-; CHECK-NEXT:    clc cra, 0(csp)
-; CHECK-NEXT:    cincoffset csp, csp, 16
+; CHECK-NEXT:    cld a2, 8(ca1)
+; CHECK-NEXT:    cld a1, 0(ca1)
+; CHECK-NEXT:    csd a2, 8(ca0)
+; CHECK-NEXT:    csd a1, 0(ca0)
 ; CHECK-NEXT:    cret
 entry:
   %a_i8 = bitcast %struct.pair addrspace(200)* %a to i8 addrspace(200)*
