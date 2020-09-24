@@ -1647,6 +1647,8 @@ void Verifier::visitModuleFlagCGProfileEntry(const MDOperand &MDO) {
 /// Return true if this attribute kind only applies to functions.
 static bool isFuncOnlyAttr(Attribute::AttrKind Kind) {
   switch (Kind) {
+  case Attribute::MustPreserveCheriTags:
+  case Attribute::NoPreserveCheriTags:
   case Attribute::NoMerge:
   case Attribute::NoReturn:
   case Attribute::NoSync:
@@ -1696,7 +1698,6 @@ static bool isFuncOnlyAttr(Attribute::AttrKind Kind) {
   case Attribute::Speculatable:
   case Attribute::StrictFP:
   case Attribute::NullPointerIsValid:
-  case Attribute::MustPreserveCheriTags:
   case Attribute::MustProgress:
   case Attribute::NoProfile:
     return true;

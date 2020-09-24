@@ -1371,6 +1371,9 @@ bool LLParser::parseFnAttributeValuePairs(AttrBuilder &B,
       B.addAttribute(Attribute::MustProgress);
       break;
     case lltok::kw_naked: B.addAttribute(Attribute::Naked); break;
+    case lltok::kw_no_preserve_cheri_tags:
+      B.addAttribute(Attribute::NoPreserveCheriTags);
+      break;
     case lltok::kw_nobuiltin: B.addAttribute(Attribute::NoBuiltin); break;
     case lltok::kw_nocallback:
       B.addAttribute(Attribute::NoCallback);

@@ -490,6 +490,11 @@ std::string Attribute::getAsString(bool InAttrGrp) const {
   if (hasAttribute(Attribute::MustProgress))
     return "mustprogress";
 
+  if (hasAttribute(Attribute::MustPreserveCheriTags))
+    return "must_preserve_cheri_tags";
+  if (hasAttribute(Attribute::NoPreserveCheriTags))
+    return "no_preserve_cheri_tags";
+
   if (isTypeAttribute()) {
     std::string Result;
     raw_string_ostream OS(Result);

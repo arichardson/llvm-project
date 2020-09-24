@@ -265,6 +265,10 @@ def ZExt : EnumAttr<"zeroext">;
 // This MemTransferInst may transfer capabilities and must not be
 // split into smaller loads/stores that would break this property
 def MustPreserveCheriTags : EnumAttr<"must_preserve_cheri_tags">;
+// This MemTransferInst will never transfer capabilities and can
+// therefore be split into smaller loads/stores and/or be lowered to
+// copy instructions/functions that do not retain CHERI tags.
+def NoPreserveCheriTags : EnumAttr<"no_preserve_cheri_tags">;
 
 /// Function is required to make Forward Progress.
 def MustProgress : TypeAttr<"mustprogress">;
