@@ -137,7 +137,7 @@ def update_one_test(test_name: str, input_file: typing.BinaryIO,
                     continue
                 else:
                     sys.exit("Invalid @IF- directive: " + line.decode("utf-8"))
-            if line.startswith(b"@IFNOT-"):
+            elif line.startswith(b"@IFNOT-"):
                 if line.startswith(current_arch_ifnot):
                     print("Skipping", current_arch_ifnot, "line: ", line)
                     continue
@@ -153,6 +153,16 @@ def update_one_test(test_name: str, input_file: typing.BinaryIO,
                         break
                 if not valid_directive:
                     sys.exit("Invalid @IF- directive: " + line.decode("utf-8"))
+            elif line.startswith(b"; UPDATE_OPT_ARGS:"):
+                argstr = line[len(b"; UPDATE_OPT_ARGS:"):].decode("utf-8")
+                update_opt_args = [x.strip() for x in argstr.split()]
+                print("Set update_test_checks.py args to: ", update_opt_args)
+                continue
+            elif line.startswith(b"; UPDATE_LLC_ARGS:"):
+                argstr = line[len(b"; UPDATE_LLC_ARGS:"):].decode("utf-8")
+                update_llc_args = [x.strip() for x in argstr.split()]
+                print("Set update_llc_test_checks.py args to: ", update_llc_args)
+                continue
 
             m = CHERI_GENERIC_UTC_CMD.match(line)
             if m:
@@ -210,9 +220,6 @@ def update_one_test(test_name: str, input_file: typing.BinaryIO,
         # if args.verbose:
         print("Running", " ".join(update_cmd))
         subprocess.check_call(update_cmd)
-    #/Users/alex/cheri/llvm-project/llvm/utils/update_llc_test_checks.py --verbose --llc-binary /Users/alex/cheri/llvm-project/cmake-build-debug/bin/llc /Users/alex/cheri/llvm-project/llvm/test/CodeGen/CHERI-Generic/MIPS/cheri-csub.ll
-
-    # TODO: run update_test_checks.py
 
 
 def main():
