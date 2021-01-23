@@ -952,8 +952,17 @@ bool CodeGenTypes::isZeroInitializable(QualType T) {
   return true;
 }
 
-llvm::PreserveCheriTags CodeGenTypes::copyShouldPreserveTags(const Expr *Dest,
-                                                             const Expr *Src) {
+llvm::PreserveCheriTags
+CodeGenTypes::copyShouldPreserveTags(const Expr *Dest, const Expr *Src,
+                                     const llvm::Value *Size) {
+  if (auto ConstSize = dyn_cast_or_null<llvm::ConstantInt>(Size)) {
+    // If the copy size is smaller than capability size we do not need to
+    // preserve tag bits.
+    auto CapSize = Context.toCharUnitsFromBits(
+        Context.getTargetInfo().getCHERICapabilityWidth());
+    if (ConstSize->getValue().slt(CapSize.getQuantity()))
+      return llvm::PreserveCheriTags::Unnecessary;
+  }
   auto GetPointee = [](const Expr *E) {
     assert(E->getType()->isPointerType());
     // Ignore the implicit cast to void* for the memcpy call.

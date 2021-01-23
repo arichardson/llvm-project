@@ -72,28 +72,28 @@ struct with_cap {
   void *cap;
 };
 
-void test_no_warn_for_non_caps(short *align2, align2_ptr align2_not_short, int not_a_cap, unsigned __intcap *capptr,
+void test_no_warn_for_non_caps(align2_ptr align2, int not_a_cap, unsigned __intcap *capptr,
                                struct with_cap *struct_with_cap, struct without_cap *struct_without_cap) {
   // CHECK-LABEL: @test_no_warn_for_non_caps(
 
   memcpy(align2, &not_a_cap, sizeof(not_a_cap)); // no warning
   // CHECK: call void @llvm.memcpy.p200i8.p200i8.i64(i8 addrspace(200)*
-  // CHECK-SAME: align 2 %{{.+}}, i8 addrspace(200)* align 4 %{{.+}}, i64 4, i1 false){{$}}
-  // TODO-CHECK-SAME: [[NO_PRESERVE_TAGS_ATTRIB:#[0-9]+]]{{$}}
+  // CHECK-SAME: align 1 %{{.+}}, i8 addrspace(200)* align 4 %{{.+}}, i64 4, i1 false)
+  // CHECK-SAME: [[NO_PRESERVE_TAGS_ATTRIB:#[0-9]+]]{{$}}
 
   memcpy(align2, struct_without_cap, sizeof(*struct_without_cap)); // no warning
   // CHECK: call void @llvm.memcpy.p200i8.p200i8.i64(i8 addrspace(200)*
-  // CHECK-SAME: align 2 %{{.+}}, i8 addrspace(200)* align 4 %{{.+}}, i64 8, i1 false)
-  // CHECK-SAME: [[NO_PRESERVE_TAGS_ATTRIB:#[0-9]+]]{{$}}
+  // CHECK-SAME: align 1 %{{.+}}, i8 addrspace(200)* align 4 %{{.+}}, i64 8, i1 false)
+  // CHECK-SAME: [[NO_PRESERVE_TAGS_ATTRIB]]{{$}}
 
   memcpy(align2, capptr, sizeof(*capptr));
   // expected-warning@-1{{memcpy operation with capability argument 'unsigned __intcap' and underaligned destination (aligned to 2 bytes) may be inefficient or result in CHERI tags bits being stripped}}
   // expected-note@-2{{use __builtin_assume_aligned() or cast to (u)intptr_t*}}
   // CHECK: call void @llvm.memcpy.p200i8.p200i8.i64(i8 addrspace(200)*
-  // CHECK-SAME: align 2 %{{.+}}, i8 addrspace(200)* align 16 %{{.+}}, i64 16, i1 false)
+  // CHECK-SAME: align 1 %{{.+}}, i8 addrspace(200)* align 16 %{{.+}}, i64 16, i1 false)
   // CHECK-SAME: [[PRESERVE_TAGS_ATTRIB_TYPE_UINTCAP:#[0-9]+]]{{$}}
 
-  memcpy(align2_not_short, struct_with_cap, sizeof(*struct_with_cap));
+  memcpy(align2, struct_with_cap, sizeof(*struct_with_cap));
   // expected-warning@-1{{memcpy operation with capability argument 'struct with_cap' and underaligned destination (aligned to 2 bytes) may be inefficient or result in CHERI tags bits being stripped}}
   // expected-note@-2{{use __builtin_assume_aligned() or cast to (u)intptr_t*}}
   // CHECK: call void @llvm.memcpy.p200i8.p200i8.i64(i8 addrspace(200)*

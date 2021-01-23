@@ -310,7 +310,8 @@ public:  // These are internal details of CGT that shouldn't be used externally.
   /// alignment of the destination buffer.
   llvm::PreserveCheriTags copyShouldPreserveTags(QualType DestType);
   llvm::PreserveCheriTags copyShouldPreserveTags(const Expr *Dest,
-                                                 const Expr *Src);
+                                                 const Expr *Src,
+                                                 const llvm::Value *SizeVal);
   /// Same as the copyShouldPreserveTags(), but expects DestType to be the
   /// pointee type rather than the type of the buffer pointer.
   llvm::PreserveCheriTags copyShouldPreserveTagsForPointee(QualType DestType);

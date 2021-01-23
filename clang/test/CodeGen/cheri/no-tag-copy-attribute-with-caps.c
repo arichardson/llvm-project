@@ -15,16 +15,16 @@ void test_addrof_char(struct OneCap *cap, char c, __uint128_t u) {
   // the source does not contain tags
   __builtin_memmove(cap, &c, sizeof(c));
   // CHECK: call void @llvm.memmove.p200i8.p200i8.i64(i8 addrspace(200)* align 16 {{%[a-z0-9]+}}, i8 addrspace(200)* align 1 {{%[a-z0-9.]+}}
-  // CHECK-SAME: , i64 1, i1 false) [[MUST_PRESERVE_ATTR:#[0-9]+]]{{$}}
+  // CHECK-SAME: , i64 1, i1 false) [[NO_PRESERVE_ATTR:#[0-9]+]]
   __builtin_memmove(&c, cap, sizeof(c));
   // CHECK: call void @llvm.memmove.p200i8.p200i8.i64(i8 addrspace(200)* align 1 {{%[a-z0-9]+}}.addr, i8 addrspace(200)* align 16 {{%[a-z0-9]+}}
-  // CHECK-SAME: , i64 1, i1 false) [[MUST_PRESERVE_WITH_TYPE_ATTR:#[0-9]+]]{{$}}
+  // CHECK-SAME: , i64 1, i1 false) [[NO_PRESERVE_ATTR]]
   __builtin_memmove(cap, &u, sizeof(u));
   // CHECK: call void @llvm.memmove.p200i8.p200i8.i64(i8 addrspace(200)* align 16 {{%[a-z0-9]+}}, i8 addrspace(200)* align 16 {{%[a-z0-9]+}}
-  // CHECK-SAME: , i64 16, i1 false) [[MUST_PRESERVE_ATTR]]{{$}}
+  // CHECK-SAME: , i64 16, i1 false) [[MUST_PRESERVE_ATTR:#[0-9]+]]
   __builtin_memmove(&u, cap, sizeof(u));
   // CHECK: call void @llvm.memmove.p200i8.p200i8.i64(i8 addrspace(200)* align 16 {{%[a-z0-9]+}}, i8 addrspace(200)* align 16 {{%[a-z0-9]+}}
-  // CHECK-SAME: , i64 16, i1 false) [[MUST_PRESERVE_WITH_TYPE_ATTR]]{{$}}
+  // CHECK-SAME: , i64 16, i1 false) [[MUST_PRESERVE_WITH_TYPE_ATTR:#[0-9]+]]{{$}}
 }
 
 void test_small_copy(struct OneCap *cap1, struct OneCap *cap2) {
@@ -34,9 +34,9 @@ void test_small_copy(struct OneCap *cap1, struct OneCap *cap2) {
   // CHECK: call void @llvm.memmove.p200i8.p200i8.i64(i8 addrspace(200)* align 16 {{%[a-z0-9]+}}, i8 addrspace(200)* align 16 {{%[a-z0-9]+}}
   // CHECK-SAME: , i64 16, i1 false) [[MUST_PRESERVE_WITH_TYPE_ATTR]]{{$}}
   __builtin_memmove(cap1, cap2, 2);
-  // TODO :This copy is too small -> should not preserve tags
+  // This copy is too small -> should not preserve tags
   // CHECK: call void @llvm.memmove.p200i8.p200i8.i64(i8 addrspace(200)* align 16 {{%[a-z0-9]+}}, i8 addrspace(200)* align 16 {{%[a-z0-9]+}}
-  // CHECK-SAME: , i64 2, i1 false) [[MUST_PRESERVE_WITH_TYPE_ATTR]]{{$}}
+  // CHECK-SAME: , i64 2, i1 false) [[NO_PRESERVE_ATTR]]{{$}}
 }
 
 struct strbuf {
@@ -53,7 +53,7 @@ void test_addrof_char_buf(struct OneCap *cap, struct strbuf s) {
   // attribute so this should be safe
   __builtin_memmove(cap, &s, sizeof(s));
   // CHECK: call void @llvm.memmove.p200i8.p200i8.i64(i8 addrspace(200)* align 16 {{%[a-z0-9]+}}, i8 addrspace(200)* align 1 {{%[a-z0-9]+}}
-  // CHECK-SAME: , i64 16, i1 false) [[NO_PRESERVE_ATTR:#[0-9]+]]
+  // CHECK-SAME: , i64 16, i1 false) [[NO_PRESERVE_ATTR]]
   __builtin_memmove(&s, cap, sizeof(s));
   // CHECK: call void @llvm.memmove.p200i8.p200i8.i64(i8 addrspace(200)* align 1 {{%[a-z0-9]+}}, i8 addrspace(200)* align 16 {{%[a-z0-9]+}}
   // CHECK-SAME: , i64 16, i1 false) [[NO_PRESERVE_ATTR]]
