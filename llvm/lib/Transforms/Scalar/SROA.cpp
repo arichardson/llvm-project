@@ -933,6 +933,9 @@ private:
     if (AS.AI.getAlign() < CapAlign)
       return false;
 
+    if (II.shouldPreserveCheriTags() == PreserveCheriTags::Unnecessary)
+      return false;
+
     if (!canRangeContainCapabilities(CapSize, Offset, Offset + Size))
       return false;
 
