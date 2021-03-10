@@ -1258,12 +1258,15 @@ static void emitStoresForConstant(CodeGenModule &CGM, const VarDecl &D,
     }
   }
 
-  // Copy from a global.
+  // Copy from a global (and therefore the effective type of the variable is
+  // known).
   auto *I = Builder.CreateMemCpy(
       Loc,
       createUnnamedGlobalForMemcpyFrom(CGM, D, Builder, constant,
                                        Loc.getAlignment()),
-      SizeVal, CGM.getTypes().copyShouldPreserveTagsForPointee(D.getType()),
+      SizeVal,
+      CGM.getTypes().copyShouldPreserveTagsForPointee(
+          D.getType(), /*EffectiveTypeKnown=*/true, SizeVal),
       isVolatile);
   if (IsAutoInit)
     I->addAnnotationMetadata("auto-init");

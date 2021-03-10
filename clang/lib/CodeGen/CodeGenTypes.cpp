@@ -952,29 +952,31 @@ bool CodeGenTypes::isZeroInitializable(QualType T) {
   return true;
 }
 
-llvm::PreserveCheriTags
-CodeGenTypes::copyShouldPreserveTags(const Expr *Dest, const Expr *Src,
-                                     const llvm::Value *Size) {
+static bool isLessThanCapSize(const ASTContext &Context,
+                              const llvm::Value *Size) {
   if (auto ConstSize = dyn_cast_or_null<llvm::ConstantInt>(Size)) {
     // If the copy size is smaller than capability size we do not need to
     // preserve tag bits.
     auto CapSize = Context.toCharUnitsFromBits(
         Context.getTargetInfo().getCHERICapabilityWidth());
     if (ConstSize->getValue().slt(CapSize.getQuantity()))
-      return llvm::PreserveCheriTags::Unnecessary;
+      return true;
   }
-  auto GetPointee = [](const Expr *E) {
-    assert(E->getType()->isPointerType());
-    // Ignore the implicit cast to void* for the memcpy call.
-    // Note: IgnoreParenImpCasts() might strip function/array-to-pointer decay
-    // so we can't always call getPointee().
-    QualType Ty = E->IgnoreParenImpCasts()->getType();
-    if (Ty->isAnyPointerType())
-      return Ty->getPointeeType();
-    return Ty;
-  };
+  return false;
+}
 
-  auto DstPreserve = copyShouldPreserveTagsForPointee(GetPointee(Dest));
+llvm::PreserveCheriTags
+CodeGenTypes::copyShouldPreserveTags(const Expr *DestPtr, const Expr *SrcPtr,
+                                     const llvm::Value *Size) {
+  // Don't add the no_preserve_tags/must_preserve_tags attribute for non-CHERI
+  // targets to avoid changing tests and to avoid compile-time impact.
+  if (!Context.getTargetInfo().SupportsCapabilities())
+    return llvm::PreserveCheriTags::Unknown;
+  if (isLessThanCapSize(Context, Size)) {
+    // Copies smaller than capability size do not need to preserve tag bits.
+    return llvm::PreserveCheriTags::Unnecessary;
+  }
+  auto DstPreserve = copyShouldPreserveTags(DestPtr);
   if (DstPreserve == llvm::PreserveCheriTags::Unnecessary) {
     // If the destination does not need to preserve tags, we know that we don't
     // need to retain tags even if the source is a capability type.
@@ -982,7 +984,7 @@ CodeGenTypes::copyShouldPreserveTags(const Expr *Dest, const Expr *Src,
   }
   assert(DstPreserve == llvm::PreserveCheriTags::Required ||
          DstPreserve == llvm::PreserveCheriTags::Unknown);
-  auto SrcPreserve = copyShouldPreserveTagsForPointee(GetPointee(Src));
+  auto SrcPreserve = copyShouldPreserveTags(SrcPtr);
   if (SrcPreserve == llvm::PreserveCheriTags::Unnecessary) {
     // If the copy source never contains capabilities, we don't need to retain
     // tags even if the destination is contains capabilities.
@@ -1001,14 +1003,42 @@ CodeGenTypes::copyShouldPreserveTags(const Expr *Dest, const Expr *Src,
   return DstPreserve;
 }
 
-llvm::PreserveCheriTags
-CodeGenTypes::copyShouldPreserveTags(QualType DestType) {
-  assert(DestType->isAnyPointerType() && "Copy dest must be a pointer type");
-  return copyShouldPreserveTagsForPointee(DestType->getPointeeType());
+llvm::PreserveCheriTags CodeGenTypes::copyShouldPreserveTags(const Expr *E) {
+  assert(E->getType()->isAnyPointerType());
+  // Ignore the implicit cast to void* for the memcpy call.
+  // Note: IgnoreParenImpCasts() might strip function/array-to-pointer decay
+  // so we can't always call getPointeeType().
+  QualType Ty = E->IgnoreParenImpCasts()->getType();
+  if (Ty->isAnyPointerType())
+    Ty = Ty->getPointeeType();
+  // TODO: Find the underlying VarDecl to improve diagnostics
+  const VarDecl *UnderlyingVar = nullptr;
+  // TODO: this assert may be overly aggressive
+  assert((!UnderlyingVar || UnderlyingVar->getType() == Ty) &&
+         "Passed wrong VarDecl?");
+  // If we have an underlying VarDecl, we can assume that the dynamic type of
+  // the object is known and can perform more detailed analysis.
+  return copyShouldPreserveTagsForPointee(Ty, UnderlyingVar != nullptr);
+}
+
+llvm::PreserveCheriTags CodeGenTypes::copyShouldPreserveTagsForPointee(
+    QualType CopyTy, bool EffectiveTypeKnown, const llvm::Value *SizeVal) {
+  // Don't add the no_preserve_tags/must_preserve_tags attribute for non-CHERI
+  // targets to avoid changing tests and to avoid compile-time impact.
+  if (!Context.getTargetInfo().SupportsCapabilities())
+    return llvm::PreserveCheriTags::Unknown;
+  if (isLessThanCapSize(Context, SizeVal)) {
+    // Copies smaller than capability size do not need to preserve tag bits.
+    return llvm::PreserveCheriTags::Unnecessary;
+  }
+  return copyShouldPreserveTagsForPointee(CopyTy, EffectiveTypeKnown);
 }
 
 llvm::PreserveCheriTags
-CodeGenTypes::copyShouldPreserveTagsForPointee(QualType Pointee) {
+CodeGenTypes::copyShouldPreserveTagsForPointee(QualType Pointee,
+                                               bool EffectiveTypeKnown) {
+  assert(Context.getTargetInfo().SupportsCapabilities() &&
+         "Should only be called for CHERI targets");
   assert(!Pointee.isNull() && "Should only be called for valid types");
   if (!getTarget().SupportsCapabilities()) {
     // If we are not compiling for CHERI, return Unknown to avoid adding the
@@ -1020,6 +1050,25 @@ CodeGenTypes::copyShouldPreserveTagsForPointee(QualType Pointee) {
     // If this is a capability type or a structure/union containing
     // capabilities, we obviously need to retain tag bits when copying.
     return llvm::PreserveCheriTags::Required;
+  } else if (!EffectiveTypeKnown) {
+    // If we don't know the underlying type of the copy (i.e. we just have a
+    // pointer without any additional context), we cannot assume that the actual
+    // object at that location matches the type of the pointer, so we have to
+    // conservatively return Unknown if containsCapabilities() was false.
+    // This is needed because C's strict aliasing rules are not based on the
+    // type of the pointer but rather based on the type of what was last stored.
+    // See C2x 6.5:
+    // "If a value is copied into an object having no declared type using memcpy
+    // or memmove, or is copied as an array of character type, then the
+    // effective type of the modified object for that access and for subsequent
+    // accesses that do not modify the value is the effective type of the object
+    // from which the value is copied, if it has one. For all other accesses to
+    // an object having no declared type, the effective type of the object is
+    // simply the type of the lvalue used for the access."
+    // And importantly: "Allocated objects have no declared type.", so unless
+    // we know what the underlying VarDecl is, we cannot use the type of the
+    // expression to determine whether it could hold tags.
+    return llvm::PreserveCheriTags::Unknown;
   } else if (Pointee->isIncompleteType()) {
     // We don't know if incomplete types contain capabilities, so be
     // conservative and assume that they might.
@@ -1027,7 +1076,10 @@ CodeGenTypes::copyShouldPreserveTagsForPointee(QualType Pointee) {
   } else if (auto *RD = Pointee->getAsRecordDecl()) {
     // TODO: should maybe add ASTContext::neverContainsCapabilities()
     if (RD->hasFlexibleArrayMember()) {
-      // This record may store capabilities in the trailing array.
+      // If this record has a trailing flexible array, we conservatively assume
+      // that the flexible array could contain capabilities.
+      // TODO: We could find the flexible array member and use that to
+      //  determine whether the type may contain tags.
       return llvm::PreserveCheriTags::Unknown;
     } else if (RD->field_empty()) {
       // This structure could be used as an opaque type -> assume it might
@@ -1046,15 +1098,16 @@ CodeGenTypes::copyShouldPreserveTagsForPointee(QualType Pointee) {
     // having to call the library function.
     return llvm::PreserveCheriTags::Unnecessary;
   } else if (Pointee->isArrayType()) {
-    return copyShouldPreserveTagsForPointee(
-        QualType(Pointee->getArrayElementTypeNoTypeQual(), 0));
+    return copyShouldPreserveTagsForPointee(Context.getBaseElementType(Pointee),
+                                            EffectiveTypeKnown);
   }
 
   if (Pointee->isScalarType()) {
     // We can return PreserveCheriTags::Unneccessary for scalar types that are
     // not void *, char *, or std::byte * (since those could point to anything).
     assert(!Pointee->isCHERICapabilityType(Context));
-    if (!Pointee->isStdByteType() && !Pointee->isCharType())
+    if (!Pointee->isStdByteType() && !Pointee->isCharType() &&
+        !Pointee->isVoidType())
       return llvm::PreserveCheriTags::Unnecessary;
   }
 
