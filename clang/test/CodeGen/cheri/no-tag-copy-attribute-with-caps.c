@@ -7,8 +7,6 @@ struct OneCap {
   void *__capability b;
 } dst;
 
-// define void @test_addrof_char(%struct.OneCap addrspace(200)* {{%[a-z0-9]+}}, i8 signext {{%[a-z0-9]+}}, i128 {{%[a-z0-9]+}}) addrspace(200) #0 {
-
 void test_addrof_char(struct OneCap *cap, char c, __uint128_t u) {
   // CHECK-LABEL: void @test_addrof_char(
   // Since this is an address-of expression we should be able to detect that
@@ -18,13 +16,15 @@ void test_addrof_char(struct OneCap *cap, char c, __uint128_t u) {
   // CHECK-SAME: , i64 1, i1 false) [[NO_PRESERVE_ATTR:#[0-9]+]]
   __builtin_memmove(&c, cap, sizeof(c));
   // CHECK: call void @llvm.memmove.p200i8.p200i8.i64(i8 addrspace(200)* align 1 {{%[a-z0-9]+}}.addr, i8 addrspace(200)* align 16 {{%[a-z0-9]+}}
-  // CHECK-SAME: , i64 1, i1 false) [[NO_PRESERVE_ATTR]]
+  // CHECK-SAME: , i64 1, i1 false) [[NO_PRESERVE_ATTR]]{{$}}
+
+  // uint128_t cannot not hold tags -> no need to preserve them.
   __builtin_memmove(cap, &u, sizeof(u));
   // CHECK: call void @llvm.memmove.p200i8.p200i8.i64(i8 addrspace(200)* align 16 {{%[a-z0-9]+}}, i8 addrspace(200)* align 16 {{%[a-z0-9]+}}
-  // CHECK-SAME: , i64 16, i1 false) [[MUST_PRESERVE_ATTR:#[0-9]+]]
+  // CHECK-SAME: , i64 16, i1 false) [[NO_PRESERVE_ATTR]]{{$}}
   __builtin_memmove(&u, cap, sizeof(u));
   // CHECK: call void @llvm.memmove.p200i8.p200i8.i64(i8 addrspace(200)* align 16 {{%[a-z0-9]+}}, i8 addrspace(200)* align 16 {{%[a-z0-9]+}}
-  // CHECK-SAME: , i64 16, i1 false) [[MUST_PRESERVE_WITH_TYPE_ATTR:#[0-9]+]]{{$}}
+  // CHECK-SAME: , i64 16, i1 false) [[NO_PRESERVE_ATTR]]{{$}}
 }
 
 void test_small_copy(struct OneCap *cap1, struct OneCap *cap2) {
@@ -32,7 +32,7 @@ void test_small_copy(struct OneCap *cap1, struct OneCap *cap2) {
   __builtin_memmove(cap1, cap2, sizeof(*cap1));
   // This copy preserves tags
   // CHECK: call void @llvm.memmove.p200i8.p200i8.i64(i8 addrspace(200)* align 16 {{%[a-z0-9]+}}, i8 addrspace(200)* align 16 {{%[a-z0-9]+}}
-  // CHECK-SAME: , i64 16, i1 false) [[MUST_PRESERVE_WITH_TYPE_ATTR]]{{$}}
+  // CHECK-SAME: , i64 16, i1 false) [[MUST_PRESERVE_WITH_TYPE_ATTR:#[0-9]+]]{{$}}
   __builtin_memmove(cap1, cap2, 2);
   // This copy is too small -> should not preserve tags
   // CHECK: call void @llvm.memmove.p200i8.p200i8.i64(i8 addrspace(200)* align 16 {{%[a-z0-9]+}}, i8 addrspace(200)* align 16 {{%[a-z0-9]+}}
@@ -65,22 +65,23 @@ void test_array_decay(struct OneCap *cap) {
   int buf[16];
   __builtin_memmove(cap, buf, sizeof(*cap));
   // CHECK: call void @llvm.memmove.p200i8.p200i8.i64(i8 addrspace(200)* align 16 {{%[a-z0-9]+}}, i8 addrspace(200)* align 4 {{%[a-z0-9]+}}
-  // CHECK-SAME: , i64 16, i1 false) [[MUST_PRESERVE_ATTR]]
+  // CHECK-SAME: , i64 16, i1 false) [[NO_PRESERVE_ATTR]]
   __builtin_memmove(buf, cap, sizeof(*cap));
   // CHECK: call void @llvm.memmove.p200i8.p200i8.i64(i8 addrspace(200)* align 4 {{%[a-z0-9]+}}, i8 addrspace(200)* align 16 {{%[a-z0-9]+}}
-  // CHECK-SAME: , i64 16, i1 false) [[MUST_PRESERVE_WITH_TYPE_ATTR]]{{$}}
+  // CHECK-SAME: , i64 16, i1 false) [[NO_PRESERVE_ATTR]]
 
-  // char array aligned to one byte -> does not contain tags
+  // char array aligned to one byte -> for now be conservative about char* and don't add the attibute
+  // TODO: this does not contain tags
   char buf2[16];
   __builtin_memmove(cap, buf2, sizeof(*cap));
   // CHECK: call void @llvm.memmove.p200i8.p200i8.i64(i8 addrspace(200)* align 16 {{%[a-z0-9]+}}, i8 addrspace(200)* align 1 {{%[a-z0-9]+}}
-  // CHECK-SAME: , i64 16, i1 false) [[MUST_PRESERVE_ATTR]]
+  // CHECK-SAME: , i64 16, i1 false) [[MUST_PRESERVE_ATTR:#[0-9]+]]
   __builtin_memmove(buf2, cap, sizeof(*cap));
   // CHECK: call void @llvm.memmove.p200i8.p200i8.i64(i8 addrspace(200)* align 1 {{%[a-z0-9]+}}, i8 addrspace(200)* align 16 {{%[a-z0-9]+}}
   // CHECK-SAME: , i64 16, i1 false) [[MUST_PRESERVE_WITH_TYPE_ATTR]]{{$}}
 
-  // But we don't add the attribute for aligned char array decay since those are
-  // often used for buffers that contain anything.
+  // Don't add the no_preserve attribute for aligned char array decay since
+  // those are often used for buffers that contain anything.
   _Alignas(void *__capability) char aligned_char_buf[16];
   __builtin_memmove(cap, aligned_char_buf, sizeof(*cap));
   // CHECK: call void @llvm.memmove.p200i8.p200i8.i64(i8 addrspace(200)* align 16 {{%[a-z0-9]+}}, i8 addrspace(200)* align 16 {{%[a-z0-9]+}}
@@ -131,18 +132,41 @@ void test_char_buffer(struct OneCap *cap, char *buf) {
   // CHECK-SAME: , i64 16, i1 false) [[MUST_PRESERVE_WITH_TYPE_ATTR]]{{$}}
 }
 
+void test_uchar_buffer(struct OneCap *cap, unsigned char *buf) {
+  // CHECK-LABEL: void @test_uchar_buffer(
+  // We also assume that unsigned char* means unknown contents.
+  __builtin_memmove(cap, buf, sizeof(*cap));
+  // expected-warning@-1{{memmove operation with capability argument <unknown type> and underaligned destination (aligned to 1 bytes) may be inefficient or result in CHERI tags bits being stripped}} expected-note@-1{{For more information}}
+  // CHECK: call void @llvm.memmove.p200i8.p200i8.i64(i8 addrspace(200)* align 16 {{%[a-z0-9]+}}, i8 addrspace(200)* align 1 {{%[a-z0-9]+}}
+  // CHECK-SAME: , i64 16, i1 false) [[MUST_PRESERVE_ATTR]]{{$}}
+  __builtin_memmove(buf, cap, sizeof(*cap));
+  // expected-warning@-1{{memmove operation with capability argument 'struct OneCap' and underaligned destination (aligned to 1 bytes) may be inefficient or result in CHERI tags bits being stripped}} expected-note@-1{{For more information}}
+  // CHECK: call void @llvm.memmove.p200i8.p200i8.i64(i8 addrspace(200)* align 1 {{%[a-z0-9]+}}, i8 addrspace(200)* align 16 {{%[a-z0-9]+}}
+  // CHECK-SAME: , i64 16, i1 false) [[MUST_PRESERVE_WITH_TYPE_ATTR]]{{$}}
+}
+
+void test_u8_buffer(struct OneCap *cap, __UINT8_TYPE__ *buf) {
+  // CHECK-LABEL: void @test_u8_buffer(
+  // Same for uint8_t (it's almost certainly defined as unsigned char).
+  __builtin_memmove(cap, buf, sizeof(*cap));
+  // expected-warning@-1{{memmove operation with capability argument <unknown type> and underaligned destination (aligned to 1 bytes) may be inefficient or result in CHERI tags bits being stripped}} expected-note@-1{{For more information}}
+  // CHECK: call void @llvm.memmove.p200i8.p200i8.i64(i8 addrspace(200)* align 16 {{%[a-z0-9]+}}, i8 addrspace(200)* align 1 {{%[a-z0-9]+}}
+  // CHECK-SAME: , i64 16, i1 false) [[MUST_PRESERVE_ATTR]]{{$}}
+  __builtin_memmove(buf, cap, sizeof(*cap));
+  // expected-warning@-1{{memmove operation with capability argument 'struct OneCap' and underaligned destination (aligned to 1 bytes) may be inefficient or result in CHERI tags bits being stripped}} expected-note@-1{{For more information}}
+  // CHECK: call void @llvm.memmove.p200i8.p200i8.i64(i8 addrspace(200)* align 1 {{%[a-z0-9]+}}, i8 addrspace(200)* align 16 {{%[a-z0-9]+}}
+  // CHECK-SAME: , i64 16, i1 false) [[MUST_PRESERVE_WITH_TYPE_ATTR]]{{$}}
+}
+
 void test_int_buffer(struct OneCap *cap, int *buf) {
   // CHECK-LABEL: void @test_int_buffer(
   // However, for int* we can assume it does not contain tags.
   __builtin_memmove(cap, buf, sizeof(*cap));
-  // expected-warning@-1{{memmove operation with capability argument <unknown type> and underaligned destination (aligned to 4 bytes) may be inefficient or result in CHERI tags bits being stripped}} expected-note@-1{{For more information}}
-  // FIXME: the above shouldn't print <unknown type>
   // CHECK: call void @llvm.memmove.p200i8.p200i8.i64(i8 addrspace(200)* align 16 {{%[a-z0-9]+}}, i8 addrspace(200)* align 4 {{%[a-z0-9]+}}
-  // CHECK-SAME: , i64 16, i1 false) [[MUST_PRESERVE_ATTR]]{{$}}
+  // CHECK-SAME: , i64 16, i1 false) [[NO_PRESERVE_ATTR]]{{$}}
   __builtin_memmove(buf, cap, sizeof(*cap));
-  // expected-warning@-1{{memmove operation with capability argument 'struct OneCap' and underaligned destination (aligned to 4 bytes) may be inefficient or result in CHERI tags bits being stripped}} expected-note@-1{{For more information}}
   // CHECK: call void @llvm.memmove.p200i8.p200i8.i64(i8 addrspace(200)* align 4 {{%[a-z0-9]+}}, i8 addrspace(200)* align 16 {{%[a-z0-9]+}}
-  // CHECK-SAME: , i64 16, i1 false) [[MUST_PRESERVE_WITH_TYPE_ATTR]]{{$}}
+  // CHECK-SAME: , i64 16, i1 false) [[NO_PRESERVE_ATTR]]{{$}}
 }
 
 // CHECK: attributes #0 = {

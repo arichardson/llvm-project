@@ -3,7 +3,7 @@
 /// not to contain capabilities. Previously we assumed that all copies >= sizeof(capability)
 /// can contain capabilities and we therefore fell back to calling memcpy if the
 /// alignment was less than >= alignof(capability).
-/// TODO: include some end-to-end testing to ensure that the frontend and backend changes allow
+/// TODO: include some end-to-end testing to ensure that the frontend and backend agree on
 ///  eliding the memcpy() call that we were previously force to make?
 // RUN: %riscv64_cheri_purecap_cc1 %s -emit-llvm -o - -O0 | FileCheck %s
 
@@ -82,8 +82,7 @@ void test_align_copy_longptr(long *a, long *b) {
   memcpy(a, b, CAP_SIZE);
   // CHECK-LABEL: void @test_align_copy_longptr(
   // CHECK: call void @llvm.memcpy.p200i8.p200i8.i64(i8 addrspace(200)* align 8 {{%[0-9a-zA-Z.]+}}, i8 addrspace(200)* align 8 {{%[0-9a-zA-Z.]+}},
-  // CHECK-SAME: i64 16, i1 false){{$}}
-  // FIXME-SAME: [[NO_PRESERVE_TAGS_ATTR]]{{$}}
+  // CHECK-SAME: i64 16, i1 false) [[NO_PRESERVE_TAGS_ATTR]]
 }
 
 #if __has_feature(capabilities)
@@ -119,8 +118,11 @@ void test_align_copy_fwd_declared_dst_notag(long *a, struct fwddecl *b) {
   // We don't know if src contains capabilities, but the destination can't contain tags
   // CHECK-LABEL: void @test_align_copy_fwd_declared_dst_notag(
   // CHECK: call void @llvm.memcpy.p200i8.p200i8.i64(i8 addrspace(200)* align 8 {{%[0-9a-zA-Z.]+}}, i8 addrspace(200)* align 1 {{%[0-9a-zA-Z.]+}},
-  // CHECK-SAME: i64 16, i1 false){{$}}
+  // CHECK-SAME: i64 16, i1 false) [[NO_PRESERVE_TAGS_ATTR]]
   memcpy(a, b, CAP_SIZE);
+  // Note: if you look at the assembly output for  this call, it
+  // still uses memcpy despite the attribute. b is only aligned to one byte and
+  // expanding it would be too costly on an architecture without fast unaligned loads/stores.
 }
 
 // CHECK: attributes #0 = {

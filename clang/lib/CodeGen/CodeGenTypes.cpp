@@ -1045,11 +1045,18 @@ CodeGenTypes::copyShouldPreserveTagsForPointee(QualType Pointee) {
     // intrinsic, the backend can emit non-capability loads inline instead of
     // having to call the library function.
     return llvm::PreserveCheriTags::Unnecessary;
+  } else if (Pointee->isArrayType()) {
+    return copyShouldPreserveTagsForPointee(
+        QualType(Pointee->getArrayElementTypeNoTypeQual(), 0));
   }
-  // TODO: handle array types
 
-  // TODO: In the future we might want to return PreserveCheriTags::Unneccessary
-  //  for integral types that are not void *, char *, or std::byte *.
+  if (Pointee->isScalarType()) {
+    // We can return PreserveCheriTags::Unneccessary for scalar types that are
+    // not void *, char *, or std::byte * (since those could point to anything).
+    assert(!Pointee->isCHERICapabilityType(Context));
+    if (!Pointee->isStdByteType() && !Pointee->isCharType())
+      return llvm::PreserveCheriTags::Unnecessary;
+  }
 
   // Some other type where we don't know whether we need to retain tags, so
   // fall back to the default behaviour (and retain tags if possible).
