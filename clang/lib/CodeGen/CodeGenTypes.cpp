@@ -1040,7 +1040,8 @@ llvm::PreserveCheriTags CodeGenTypes::copyShouldPreserveTags(const Expr *E) {
       findUnderlyingVarDecl(E, &ConservativeTypeApproximation);
   if (UnderlyingVar) {
     QualType VarTy = UnderlyingVar->getType();
-    assert(!VarTy->isIncompleteType() && "Unexpected incomplete type");
+    assert(!VarTy->isDependentType() && !VarTy->containsErrors() &&
+           "Unexpected dependent/error type");
     if (VarTy->isReferenceType()) {
       // If the variable declaration is a C++ reference we can assume that the
       // effective type of the object matches the type of the reference since
@@ -1124,6 +1125,13 @@ CodeGenTypes::copyShouldPreserveTagsForPointee(QualType Pointee,
   } else if (Pointee->isIncompleteType()) {
     // We don't know if incomplete types contain capabilities, so be
     // conservative and assume that they might.
+    // The only exception here are incomplete array types (e.g. extern int x[])
+    // since we don't care about the size of the type, just whether it can
+    // contain capabilities.
+    if (Pointee->isIncompleteArrayType()) {
+      return copyShouldPreserveTagsForPointee(
+          Context.getBaseElementType(Pointee), EffectiveTypeKnown);
+    }
     return llvm::PreserveCheriTags::Unknown;
   } else if (auto *RD = Pointee->getAsRecordDecl()) {
     // TODO: should maybe add ASTContext::neverContainsCapabilities()
