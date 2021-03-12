@@ -1003,21 +1003,25 @@ CodeGenTypes::copyShouldPreserveTags(const Expr *DestPtr, const Expr *SrcPtr,
   return DstPreserve;
 }
 
-static const VarDecl *findUnderlyingVarDecl(const Expr *E) {
+static const VarDecl *findUnderlyingVarDecl(const Expr *E,
+                                            bool *ConservativeApproximation) {
   // Note: this is pretty similar to E->getReferencedDeclOfCallee(); and should
   // possibly be moved to Expr.cpp
   const Expr *UnderlyingExpr = E->IgnoreParenCasts();
   if (auto *UO = dyn_cast<UnaryOperator>(UnderlyingExpr)) {
     if (UO->getOpcode() == UO_AddrOf) {
-      return findUnderlyingVarDecl(UO->getSubExpr());
+      return findUnderlyingVarDecl(UO->getSubExpr(), ConservativeApproximation);
     }
-  } else if (auto DRE = dyn_cast<DeclRefExpr>(UnderlyingExpr)) {
+  } else if (auto *DRE = dyn_cast<DeclRefExpr>(UnderlyingExpr)) {
     return dyn_cast<const VarDecl>(DRE->getDecl());
+  } else if (auto *ME = dyn_cast<MemberExpr>(UnderlyingExpr)) {
+    // TODO: We could improve analysis for MemberExpr, but only if the copy size
+    //  is <= the size of the member, since memcpy() across multiple fields is
+    //  a something that exists (despite not being compatible with sub-object
+    //  bounds). For now we just look at the declaration of the entire struct.
+    *ConservativeApproximation = true;
+    return findUnderlyingVarDecl(ME->getBase(), ConservativeApproximation);
   }
-  // TODO: We could improve analysis for MemberExpr, but only if the copy size
-  //  is <= the size of the member, since memcpy() accross multiple fields is
-  //  a something that exists (despite not being compatible with sub-object
-  //  bounds). For now we just look at the declaration of the entire struct
   return nullptr;
 }
 
@@ -1026,11 +1030,14 @@ llvm::PreserveCheriTags CodeGenTypes::copyShouldPreserveTags(const Expr *E) {
   // Ignore the implicit cast to void* for the memcpy call.
   // Note: IgnoreParenImpCasts() might strip function/array-to-pointer decay
   // so we can't always call getPointeeType().
-  QualType Ty = E->IgnoreParenImpCasts()->getType();
-  if (Ty->isAnyPointerType())
-    Ty = Ty->getPointeeType();
+  QualType ExprTy = E->IgnoreParenImpCasts()->getType();
+  QualType PointeeTy =
+      ExprTy->isAnyPointerType() ? ExprTy->getPointeeType() : ExprTy;
+  QualType CheckTy = PointeeTy;
   bool EffectiveTypeKnown = false;
-  const VarDecl *UnderlyingVar = findUnderlyingVarDecl(E);
+  bool ConservativeTypeApproximation = false;
+  const VarDecl *UnderlyingVar =
+      findUnderlyingVarDecl(E, &ConservativeTypeApproximation);
   if (UnderlyingVar) {
     QualType VarTy = UnderlyingVar->getType();
     assert(!VarTy->isIncompleteType() && "Unexpected incomplete type");
@@ -1038,18 +1045,32 @@ llvm::PreserveCheriTags CodeGenTypes::copyShouldPreserveTags(const Expr *E) {
       // If the variable declaration is a C++ reference we can assume that the
       // effective type of the object matches the type of the reference since
       // forming the reference would have been invalid otherwise.
-      Ty = VarTy->getPointeeType();
+      CheckTy = VarTy->getPointeeType();
       EffectiveTypeKnown = true;
     } else if (!VarTy->isAnyPointerType()) {
       // If we found a non-pointer declaration that we are copying to/from, use
       // the type of the declaration for the analysis since that defines the
       // effective type. For pointers we can't assume anything since they could
       // be "allocated objects" without a declared type.
-      Ty = VarTy;
+      CheckTy = VarTy;
       EffectiveTypeKnown = true;
     }
   }
-  return copyShouldPreserveTagsForPointee(Ty, EffectiveTypeKnown);
+  llvm::PreserveCheriTags Result =
+      copyShouldPreserveTagsForPointee(CheckTy, EffectiveTypeKnown);
+  if (ConservativeTypeApproximation && EffectiveTypeKnown &&
+      Result == llvm::PreserveCheriTags::Required) {
+    // If we had a MemberExpr and were looking at the entire containing struct
+    // rather than just the single field, we only add the must_preserve_tags
+    // attribute if the pointee type is actually a capability type. This avoids
+    // lots of unnecessary warnings and still lets backend/middle-end decide
+    // how to handle the copy. It also allows use to set no_preserve_tags if the
+    // conservative approximation showed that the entire containing VarDecl
+    // doesn't contain tags.
+    Result = copyShouldPreserveTagsForPointee(PointeeTy,
+                                              /*EffectiveTypeKnown=*/false);
+  }
+  return Result;
 }
 
 llvm::PreserveCheriTags CodeGenTypes::copyShouldPreserveTagsForPointee(
