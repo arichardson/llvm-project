@@ -743,8 +743,9 @@ void AggExprEmitter::VisitCastExpr(CastExpr *E) {
     llvm::Value *SizeVal = llvm::ConstantInt::get(
         CGF.SizeTy,
         CGF.getContext().getTypeSizeInChars(E->getType()).getQuantity());
-    Builder.CreateMemCpy(DestAddress, SourceAddress, SizeVal,
-                         llvm::PreserveCheriTags::TODO);
+    Builder.CreateMemCpy(
+        DestAddress, SourceAddress, SizeVal,
+        CGF.getTypes().copyShouldPreserveTagsForPointee(E->getType()));
     break;
   }
 
@@ -2162,8 +2163,9 @@ void CodeGenFunction::EmitAggregateCopy(LValue Dest, LValue Src, QualType Ty,
     }
   }
 
-  auto Inst = Builder.CreateMemCpy(DestPtr, SrcPtr, SizeVal,
-                                   llvm::PreserveCheriTags::TODO, isVolatile);
+  auto Inst = Builder.CreateMemCpy(
+      DestPtr, SrcPtr, SizeVal, getTypes().copyShouldPreserveTagsForPointee(Ty),
+      isVolatile);
 
   // Determine the metadata to describe the position of any padding in this
   // memcpy, as well as the TBAA tags for the members of the struct, in case

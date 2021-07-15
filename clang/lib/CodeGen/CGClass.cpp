@@ -986,7 +986,8 @@ namespace {
       emitMemcpyIR(
           Dest.isBitField() ? Dest.getBitFieldAddress() : Dest.getAddress(CGF),
           Src.isBitField() ? Src.getBitFieldAddress() : Src.getAddress(CGF),
-          MemcpySize, llvm::PreserveCheriTags::TODO);
+          MemcpySize,
+          CGF.getTypes().copyShouldPreserveTagsForPointee(RecordTy));
       reset();
     }
 

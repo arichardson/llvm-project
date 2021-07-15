@@ -25,6 +25,7 @@ class DataLayout;
 class Type;
 class LLVMContext;
 class StructType;
+enum class PreserveCheriTags;
 }
 
 namespace clang {
@@ -302,6 +303,17 @@ public:  // These are internal details of CGT that shouldn't be used externally.
   /// IsZeroInitializable - Return whether a record type can be
   /// zero-initialized (in the C++ sense) with an LLVM zeroinitializer.
   bool isZeroInitializable(const RecordDecl *RD);
+
+  /// Return whether a copy (e.g. memcpy/memmove) where the destination is a
+  /// pointer to DestType may need to preserve CHERI tags (i.e. needs to call
+  /// the copy function at run time if the alignment is not greater than the
+  /// alignment of the destination buffer.
+  llvm::PreserveCheriTags copyShouldPreserveTags(QualType DestType);
+  llvm::PreserveCheriTags copyShouldPreserveTags(const Expr *Dest,
+                                                 const Expr *Src);
+  /// Same as the copyShouldPreserveTags(), but expects DestType to be the
+  /// pointee type rather than the type of the buffer pointer.
+  llvm::PreserveCheriTags copyShouldPreserveTagsForPointee(QualType DestType);
 
   bool isRecordLayoutComplete(const Type *Ty) const;
   bool noRecordsBeingLaidOut() const {

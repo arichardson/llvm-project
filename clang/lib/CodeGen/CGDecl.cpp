@@ -1259,11 +1259,12 @@ static void emitStoresForConstant(CodeGenModule &CGM, const VarDecl &D,
   }
 
   // Copy from a global.
-  auto *I =
-      Builder.CreateMemCpy(Loc,
-                           createUnnamedGlobalForMemcpyFrom(
-                               CGM, D, Builder, constant, Loc.getAlignment()),
-                           SizeVal, llvm::PreserveCheriTags::TODO, isVolatile);
+  auto *I = Builder.CreateMemCpy(
+      Loc,
+      createUnnamedGlobalForMemcpyFrom(CGM, D, Builder, constant,
+                                       Loc.getAlignment()),
+      SizeVal, CGM.getTypes().copyShouldPreserveTagsForPointee(D.getType()),
+      isVolatile);
   if (IsAutoInit)
     I->addAnnotationMetadata("auto-init");
 }
