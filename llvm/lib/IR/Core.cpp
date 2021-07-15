@@ -3511,22 +3511,20 @@ LLVMValueRef LLVMBuildMemSet(LLVMBuilderRef B, LLVMValueRef Ptr,
                                       MaybeAlign(Align)));
 }
 
-LLVMValueRef LLVMBuildMemCpy(LLVMBuilderRef B,
-                             LLVMValueRef Dst, unsigned DstAlign,
-                             LLVMValueRef Src, unsigned SrcAlign,
-                             LLVMValueRef Size) {
+LLVMValueRef LLVMBuildMemCpy(LLVMBuilderRef B, LLVMValueRef Dst,
+                             unsigned DstAlign, LLVMValueRef Src,
+                             unsigned SrcAlign, LLVMValueRef Size) {
   return wrap(unwrap(B)->CreateMemCpy(unwrap(Dst), MaybeAlign(DstAlign),
                                       unwrap(Src), MaybeAlign(SrcAlign),
-                                      unwrap(Size)));
+                                      unwrap(Size), PreserveCheriTags::TODO));
 }
 
-LLVMValueRef LLVMBuildMemMove(LLVMBuilderRef B,
-                              LLVMValueRef Dst, unsigned DstAlign,
-                              LLVMValueRef Src, unsigned SrcAlign,
-                              LLVMValueRef Size) {
+LLVMValueRef LLVMBuildMemMove(LLVMBuilderRef B, LLVMValueRef Dst,
+                              unsigned DstAlign, LLVMValueRef Src,
+                              unsigned SrcAlign, LLVMValueRef Size) {
   return wrap(unwrap(B)->CreateMemMove(unwrap(Dst), MaybeAlign(DstAlign),
                                        unwrap(Src), MaybeAlign(SrcAlign),
-                                       unwrap(Size)));
+                                       unwrap(Size), PreserveCheriTags::TODO));
 }
 
 LLVMValueRef LLVMBuildAlloca(LLVMBuilderRef B, LLVMTypeRef Ty,

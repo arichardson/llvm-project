@@ -986,7 +986,7 @@ namespace {
       emitMemcpyIR(
           Dest.isBitField() ? Dest.getBitFieldAddress() : Dest.getAddress(CGF),
           Src.isBitField() ? Src.getBitFieldAddress() : Src.getAddress(CGF),
-          MemcpySize);
+          MemcpySize, llvm::PreserveCheriTags::TODO);
       reset();
     }
 
@@ -999,18 +999,20 @@ namespace {
     const CXXRecordDecl *ClassDecl;
 
   private:
-    void emitMemcpyIR(Address DestPtr, Address SrcPtr, CharUnits Size) {
+    void emitMemcpyIR(Address DestPtr, Address SrcPtr, CharUnits Size,
+                      llvm::PreserveCheriTags PreserveTags) {
       llvm::PointerType *DPT = DestPtr.getType();
-      llvm::Type *DBP =
-        llvm::Type::getInt8PtrTy(CGF.getLLVMContext(), DPT->getAddressSpace());
+      llvm::Type *DBP = llvm::Type::getInt8PtrTy(CGF.getLLVMContext(),
+                                                 DPT->getAddressSpace());
       DestPtr = CGF.Builder.CreateBitCast(DestPtr, DBP);
 
       llvm::PointerType *SPT = SrcPtr.getType();
-      llvm::Type *SBP =
-        llvm::Type::getInt8PtrTy(CGF.getLLVMContext(), SPT->getAddressSpace());
+      llvm::Type *SBP = llvm::Type::getInt8PtrTy(CGF.getLLVMContext(),
+                                                 SPT->getAddressSpace());
       SrcPtr = CGF.Builder.CreateBitCast(SrcPtr, SBP);
 
-      CGF.Builder.CreateMemCpy(DestPtr, SrcPtr, Size.getQuantity());
+      CGF.Builder.CreateMemCpy(DestPtr, SrcPtr, Size.getQuantity(),
+                               PreserveTags);
     }
 
     void addInitialField(FieldDecl *F) {

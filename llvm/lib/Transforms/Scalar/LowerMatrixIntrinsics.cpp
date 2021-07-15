@@ -1152,9 +1152,9 @@ public:
     Builder.SetInsertPoint(Copy, Copy->begin());
     AllocaInst *NewLd =
         Builder.CreateAlloca(Load->getType(), Load->getPointerAddressSpace());
-    Builder.CreateMemCpy(NewLd, NewLd->getAlign(),
-                         Load->getPointerOperand(), Load->getAlign(),
-                         LoadLoc.Size.getValue());
+    Builder.CreateMemCpy(NewLd, NewLd->getAlign(), Load->getPointerOperand(),
+                         Load->getAlign(), LoadLoc.Size.getValue(),
+                         PreserveCheriTags::TODO);
     Builder.SetInsertPoint(Fusion, Fusion->begin());
     PHINode *PHI = Builder.CreatePHI(Load->getPointerOperandType(), 3);
     PHI->addIncoming(Load->getPointerOperand(), Check0);

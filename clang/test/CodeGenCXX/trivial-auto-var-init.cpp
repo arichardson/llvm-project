@@ -151,7 +151,7 @@ void test_switch(int i) {
 // PATTERN:  br label %vla-init.loop
 // PATTERN: vla-init.loop:
 // PATTERN:  %vla.cur = phi i8* [ %vla.begin, %vla-setup.loop ], [ %vla.next, %vla-init.loop ]
-// PATTERN:  call void @llvm.memcpy{{.*}} %vla.cur, {{.*}}@__const.test_vla.vla {{.*}}), !annotation [[AUTO_INIT:!.+]]
+// PATTERN:  call void @llvm.memcpy{{.*}} %vla.cur, {{.*}}@__const.test_vla.vla {{.*}}) #{{[0-9]+}}, !annotation [[AUTO_INIT:!.+]]
 // PATTERN:  %vla.next = getelementptr inbounds i8, i8* %vla.cur, i64 4
 // PATTERN:  %vla-init.isdone = icmp eq i8* %vla.next, %vla.end
 // PATTERN:  br i1 %vla-init.isdone, label %vla-init.cont, label %vla-init.loop
@@ -215,7 +215,7 @@ void test_alloca_with_align(int size) {
 // PATTERN:  br label %vla-init.loop
 // PATTERN: vla-init.loop:
 // PATTERN:  %vla.cur = phi i8* [ %vla.begin, %vla-setup.loop ], [ %vla.next, %vla-init.loop ]
-// PATTERN:  call void @llvm.memcpy{{.*}} %vla.cur, {{.*}}@__const.test_struct_vla.vla {{.*}}), !annotation [[AUTO_INIT:!.+]]
+// PATTERN:  call void @llvm.memcpy{{.*}} %vla.cur, {{.*}}@__const.test_struct_vla.vla {{.*}}) #{{[0-9]+}}, !annotation [[AUTO_INIT:!.+]]
 // PATTERN:  %vla.next = getelementptr inbounds i8, i8* %vla.cur, i64 16
 // PATTERN:  %vla-init.isdone = icmp eq i8* %vla.next, %vla.end
 // PATTERN:  br i1 %vla-init.isdone, label %vla-init.cont, label %vla-init.loop

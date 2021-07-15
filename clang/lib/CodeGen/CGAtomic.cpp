@@ -1485,7 +1485,8 @@ Address AtomicInfo::convertToAtomicIntPointer(Address Addr) const {
   if (SourceSizeInBits != AtomicSizeInBits) {
     Address Tmp = CreateTempAlloca();
     CGF.Builder.CreateMemCpy(Tmp, Addr,
-                             std::min(AtomicSizeInBits, SourceSizeInBits) / 8);
+                             std::min(AtomicSizeInBits, SourceSizeInBits) / 8,
+                             llvm::PreserveCheriTags::Unnecessary);
     Addr = Tmp;
   }
 

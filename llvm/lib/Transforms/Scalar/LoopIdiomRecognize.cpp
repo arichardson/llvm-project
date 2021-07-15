@@ -1156,8 +1156,9 @@ bool LoopIdiomRecognize::processLoopStoreOfLoopLoad(StoreInst *SI,
   //  If the load or store are atomic, then they must necessarily be unordered
   //  by previous checks.
   if (!SI->isAtomic() && !LI->isAtomic())
-    NewCall = Builder.CreateMemCpy(StoreBasePtr, SI->getAlign(), LoadBasePtr,
-                                   LI->getAlign(), NumBytes);
+    NewCall =
+        Builder.CreateMemCpy(StoreBasePtr, SI->getAlign(), LoadBasePtr,
+                             LI->getAlign(), NumBytes, PreserveCheriTags::TODO);
   else {
     // We cannot allow unaligned ops for unordered load/store, so reject
     // anything where the alignment isn't at least the element size.
@@ -1177,8 +1178,8 @@ bool LoopIdiomRecognize::processLoopStoreOfLoopLoad(StoreInst *SI,
     // Note that unordered atomic loads/stores are *required* by the spec to
     // have an alignment but non-atomic loads/stores may not.
     NewCall = Builder.CreateElementUnorderedAtomicMemCpy(
-        StoreBasePtr, StoreAlign, LoadBasePtr, LoadAlign, NumBytes,
-        StoreSize);
+        StoreBasePtr, StoreAlign, LoadBasePtr, LoadAlign, NumBytes, StoreSize,
+        PreserveCheriTags::TODO);
   }
   NewCall->setDebugLoc(SI->getDebugLoc());
 

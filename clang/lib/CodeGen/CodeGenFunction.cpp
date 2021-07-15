@@ -1898,7 +1898,7 @@ static void emitNonZeroVLAInit(CodeGenFunction &CGF, QualType baseType,
 
   // memcpy the individual element bit-pattern.
   Builder.CreateMemCpy(Address(cur, curAlign), src, baseSizeInChars,
-                       /*volatile*/ false);
+                       llvm::PreserveCheriTags::TODO, /*volatile*/ false);
 
   // Go to the next element.
   llvm::Value *next =
@@ -1975,7 +1975,8 @@ CodeGenFunction::EmitNullInitialization(Address DestPtr, QualType Ty) {
     if (vla) return emitNonZeroVLAInit(*this, Ty, DestPtr, SrcPtr, SizeVal);
 
     // Get and call the appropriate llvm.memcpy overload.
-    Builder.CreateMemCpy(DestPtr, SrcPtr, SizeVal, false);
+    Builder.CreateMemCpy(DestPtr, SrcPtr, SizeVal,
+                         llvm::PreserveCheriTags::TODO, false);
     return;
   }
 

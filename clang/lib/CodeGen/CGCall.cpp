@@ -1327,7 +1327,8 @@ static llvm::Value *CreateCoercedLoad(Address Src, llvm::Type *Ty,
   CGF.Builder.CreateMemCpy(
       Tmp.getPointer(), Tmp.getAlignment().getAsAlign(), Src.getPointer(),
       Src.getAlignment().getAsAlign(),
-      llvm::ConstantInt::get(CGF.IntPtrTy, SrcSize.getKnownMinSize()));
+      llvm::ConstantInt::get(CGF.IntPtrTy, SrcSize.getKnownMinSize()),
+      llvm::PreserveCheriTags::TODO);
   return CGF.Builder.CreateLoad(Tmp);
 }
 
@@ -1433,7 +1434,8 @@ static void CreateCoercedStore(llvm::Value *Src,
     CGF.Builder.CreateMemCpy(
         Dst.getPointer(), Dst.getAlignment().getAsAlign(), Tmp.getPointer(),
         Tmp.getAlignment().getAsAlign(),
-        llvm::ConstantInt::get(CGF.IntPtrTy, DstSize.getFixedSize()));
+        llvm::ConstantInt::get(CGF.IntPtrTy, DstSize.getFixedSize()),
+        llvm::PreserveCheriTags::TODO);
   }
 }
 
@@ -2725,7 +2727,8 @@ void CodeGenFunction::EmitFunctionProlog(const CGFunctionInfo &FI,
           Builder.CreateMemCpy(
               AlignedTemp.getPointer(), AlignedTemp.getAlignment().getAsAlign(),
               ParamAddr.getPointer(), ParamAddr.getAlignment().getAsAlign(),
-              llvm::ConstantInt::get(IntPtrTy, Size.getQuantity()));
+              llvm::ConstantInt::get(IntPtrTy, Size.getQuantity()),
+              llvm::PreserveCheriTags::TODO);
           V = AlignedTemp;
         }
         ArgVals.push_back(ParamValue::forIndirect(V));
@@ -2928,7 +2931,8 @@ void CodeGenFunction::EmitFunctionProlog(const CGFunctionInfo &FI,
         }
 
         if (SrcSize > DstSize) {
-          Builder.CreateMemCpy(Ptr, AddrToStoreInto, DstSize);
+          Builder.CreateMemCpy(Ptr, AddrToStoreInto, DstSize,
+                               llvm::PreserveCheriTags::TODO);
         }
 
       } else {
@@ -4978,7 +4982,8 @@ RValue CodeGenFunction::EmitCall(const CGFunctionInfo &CallInfo,
           Address TempAlloca
             = CreateTempAlloca(STy, Src.getAlignment(),
                                Src.getName() + ".coerce");
-          Builder.CreateMemCpy(TempAlloca, Src, SrcSize);
+          Builder.CreateMemCpy(TempAlloca, Src, SrcSize,
+                               llvm::PreserveCheriTags::TODO);
           Src = TempAlloca;
         } else {
           Src = Builder.CreateBitCast(Src,

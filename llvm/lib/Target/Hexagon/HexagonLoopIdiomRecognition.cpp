@@ -2293,12 +2293,14 @@ CleanupAndExit:
                       : CondBuilder.CreateBitCast(LoadBasePtr, Int32PtrTy);
       NewCall = CondBuilder.CreateCall(Fn, {Op0, Op1, NumWords});
     } else {
-      NewCall = CondBuilder.CreateMemMove(
-          StoreBasePtr, SI->getAlign(), LoadBasePtr, LI->getAlign(), NumBytes);
+      NewCall = CondBuilder.CreateMemMove(StoreBasePtr, SI->getAlign(),
+                                          LoadBasePtr, LI->getAlign(), NumBytes,
+                                          PreserveCheriTags::TODO);
     }
   } else {
-    NewCall = Builder.CreateMemCpy(StoreBasePtr, SI->getAlign(), LoadBasePtr,
-                                   LI->getAlign(), NumBytes);
+    NewCall =
+        Builder.CreateMemCpy(StoreBasePtr, SI->getAlign(), LoadBasePtr,
+                             LI->getAlign(), NumBytes, PreserveCheriTags::TODO);
     // Okay, the memcpy has been formed.  Zap the original store and
     // anything that feeds into it.
     RecursivelyDeleteTriviallyDeadInstructions(SI, TLI);

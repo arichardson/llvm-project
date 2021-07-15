@@ -596,7 +596,8 @@ Value *SafeStack::moveStaticAllocasToUnsafeStack(
                       -Offset);
     Arg->replaceAllUsesWith(NewArg);
     IRB.SetInsertPoint(cast<Instruction>(NewArg)->getNextNode());
-    IRB.CreateMemCpy(Off, Align, Arg, Arg->getParamAlign(), Size);
+    IRB.CreateMemCpy(Off, Align, Arg, Arg->getParamAlign(), Size,
+                     llvm::PreserveCheriTags::TODO);
   }
 
   // Allocate space for every unsafe static AllocaInst on the unsafe stack.

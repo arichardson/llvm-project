@@ -4800,7 +4800,8 @@ static void emitDepobjElements(CodeGenFunction &CGF, QualType &KmpDependInfoTy,
       Address DepAddr =
           Address(CGF.Builder.CreateGEP(DependenciesArray.getPointer(), Pos),
                   DependenciesArray.getAlignment());
-      CGF.Builder.CreateMemCpy(DepAddr, Base.getAddress(CGF), Size);
+      CGF.Builder.CreateMemCpy(DepAddr, Base.getAddress(CGF), Size,
+                               llvm::PreserveCheriTags::TODO);
 
       // Increase pos.
       // pos += size;
@@ -9146,7 +9147,8 @@ public:
         CGF.Builder.CreateMemCpy(
             CGF.MakeNaturalAlignAddrLValue(Addr, ElementType).getAddress(CGF),
             Address(CV, CGF.getContext().getTypeAlignInChars(ElementType)),
-            CombinedInfo.Sizes.back(), /*IsVolatile=*/false);
+            CombinedInfo.Sizes.back(), llvm::PreserveCheriTags::TODO,
+            /*IsVolatile=*/false);
         // Use new global variable as the base pointers.
         CombinedInfo.Exprs.push_back(VD->getCanonicalDecl());
         CombinedInfo.BasePointers.push_back(Addr);
