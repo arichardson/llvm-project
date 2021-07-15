@@ -127,7 +127,7 @@ SDValue ARMSelectionDAGInfo::EmitSpecializedLibcall(
 SDValue ARMSelectionDAGInfo::EmitTargetCodeForMemcpy(
     SelectionDAG &DAG, const SDLoc &dl, SDValue Chain, SDValue Dst, SDValue Src,
     SDValue Size, Align Alignment, bool isVolatile, bool AlwaysInline,
-    bool MustPreserveCheriCapabilities, MachinePointerInfo DstPtrInfo,
+    PreserveCheriTags PreserveTags, MachinePointerInfo DstPtrInfo,
     MachinePointerInfo SrcPtrInfo) const {
   const ARMSubtarget &Subtarget =
       DAG.getMachineFunction().getSubtarget<ARMSubtarget>();
@@ -138,7 +138,7 @@ SDValue ARMSelectionDAGInfo::EmitTargetCodeForMemcpy(
   // This requires the copy size to be a constant, preferably
   // within a subtarget-specific limit.
   ConstantSDNode *ConstantSize = dyn_cast<ConstantSDNode>(Size);
-  if (!ConstantSize || MustPreserveCheriCapabilities)
+  if (!ConstantSize || PreserveTags == PreserveCheriTags::Required)
     return EmitSpecializedLibcall(DAG, dl, Chain, Dst, Src, Size,
                                   Alignment.value(), RTLIB::MEMCPY);
   uint64_t SizeVal = ConstantSize->getZExtValue();
@@ -242,7 +242,7 @@ SDValue ARMSelectionDAGInfo::EmitTargetCodeForMemcpy(
 SDValue ARMSelectionDAGInfo::EmitTargetCodeForMemmove(
     SelectionDAG &DAG, const SDLoc &dl, SDValue Chain, SDValue Dst, SDValue Src,
     SDValue Size, Align Alignment, bool isVolatile,
-    bool MustPreserveCheriCapabilities, MachinePointerInfo DstPtrInfo,
+    PreserveCheriTags PreserveTags, MachinePointerInfo DstPtrInfo,
     MachinePointerInfo SrcPtrInfo) const {
   return EmitSpecializedLibcall(DAG, dl, Chain, Dst, Src, Size, Alignment.value(),
                                 RTLIB::MEMMOVE);

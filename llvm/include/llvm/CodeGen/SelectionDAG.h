@@ -74,6 +74,7 @@ class MachineConstantPoolValue;
 class MCSymbol;
 class OptimizationRemarkEmitter;
 class ProfileSummaryInfo;
+enum class PreserveCheriTags;
 class SDDbgValue;
 class SDDbgOperand;
 class SDDbgLabel;
@@ -1046,24 +1047,25 @@ public:
   /// stack arguments from being clobbered.
   SDValue getStackArgumentTokenFactor(SDValue Chain);
 
-  LLVM_ATTRIBUTE_DEPRECATED(
-      SDValue getMemcpy(SDValue Chain, const SDLoc &dl, SDValue Dst,
-                        SDValue Src, SDValue Size, unsigned Align, bool isVol,
-                        bool AlwaysInline, bool isTailCall,
-                        bool MustPreserveCheriCapabilities,
-                        MachinePointerInfo DstPtrInfo,
-                        MachinePointerInfo SrcPtrInfo,
-                        StringRef CopyType = StringRef()),
-      "Use the version that takes Align instead") {
+  LLVM_ATTRIBUTE_DEPRECATED(SDValue getMemcpy(SDValue Chain, const SDLoc &dl,
+                                              SDValue Dst, SDValue Src,
+                                              SDValue Size, unsigned Align,
+                                              bool isVol, bool AlwaysInline,
+                                              bool isTailCall,
+                                              PreserveCheriTags PreserveTags,
+                                              MachinePointerInfo DstPtrInfo,
+                                              MachinePointerInfo SrcPtrInfo,
+                                              StringRef CopyType = StringRef()),
+                            "Use the version that takes Align instead") {
     return getMemcpy(Chain, dl, Dst, Src, Size, llvm::Align(Align), isVol,
-                     AlwaysInline, isTailCall, MustPreserveCheriCapabilities,
-                     DstPtrInfo, SrcPtrInfo, CopyType);
+                     AlwaysInline, isTailCall, PreserveTags, DstPtrInfo,
+                     SrcPtrInfo, CopyType);
   }
 
   SDValue getMemcpy(SDValue Chain, const SDLoc &dl, SDValue Dst, SDValue Src,
                     SDValue Size, Align Alignment, bool isVol,
                     bool AlwaysInline, bool isTailCall,
-                    bool MustPreserveCheriCapabilities,
+                    PreserveCheriTags PreserveTags,
                     MachinePointerInfo DstPtrInfo,
                     MachinePointerInfo SrcPtrInfo,
                     StringRef CopyType = StringRef());
@@ -1071,17 +1073,18 @@ public:
   LLVM_ATTRIBUTE_DEPRECATED(
       SDValue getMemmove(SDValue Chain, const SDLoc &dl, SDValue Dst,
                          SDValue Src, SDValue Size, unsigned Align, bool isVol,
-                         bool isTailCall, bool MustPreserveCheriCapabilities,
+                         bool isTailCall, PreserveCheriTags PreserveTags,
                          MachinePointerInfo DstPtrInfo,
-                         MachinePointerInfo SrcPtrInfo, StringRef MoveType = StringRef()),
+                         MachinePointerInfo SrcPtrInfo,
+                         StringRef MoveType = StringRef()),
       "Use the version that takes Align instead") {
     return getMemmove(Chain, dl, Dst, Src, Size, llvm::Align(Align), isVol,
-                      isTailCall, MustPreserveCheriCapabilities, DstPtrInfo,
-                      SrcPtrInfo, MoveType);
+                      isTailCall, PreserveTags, DstPtrInfo, SrcPtrInfo,
+                      MoveType);
   }
   SDValue getMemmove(SDValue Chain, const SDLoc &dl, SDValue Dst, SDValue Src,
                      SDValue Size, Align Alignment, bool isVol, bool isTailCall,
-                     bool MustPreserveCheriCapabilities,
+                     PreserveCheriTags PreserveTags,
                      MachinePointerInfo DstPtrInfo,
                      MachinePointerInfo SrcPtrInfo,
                      StringRef MoveType = StringRef());

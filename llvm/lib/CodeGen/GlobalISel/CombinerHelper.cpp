@@ -1357,7 +1357,7 @@ bool CombinerHelper::optimizeMemcpy(MachineInstr &MI, Register Dst,
   if (!findGISelOptimalMemOpLowering(
           MemOps, Limit,
           MemOp::Copy(KnownLen, DstAlignCanChange, Alignment, SrcAlign,
-                      IsVolatile, false),
+                      IsVolatile, PreserveCheriTags::TODO),
           DstPtrInfo.getAddrSpace(), SrcPtrInfo.getAddrSpace(),
           MF.getFunction().getAttributes(), TLI))
     return false;
@@ -1462,7 +1462,7 @@ bool CombinerHelper::optimizeMemmove(MachineInstr &MI, Register Dst,
   if (!findGISelOptimalMemOpLowering(
           MemOps, Limit,
           MemOp::Copy(KnownLen, DstAlignCanChange, Alignment, SrcAlign,
-                      /*IsVolatile*/ true, false),
+                      /*IsVolatile*/ true, PreserveCheriTags::TODO),
           DstPtrInfo.getAddrSpace(), SrcPtrInfo.getAddrSpace(),
           MF.getFunction().getAttributes(), TLI))
     return false;
