@@ -3475,7 +3475,8 @@ RValue CodeGenFunction::EmitBuiltinExpr(const GlobalDecl GD, unsigned BuiltinID,
                         E->getArg(1)->getExprLoc(), FD, 1);
     auto CI = Builder.CreateMemCpy(
         Dest, Src, SizeVal,
-        getTypes().copyShouldPreserveTags(E->getArg(0), E->getArg(1)), false);
+        getTypes().copyShouldPreserveTags(E->getArg(0), E->getArg(1), SizeVal),
+        false);
     checkCapabilityCopy(*this, "memcpy", E->getArg(1), CI);
     if (BuiltinID == Builtin::BImempcpy ||
         BuiltinID == Builtin::BI__builtin_mempcpy)
@@ -3497,7 +3498,8 @@ RValue CodeGenFunction::EmitBuiltinExpr(const GlobalDecl GD, unsigned BuiltinID,
                         E->getArg(1)->getExprLoc(), FD, 1);
     Builder.CreateMemCpyInline(
         Dest, Src, Size,
-        getTypes().copyShouldPreserveTags(E->getArg(0), E->getArg(1)));
+        getTypes().copyShouldPreserveTags(E->getArg(0), E->getArg(1),
+                                          Builder.getInt64(Size)));
     return RValue::get(nullptr);
   }
 
@@ -3524,7 +3526,8 @@ RValue CodeGenFunction::EmitBuiltinExpr(const GlobalDecl GD, unsigned BuiltinID,
     Value *SizeVal = llvm::ConstantInt::get(Builder.getContext(), Size);
     auto CI = Builder.CreateMemCpy(
         Dest, Src, SizeVal,
-        getTypes().copyShouldPreserveTags(E->getArg(0), E->getArg(1)), false);
+        getTypes().copyShouldPreserveTags(E->getArg(0), E->getArg(1), SizeVal),
+        false);
     checkCapabilityCopy(*this, "memcpy", E->getArg(1), CI);
     return RValue::get(Dest.getPointer(), Dest.getAlignment().getQuantity());
   }
@@ -3558,7 +3561,8 @@ RValue CodeGenFunction::EmitBuiltinExpr(const GlobalDecl GD, unsigned BuiltinID,
     Value *SizeVal = llvm::ConstantInt::get(Builder.getContext(), Size);
     auto CI = Builder.CreateMemMove(
         Dest, Src, SizeVal,
-        getTypes().copyShouldPreserveTags(E->getArg(0), E->getArg(1)), false);
+        getTypes().copyShouldPreserveTags(E->getArg(0), E->getArg(1), SizeVal),
+        false);
     checkCapabilityCopy(*this, "memmove", E->getArg(1), CI);
     return RValue::get(Dest.getPointer(), Dest.getAlignment().getQuantity());
   }
@@ -3574,7 +3578,8 @@ RValue CodeGenFunction::EmitBuiltinExpr(const GlobalDecl GD, unsigned BuiltinID,
                         E->getArg(1)->getExprLoc(), FD, 1);
     auto CI = Builder.CreateMemMove(
         Dest, Src, SizeVal,
-        getTypes().copyShouldPreserveTags(E->getArg(0), E->getArg(1)), false);
+        getTypes().copyShouldPreserveTags(E->getArg(0), E->getArg(1), SizeVal),
+        false);
     checkCapabilityCopy(*this, "memmove", E->getArg(1), CI);
     return RValue::get(Dest.getPointer(), Dest.getAlignment().getQuantity());
   }

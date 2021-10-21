@@ -1275,7 +1275,7 @@ static void emitStoresForConstant(CodeGenModule &CGM, const VarDecl &D,
       IsAutoInit || !ContainsCaps
           ? llvm::PreserveCheriTags::Unnecessary
           : CGM.getTypes().copyShouldPreserveTagsForPointee(
-                D.getType(), /*EffectiveTypeKnown=*/true),
+                D.getType(), /*EffectiveTypeKnown=*/true, SizeVal),
       isVolatile);
   if (IsAutoInit)
     I->addAnnotationMetadata("auto-init");

@@ -313,11 +313,13 @@ public:  // These are internal details of CGT that shouldn't be used externally.
   /// (e.g. a referenced VarDecl) and performing a more conservative analysis
   /// if this is not the case.
   llvm::PreserveCheriTags copyShouldPreserveTags(const Expr *DestPtr,
-                                                 const Expr *SrcPtr);
+                                                 const Expr *SrcPtr,
+                                                 const llvm::Value *SizeVal);
   /// Same as the copyShouldPreserveTags(), but expects CopyTy to be the
   /// pointee type rather than the type of the buffer pointer.
   llvm::PreserveCheriTags
-  copyShouldPreserveTagsForPointee(QualType CopyTy, bool EffectiveTypeKnown);
+  copyShouldPreserveTagsForPointee(QualType CopyTy, bool EffectiveTypeKnown,
+                                   const llvm::Value *SizeVal);
 
   bool isRecordLayoutComplete(const Type *Ty) const;
   bool noRecordsBeingLaidOut() const {
@@ -329,6 +331,8 @@ public:  // These are internal details of CGT that shouldn't be used externally.
 
 private:
   llvm::PreserveCheriTags copyShouldPreserveTags(const Expr *E);
+  llvm::PreserveCheriTags
+  copyShouldPreserveTagsForPointee(QualType DestType, bool EffectiveTypeKnown);
 };
 
 }  // end namespace CodeGen

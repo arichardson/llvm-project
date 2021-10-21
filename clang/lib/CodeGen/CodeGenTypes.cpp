@@ -952,12 +952,30 @@ bool CodeGenTypes::isZeroInitializable(QualType T) {
   return true;
 }
 
+static bool isLessThanCapSize(const ASTContext &Context,
+                              const llvm::Value *Size) {
+  if (auto ConstSize = dyn_cast_or_null<llvm::ConstantInt>(Size)) {
+    // If the copy size is smaller than capability size we do not need to
+    // preserve tag bits.
+    auto CapSize = Context.toCharUnitsFromBits(
+        Context.getTargetInfo().getCHERICapabilityWidth());
+    if (ConstSize->getValue().slt(CapSize.getQuantity()))
+      return true;
+  }
+  return false;
+}
+
 llvm::PreserveCheriTags
-CodeGenTypes::copyShouldPreserveTags(const Expr *DestPtr, const Expr *SrcPtr) {
+CodeGenTypes::copyShouldPreserveTags(const Expr *DestPtr, const Expr *SrcPtr,
+                                     const llvm::Value *Size) {
   // Don't add the no_preserve_tags/must_preserve_tags attribute for non-CHERI
   // targets to avoid changing tests and to avoid compile-time impact.
   if (!Context.getTargetInfo().SupportsCapabilities())
     return llvm::PreserveCheriTags::Unknown;
+  if (isLessThanCapSize(Context, Size)) {
+    // Copies smaller than capability size do not need to preserve tag bits.
+    return llvm::PreserveCheriTags::Unnecessary;
+  }
   auto DstPreserve = copyShouldPreserveTags(DestPtr);
   if (DstPreserve == llvm::PreserveCheriTags::Unnecessary) {
     // If the destination does not need to preserve tags, we know that we don't
@@ -1003,13 +1021,22 @@ llvm::PreserveCheriTags CodeGenTypes::copyShouldPreserveTags(const Expr *E) {
   return copyShouldPreserveTagsForPointee(Ty, UnderlyingVar != nullptr);
 }
 
-llvm::PreserveCheriTags
-CodeGenTypes::copyShouldPreserveTagsForPointee(QualType Pointee,
-                                               bool EffectiveTypeKnown) {
+llvm::PreserveCheriTags CodeGenTypes::copyShouldPreserveTagsForPointee(
+    QualType CopyTy, bool EffectiveTypeKnown, const llvm::Value *SizeVal) {
   // Don't add the no_preserve_tags/must_preserve_tags attribute for non-CHERI
   // targets to avoid changing tests and to avoid compile-time impact.
   if (!Context.getTargetInfo().SupportsCapabilities())
     return llvm::PreserveCheriTags::Unknown;
+  if (isLessThanCapSize(Context, SizeVal)) {
+    // Copies smaller than capability size do not need to preserve tag bits.
+    return llvm::PreserveCheriTags::Unnecessary;
+  }
+  return copyShouldPreserveTagsForPointee(CopyTy, EffectiveTypeKnown);
+}
+
+llvm::PreserveCheriTags
+CodeGenTypes::copyShouldPreserveTagsForPointee(QualType Pointee,
+                                               bool EffectiveTypeKnown) {
   assert(Context.getTargetInfo().SupportsCapabilities() &&
          "Should only be called for CHERI targets");
   assert(!Pointee.isNull() && "Should only be called for valid types");

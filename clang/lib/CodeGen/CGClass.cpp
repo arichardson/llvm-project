@@ -986,7 +986,8 @@ namespace {
           Src.isBitField() ? Src.getBitFieldAddress() : Src.getAddress(CGF),
           MemcpySize,
           CGF.getTypes().copyShouldPreserveTagsForPointee(
-              RecordTy, /*EffectiveTypeKnown=*/true));
+              RecordTy, /*EffectiveTypeKnown=*/true,
+              CGF.Builder.getInt64(MemcpySize.getQuantity())));
       reset();
     }
 
