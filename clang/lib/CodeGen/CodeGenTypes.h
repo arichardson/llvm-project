@@ -25,6 +25,7 @@ class DataLayout;
 class Type;
 class LLVMContext;
 class StructType;
+enum class PreserveCheriTags;
 }
 
 namespace clang {
@@ -303,6 +304,21 @@ public:  // These are internal details of CGT that shouldn't be used externally.
   /// zero-initialized (in the C++ sense) with an LLVM zeroinitializer.
   bool isZeroInitializable(const RecordDecl *RD);
 
+  /// Return whether a copy (e.g. memcpy/memmove) where the destination is a
+  /// pointer to DestType may need to preserve CHERI tags (i.e. needs to call
+  /// the copy function at run time if the alignment is not greater than the
+  /// alignment of the destination buffer.
+  /// This function attempts to determine the effective type of the source and
+  /// destination values (C2x 6.5p6) by checking for the underlying storage
+  /// (e.g. a referenced VarDecl) and performing a more conservative analysis
+  /// if this is not the case.
+  llvm::PreserveCheriTags copyShouldPreserveTags(const Expr *DestPtr,
+                                                 const Expr *SrcPtr);
+  /// Same as the copyShouldPreserveTags(), but expects CopyTy to be the
+  /// pointee type rather than the type of the buffer pointer.
+  llvm::PreserveCheriTags
+  copyShouldPreserveTagsForPointee(QualType CopyTy, bool EffectiveTypeKnown);
+
   bool isRecordLayoutComplete(const Type *Ty) const;
   bool noRecordsBeingLaidOut() const {
     return RecordsBeingLaidOut.empty();
@@ -311,6 +327,8 @@ public:  // These are internal details of CGT that shouldn't be used externally.
     return RecordsBeingLaidOut.count(Ty);
   }
 
+private:
+  llvm::PreserveCheriTags copyShouldPreserveTags(const Expr *E);
 };
 
 }  // end namespace CodeGen
