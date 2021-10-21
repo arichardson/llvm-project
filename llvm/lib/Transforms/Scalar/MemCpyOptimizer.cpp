@@ -712,14 +712,21 @@ bool MemCpyOptPass::processStore(StoreInst *SI, BasicBlock::iterator &BBI) {
 
           IRBuilder<> Builder(P);
           Instruction *M;
+          // TODO: should probably annotate the load/store instructions instead
+          // of guessing the PreserveCheriTags value based on the type
+          PreserveCheriTags PreserveTags =
+              T->isSingleValueType() && !T->isPtrOrPtrVectorTy()
+                  ? PreserveCheriTags::Unnecessary
+                  : PreserveCheriTags::TODO;
+          assert(PreserveTags != PreserveCheriTags::Unnecessary);
           if (UseMemMove)
-            M = Builder.CreateMemMove(
-                SI->getPointerOperand(), SI->getAlign(),
-                LI->getPointerOperand(), LI->getAlign(), Size);
+            M = Builder.CreateMemMove(SI->getPointerOperand(), SI->getAlign(),
+                                      LI->getPointerOperand(), LI->getAlign(),
+                                      Size, PreserveTags);
           else
-            M = Builder.CreateMemCpy(
-                SI->getPointerOperand(), SI->getAlign(),
-                LI->getPointerOperand(), LI->getAlign(), Size);
+            M = Builder.CreateMemCpy(SI->getPointerOperand(), SI->getAlign(),
+                                     LI->getPointerOperand(), LI->getAlign(),
+                                     Size, PreserveTags);
 
           LLVM_DEBUG(dbgs() << "Promoting " << *LI << " to " << *SI << " => "
                             << *M << "\n");
