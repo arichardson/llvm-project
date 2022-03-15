@@ -34,7 +34,7 @@ define void @no_preserve(ptr addrspace(200) noalias writeonly %dst, ptr addrspac
 ; HYBRID-NEXT:    [[UGLYGEP:%.*]] = getelementptr i8, ptr [[SRC:%.*]], i64 16
 ; HYBRID-NEXT:    [[TMP1:%.*]] = zext i32 [[COUNT]] to i64
 ; HYBRID-NEXT:    [[TMP2:%.*]] = shl nuw nsw i64 [[TMP1]], 4
-; HYBRID-NEXT:    call void @llvm.memcpy.p0.p0.i64(ptr align 16 [[DST:%.*]], ptr align 4 [[UGLYGEP]], i64 [[TMP2]], i1 false)
+; HYBRID-NEXT:    call void @llvm.memcpy.p0.p0.i64(ptr align 16 [[DST:%.*]], ptr align 4 [[UGLYGEP]], i64 [[TMP2]], i1 false) #[[ATTR2:[0-9]+]]
 ; HYBRID-NEXT:    br label [[BB30]]
 ; HYBRID:       bb30:
 ; HYBRID-NEXT:    ret void
@@ -87,7 +87,7 @@ define void @must_preserve(ptr addrspace(200) noalias writeonly %dst, ptr addrsp
 ; HYBRID-NEXT:    [[UGLYGEP:%.*]] = getelementptr i8, ptr [[SRC:%.*]], i64 16
 ; HYBRID-NEXT:    [[TMP1:%.*]] = zext i32 [[COUNT]] to i64
 ; HYBRID-NEXT:    [[TMP2:%.*]] = shl nuw nsw i64 [[TMP1]], 4
-; HYBRID-NEXT:    call void @llvm.memcpy.p0.p0.i64(ptr align 16 [[DST:%.*]], ptr align 4 [[UGLYGEP]], i64 [[TMP2]], i1 false)
+; HYBRID-NEXT:    call void @llvm.memcpy.p0.p0.i64(ptr align 16 [[DST:%.*]], ptr align 4 [[UGLYGEP]], i64 [[TMP2]], i1 false) #[[ATTR3:[0-9]+]]
 ; HYBRID-NEXT:    br label [[BB30]]
 ; HYBRID:       bb30:
 ; HYBRID-NEXT:    ret void
@@ -140,5 +140,5 @@ attributes #2 = { must_preserve_cheri_tags }
 
 ; UTC_ARGS: --disable
 ; CHECK: attributes #1 = { argmemonly nocallback nofree nounwind willreturn }
-; TODO-CHECK: attributes #[[ATTR2]] = { no_preserve_cheri_tags }
-; TODO-CHECK: attributes #[[ATTR3]] = { must_preserve_cheri_tags }
+; CHECK: attributes #[[ATTR2]] = { no_preserve_cheri_tags }
+; CHECK: attributes #[[ATTR3]] = { must_preserve_cheri_tags }
