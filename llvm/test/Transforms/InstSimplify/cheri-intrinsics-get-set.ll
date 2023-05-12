@@ -12,6 +12,8 @@ declare i8 addrspace(200)* @llvm.cheri.cap.INTRINSIC.set.i64(i8 addrspace(200)*,
 
 
 ;; This is a no-op and should be folded to ret %arg
+;; NB: The exception here is @llvm.cheri.cap.high.set since it is tag-clearing
+;; and therefore could only be used on known-untagged values.
 define i8 addrspace(200)* @fold_set_of_get(i8 addrspace(200)* %arg) nounwind {
 ; ADDRESS-LABEL: define {{[^@]+}}@fold_set_of_get
 ; ADDRESS-SAME: (i8 addrspace(200)* [[ARG:%.*]]) addrspace(200) #[[ATTR0:[0-9]+]] {
@@ -85,13 +87,13 @@ define i64 @fold_get_of_set(i8 addrspace(200)* %arg, i64 %value) nounwind {
 ;
 ; HIGH-LABEL: define {{[^@]+}}@fold_get_of_set
 ; HIGH-SAME: (i8 addrspace(200)* [[ARG:%.*]], i64 [[VALUE:%.*]]) addrspace(200) #[[ATTR0]] {
-; HIGH-NEXT:    [[MODIFIED:%.*]] = tail call i8 addrspace(200)* @llvm.cheri.cap.high.set.i64(i8 addrspace(200)* [[ARG]], i64 [[VALUE]])
-; HIGH-NEXT:    [[RET:%.*]] = tail call i64 @llvm.cheri.cap.high.get.i64(i8 addrspace(200)* [[MODIFIED]])
-; HIGH-NEXT:    ret i64 [[RET]]
+; HIGH-NEXT:    ret i64 [[VALUE]]
 ;
 ; OFFSET-LABEL: define {{[^@]+}}@fold_get_of_set
 ; OFFSET-SAME: (i8 addrspace(200)* [[ARG:%.*]], i64 [[VALUE:%.*]]) addrspace(200) #[[ATTR0]] {
-; OFFSET-NEXT:    ret i64 [[VALUE]]
+; OFFSET-NEXT:    [[MODIFIED:%.*]] = tail call i8 addrspace(200)* @llvm.cheri.cap.offset.set.i64(i8 addrspace(200)* [[ARG]], i64 [[VALUE]])
+; OFFSET-NEXT:    [[RET:%.*]] = tail call i64 @llvm.cheri.cap.offset.get.i64(i8 addrspace(200)* [[MODIFIED]])
+; OFFSET-NEXT:    ret i64 [[RET]]
 ;
   %modified = tail call i8 addrspace(200)* @llvm.cheri.cap.INTRINSIC.set.i64(i8 addrspace(200)* %arg, i64 %value)
   %ret = tail call i64 @llvm.cheri.cap.INTRINSIC.get.i64(i8 addrspace(200)* %modified)
@@ -136,8 +138,7 @@ define i64 @fold_get_on_null() nounwind {
 ;
 ; HIGH-LABEL: define {{[^@]+}}@fold_get_on_null
 ; HIGH-SAME: () addrspace(200) #[[ATTR0]] {
-; HIGH-NEXT:    [[RET:%.*]] = tail call i64 @llvm.cheri.cap.high.get.i64(i8 addrspace(200)* null)
-; HIGH-NEXT:    ret i64 [[RET]]
+; HIGH-NEXT:    ret i64 0
 ;
 ; OFFSET-LABEL: define {{[^@]+}}@fold_get_on_null
 ; OFFSET-SAME: () addrspace(200) #[[ATTR0]] {
@@ -158,9 +159,7 @@ define i64 @fold_get_on_null_with_gep(i64 %value, i64 %gepoff) nounwind {
 ;
 ; HIGH-LABEL: define {{[^@]+}}@fold_get_on_null_with_gep
 ; HIGH-SAME: (i64 [[VALUE:%.*]], i64 [[GEPOFF:%.*]]) addrspace(200) #[[ATTR0]] {
-; HIGH-NEXT:    [[TMP:%.*]] = getelementptr i8, i8 addrspace(200)* null, i64 [[GEPOFF]]
-; HIGH-NEXT:    [[RET:%.*]] = tail call i64 @llvm.cheri.cap.high.get.i64(i8 addrspace(200)* [[TMP]])
-; HIGH-NEXT:    ret i64 [[RET]]
+; HIGH-NEXT:    ret i64 0
 ;
 ; OFFSET-LABEL: define {{[^@]+}}@fold_get_on_null_with_gep
 ; OFFSET-SAME: (i64 [[VALUE:%.*]], i64 [[GEPOFF:%.*]]) addrspace(200) #[[ATTR0]] {

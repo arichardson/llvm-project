@@ -5716,15 +5716,47 @@ stripAndAccumulateGEPsAndPointerCastsSameRepr(Value *V, const DataLayout &DL,
   return Result;
 }
 
-template <Intrinsic::ID Intrin, Intrinsic::ID SetIntrin>
-static Value *inferCapabilityOffsetOrAddr(Value *V, Type *ResultTy,
-                                          const DataLayout &DL) {
-  // Try to infer the offset/address from a prior setoffset/setaddr value
+// Common helper to fold llvm.cheri.get.foo intrinsics
+template <Intrinsic::ID Intrin>
+static Value *foldCheriGetSetPair(Value *V, Type *ResultTy,
+                                  const DataLayout &DL) {
+  constexpr Intrinsic::ID SetIntrin = cheri::correspondingSetIntrinsic(Intrin);
+  // getFoo(setFoo(A, B)) -> B
+  // This is true for address and high, but not necessarily true for flags and
+  // offset since setflags truncates the value and setoffset may change the
+  // bounds representation (and thus the offset) if it is significantly OOB.
+  constexpr bool SetUpdatesAllGetBits =
+      SetIntrin != Intrinsic::cheri_cap_offset_set &&
+      SetIntrin != Intrinsic::cheri_cap_flags_set;
   Value *IntrinArg = nullptr;
-  // getaddr(setaddr(A, B)) -> B and getoffset(setoffset(A, B)) -> B
-  if (match(V, m_Intrinsic<SetIntrin>(m_Value(), m_Value(IntrinArg)))) {
+  if (SetUpdatesAllGetBits &&
+      match(V, m_Intrinsic<SetIntrin>(m_Value(), m_Value(IntrinArg)))) {
     return IntrinArg;
   }
+  // All intrinsics we call this function for return zero for NULL inputs.
+  // In fact, we can extend this to any input derived from NULL where the only
+  // operations that have been address manipulations (unless we are retrieving
+  // a result depending on the address), since those cannot affect non-bounds
+  // capability metadata.
+  constexpr bool CanIgnoreAddressManipulation =
+      Intrin != Intrinsic::cheri_cap_address_get &&
+      Intrin != Intrinsic::cheri_cap_offset_get;
+  Value *Base = CanIgnoreAddressManipulation
+                    ? getBasePtrIgnoringCapabilityAddressManipulation(V, DL)
+                    : V->stripPointerCastsSameRepresentation();
+  if (isa<ConstantPointerNull>(Base)) {
+    return Constant::getNullValue(ResultTy);
+  }
+  return nullptr;
+}
+
+template <Intrinsic::ID Intrin>
+static Value *inferCapabilityOffsetOrAddr(Value *V, Type *ResultTy,
+                                          const DataLayout &DL) {
+  if (Value *Ret = foldCheriGetSetPair<Intrin>(V, ResultTy, DL))
+    return Ret;
+  // Try to infer the offset/address from a prior setoffset/setaddr value
+  Value *IntrinArg = nullptr;
   // get{addr,offset}(setaddr(NULL, B)) -> B
   if (match(V, m_Intrinsic<Intrinsic::cheri_cap_address_set>(
                    m_Zero(), m_Value(IntrinArg)))) {
@@ -5765,6 +5797,7 @@ static Value *inferCapabilityOffsetOrAddr(Value *V, Type *ResultTy,
   // We can also fold chains of constant GEPS:
   // For example: getoffset(GEP(setoffset(A, Const1), 100) -> Const1 + 100
   ConstantInt *ConstSetArg;
+  constexpr Intrinsic::ID SetIntrin = cheri::correspondingSetIntrinsic(Intrin);
   if (match(BasePtr,
             m_Intrinsic<SetIntrin>(m_Value(), m_ConstantInt(ConstSetArg)))) {
     return ConstantInt::get(ResultTy, ConstSetArg->getValue() + OffsetAPInt);
@@ -5804,7 +5837,6 @@ static Value *simplifyUnaryIntrinsic(Function *F, Value *Op0,
       return Constant::getNullValue(F->getReturnType());
     break;
   case Intrinsic::cheri_cap_sealed_get:
-  case Intrinsic::cheri_cap_flags_get:
   case Intrinsic::cheri_cap_base_get:
     // Values derived from NULL and where the only operations that have been
     // applied are address manipulations, always have the following properties:
@@ -5842,6 +5874,18 @@ static Value *simplifyUnaryIntrinsic(Function *F, Value *Op0,
             Op0, F->getReturnType(), Q.DL))
       return V;
     break;
+  case Intrinsic::cheri_cap_flags_get: {
+    if (auto *Ret = foldCheriGetSetPair<Intrinsic::cheri_cap_flags_get>(
+            Op0, F->getReturnType(), Q.DL))
+      return Ret;
+    break;
+  }
+  case Intrinsic::cheri_cap_high_get: {
+    if (auto *Ret = foldCheriGetSetPair<Intrinsic::cheri_cap_high_get>(
+            Op0, F->getReturnType(), Q.DL))
+      return Ret;
+    break;
+  }
   case Intrinsic::cheri_cap_offset_get:
     if (auto *V = inferCapabilityOffsetOrAddr<Intrinsic::cheri_cap_offset_get>(
             Op0, F->getReturnType(), Q.DL))
