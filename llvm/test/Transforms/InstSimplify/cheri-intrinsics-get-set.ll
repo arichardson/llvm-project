@@ -21,9 +21,7 @@ define i8 addrspace(200)* @fold_set_of_get(i8 addrspace(200)* %arg) nounwind {
 ;
 ; FLAGS-LABEL: define {{[^@]+}}@fold_set_of_get
 ; FLAGS-SAME: (i8 addrspace(200)* [[ARG:%.*]]) addrspace(200) #[[ATTR0:[0-9]+]] {
-; FLAGS-NEXT:    [[VALUE:%.*]] = tail call i64 @llvm.cheri.cap.flags.get.i64(i8 addrspace(200)* [[ARG]])
-; FLAGS-NEXT:    [[RET:%.*]] = tail call i8 addrspace(200)* @llvm.cheri.cap.flags.set.i64(i8 addrspace(200)* [[ARG]], i64 [[VALUE]])
-; FLAGS-NEXT:    ret i8 addrspace(200)* [[RET]]
+; FLAGS-NEXT:    ret i8 addrspace(200)* [[ARG]]
 ;
 ; HIGH-LABEL: define {{[^@]+}}@fold_set_of_get
 ; HIGH-SAME: (i8 addrspace(200)* [[ARG:%.*]]) addrspace(200) #[[ATTR0:[0-9]+]] {

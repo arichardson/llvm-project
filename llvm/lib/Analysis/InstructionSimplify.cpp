@@ -6149,6 +6149,11 @@ static Value *simplifyBinaryIntrinsic(Function *F, Value *Op0, Value *Op1,
         return Op0;
     }
     break;
+  case Intrinsic::cheri_cap_flags_set:
+    if (match(Op1,
+              m_Intrinsic<Intrinsic::cheri_cap_flags_get>(m_Specific(Op0))))
+      return Op0;
+    break;
   case Intrinsic::cheri_cap_offset_set:
   case Intrinsic::cheri_cap_address_set: {
     Value *Base = getBasePtrIgnoringCapabilityAddressManipulation(Op0, Q.DL);
