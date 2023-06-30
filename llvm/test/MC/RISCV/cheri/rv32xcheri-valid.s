@@ -1,13 +1,30 @@
+## TODO: Once the actual xcherimin subset has been finalized, we should split this into separate files rather than using .if.
 # RUN: llvm-mc %s -triple=riscv32 -mattr=+xcheri -riscv-no-aliases -show-encoding \
-# RUN:     | FileCheck -check-prefixes=CHECK,CHECK-INST %s
+# RUN:     | FileCheck -check-prefixes=CHECK,CHECK-INST,CHECK-ISAV8,CHECK-INST-ISAV8 %s
 # RUN: llvm-mc %s -triple=riscv64 -mattr=+xcheri -riscv-no-aliases -show-encoding \
+# RUN:     | FileCheck -check-prefixes=CHECK,CHECK-INST,CHECK-ISAV8,CHECK-INST-ISAV8 %s
+# RUN: llvm-mc %s -triple=riscv32 -mattr=+xcherimin -riscv-no-aliases -show-encoding --defsym=MIN_ONLY=1 \
+# RUN:     | FileCheck -check-prefixes=CHECK,CHECK-INST %s
+# RUN: llvm-mc %s -triple=riscv64 -mattr=+xcherimin -riscv-no-aliases -show-encoding --defsym=MIN_ONLY=1 \
 # RUN:     | FileCheck -check-prefixes=CHECK,CHECK-INST %s
 # RUN: llvm-mc -filetype=obj -triple riscv32 -mattr=+xcheri < %s \
 # RUN:     | llvm-objdump -M no-aliases --mattr=+xcheri -d - \
-# RUN:     | FileCheck -check-prefix=CHECK-INST %s
+# RUN:     | FileCheck -check-prefixes=CHECK-INST,CHECK-INST-ISAV8 %s
 # RUN: llvm-mc -filetype=obj -triple riscv64 -mattr=+xcheri < %s \
 # RUN:     | llvm-objdump -M no-aliases --mattr=+xcheri -d - \
+# RUN:     | FileCheck -check-prefixes=CHECK-INST,CHECK-INST-ISAV8 %s
+# RUN: llvm-mc -filetype=obj -triple riscv32 -mattr=+xcherimin --defsym=MIN_ONLY=1< %s \
+# RUN:     | llvm-objdump -M no-aliases -d - --mattr=+xcherimin \
 # RUN:     | FileCheck -check-prefix=CHECK-INST %s
+# RUN: llvm-mc -filetype=obj -triple riscv64 -mattr=+xcherimin --defsym=MIN_ONLY=1 < %s \
+# RUN:     | llvm-objdump -M no-aliases -d - --mattr=+xcherimin \
+# RUN:     | FileCheck -check-prefix=CHECK-INST %s
+
+## Check that we correctly reject instructions that are not part of 'xcherimin'.
+# RUN: not llvm-mc %s -triple=riscv32 -mattr=+xcherimin --filetype=null 2>&1 \
+# RUN:     | FileCheck -check-prefix=XCHERIMIN-ERR %s --implicit-check-not=error:
+# RUN: not llvm-mc %s -triple=riscv64 -mattr=+xcherimin --filetype=null 2>&1 \
+# RUN:     | FileCheck -check-prefix=XCHERIMIN-ERR %s --implicit-check-not=error:
 
 # CHECK-INST: cgetperm ra, csp
 # CHECK: encoding: [0xdb,0x00,0x01,0xfe]
@@ -101,18 +118,24 @@ ccseal c1, c2, c3
 # CHECK: encoding: [0xdb,0x00,0x11,0xff]
 csealentry c1, c2
 
-# CHECK-INST: ctoptr ra, csp, cgp
-# CHECK: encoding: [0xdb,0x00,0x31,0x24]
+.ifndef MIN_ONLY
+# CHECK-INST-ISAV8: ctoptr ra, csp, cgp
+# CHECK-ISAV8: encoding: [0xdb,0x00,0x31,0x24]
+# XCHERIMIN-ERR: [[#@LINE+1]]:1: error: instruction requires the following: CHERI ISAv8 semantics (trapping, DDC/PCC relocation)
 ctoptr x1, c2, c3
-# CHECK-INST: ctoptr ra, csp, ddc
-# CHECK: encoding: [0xdb,0x00,0x01,0x24]
+# CHECK-INST-ISAV8: ctoptr ra, csp, ddc
+# CHECK-ISAV8: encoding: [0xdb,0x00,0x01,0x24]
+# XCHERIMIN-ERR: [[#@LINE+1]]:1: error: instruction requires the following: CHERI ISAv8 semantics (trapping, DDC/PCC relocation)
 ctoptr x1, c2, ddc
-# CHECK-INST: cfromptr cra, csp, gp
-# CHECK: encoding: [0xdb,0x00,0x31,0x26]
+# CHECK-INST-ISAV8: cfromptr cra, csp, gp
+# CHECK-ISAV8: encoding: [0xdb,0x00,0x31,0x26]
+# XCHERIMIN-ERR: [[#@LINE+1]]:1: error: instruction requires the following: CHERI ISAv8 semantics (trapping, DDC/PCC relocation)
 cfromptr c1, c2, x3
-# CHECK-INST: cfromptr cra, ddc, gp
-# CHECK: encoding: [0xdb,0x00,0x30,0x26]
+# CHECK-INST-ISAV8: cfromptr cra, ddc, gp
+# CHECK-ISAV8: encoding: [0xdb,0x00,0x30,0x26]
+# XCHERIMIN-ERR: [[#@LINE+1]]:1: error: instruction requires the following: CHERI ISAv8 semantics (trapping, DDC/PCC relocation)
 cfromptr c1, ddc, x3
+.endif
 # CHECK-INST: sub ra, sp, gp
 # CHECK: encoding: [0xb3,0x00,0x31,0x40]
 csub x1, c2, c3
@@ -175,12 +198,16 @@ cspecialr c1, uscratchc
 # CHECK: encoding: [0x5b,0x00,0x61,0x02]
 cspecialw uscratchc, c2
 
-# CHECK-INST: cclear 1, 66
-# CHECK: encoding: [0x5b,0x01,0xe5,0xfe]
+.ifndef MIN_ONLY
+# CHECK-INST-ISAV8: cclear 1, 66
+# CHECK-ISAV8: encoding: [0x5b,0x01,0xe5,0xfe]
+# XCHERIMIN-ERR: [[#@LINE+1]]:1: error: instruction requires the following: CHERI Extension (all instructions)
 cclear 1, 0x42
-# CHECK-INST: fpclear 1, 66
-# CHECK: encoding: [0x5b,0x01,0x05,0xff]
+# CHECK-INST-ISAV8: fpclear 1, 66
+# CHECK-ISAV8: encoding: [0x5b,0x01,0x05,0xff]
+# XCHERIMIN-ERR: [[#@LINE+1]]:1: error: instruction requires the following: CHERI Extension (all instructions)
 fpclear 1, 0x42
+.endif
 
 # CHECK-INST: croundrepresentablelength ra, sp
 # CHECK: encoding: [0xdb,0x00,0x81,0xfe]

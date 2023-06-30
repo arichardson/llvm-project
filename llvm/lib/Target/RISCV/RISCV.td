@@ -397,6 +397,9 @@ def FeatureAllCheriInstrs
 def HasCheri : Predicate<"Subtarget->hasCheri()">,
                          AssemblerPredicate<(all_of FeatureCheri),
                          "CHERI Extension">;
+def HasAllCheriInstrs : Predicate<"Subtarget->hasAllCheriInstrs()">,
+                         AssemblerPredicate<(all_of FeatureAllCheriInstrs),
+                         "CHERI Extension (all instructions)">;
 def FeatureCheriNoRVC
     : SubtargetFeature<"xcheri-norvc", "EnableCheriRVCInstrs", "false",
                        "Disable CHERI RVC Instructions.">;
