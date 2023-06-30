@@ -329,9 +329,11 @@ def PseudoCGetAddr : Pseudo<(outs GPR:$rd), (ins GPCR:$cs1), [],
 let Predicates = [HasCheri] in {
 let Constraints = "@traps_if_sealed $rs1" in {
 let mayTrap = 1 in {
+let Predicates = [HasAllCheriInstrs] in {
 let defsCanBeSealed = 1 in
 def CSeal           : Cheri_rr<0xb, "cseal", GPCR, GPCR>;
 def CUnseal         : Cheri_rr<0xc, "cunseal", GPCR, GPCR>;
+} // let Predicates = [HasAllCheriInstrs]
 def CAndPerm        : Cheri_rr<0xd, "candperm">;
 } // let mayTrap = 1
 def CSetFlags       : Cheri_rr<0xe, "csetflags">;
@@ -353,9 +355,11 @@ def CClearTag       : Cheri_r<0xb, "ccleartag", GPCR>;
 let mayTrap = 1 in {
 let defsCanBeSealed = 1 in
 def CBuildCap       : Cheri_rr<0x1d, "cbuildcap", GPCR, GPCR, GPCRC0IsDDC>;
+let Predicates = [HasAllCheriInstrs] in {
 def CCopyType       : Cheri_rr<0x1e, "ccopytype", GPCR, GPCR>;
 let defsCanBeSealed = 1 in
 def CCSeal          : Cheri_rr<0x1f, "ccseal", GPCR, GPCR>;
+} // let Predicates = [HasAllCheriInstrs]
 let defsCanBeSealed = 1 in
 def CSealEntry      : Cheri_r<0x11, "csealentry", GPCR>;
 } // let mayTrap = 1
@@ -397,11 +401,6 @@ let isCall = 1, hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
 def JALR_PCC : RVInstCheriSrcDst<0x7f, 0x14, 0, OPC_CHERI, (outs GPR:$rd),
                                  (ins GPR:$rs1), "jalr.pcc", "$rd, $rs1">;
 
-let isCall = 1, hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
-def CInvoke : RVInstCheriTwoSrc<0x7e, 0x1, 0, OPC_CHERI, (outs),
-                                (ins GPCR:$rs1, GPCR:$rs2),
-                                "cinvoke", "$rs1, $rs2">;
-
 def : InstAlias<"jalr.cap $cs1", (JALR_CAP C1, GPCR:$cs1), 1>;
 def : InstAlias<"jr.cap $cs1",   (JALR_CAP C0, GPCR:$cs1), 1>;
 def : InstAlias<"ret.cap",       (JALR_CAP C0,        C1), 2>;
@@ -410,6 +409,12 @@ def : InstAlias<"jalr.pcc $cs1", (JALR_PCC X1, GPR:$cs1), 1>;
 def : InstAlias<"jr.pcc $cs1",   (JALR_PCC X0, GPR:$cs1), 1>;
 def : InstAlias<"ret.pcc",       (JALR_PCC X0,       X1), 2>;
 }
+
+let isCall = 1, hasSideEffects = 0, mayLoad = 0, mayStore = 0,
+    Predicates = [HasAllCheriInstrs] in
+def CInvoke : RVInstCheriTwoSrc<0x7e, 0x1, 0, OPC_CHERI, (outs),
+                                (ins GPCR:$rs1, GPCR:$rs2),
+                                "cinvoke", "$rs1, $rs2">;
 
 //===----------------------------------------------------------------------===//
 // Assertion Instructions

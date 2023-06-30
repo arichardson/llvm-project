@@ -57,12 +57,16 @@ cgetaddr x1, c2
 # CHECK: encoding: [0xdb,0x00,0x71,0xff]
 cgethigh x1, c2
 
-# CHECK-INST: cseal cra, csp, cgp
-# CHECK: encoding: [0xdb,0x00,0x31,0x16]
+.ifndef MIN_ONLY
+# CHECK-INST-ISAV8: cseal cra, csp, cgp
+# CHECK-ISAV8: encoding: [0xdb,0x00,0x31,0x16]
+# XCHERIMIN-ERR: [[#@LINE+1]]:1: error: instruction requires the following: CHERI Extension (all instructions)
 cseal c1, c2, c3
-# CHECK-INST: cunseal cra, csp, cgp
-# CHECK: encoding: [0xdb,0x00,0x31,0x18]
+# CHECK-INST-ISAV8: cunseal cra, csp, cgp
+# CHECK-ISAV8: encoding: [0xdb,0x00,0x31,0x18]
+# XCHERIMIN-ERR: [[#@LINE+1]]:1: error: instruction requires the following: CHERI Extension (all instructions)
 cunseal c1, c2, c3
+.endif
 # CHECK-INST: candperm cra, csp, gp
 # CHECK: encoding: [0xdb,0x00,0x31,0x1a]
 candperm c1, c2, x3
@@ -108,12 +112,16 @@ cbuildcap c1, c2, c3
 # CHECK-INST: cbuildcap cra, ddc, cgp
 # CHECK: encoding: [0xdb,0x00,0x30,0x3a]
 cbuildcap c1, ddc, c3
-# CHECK-INST: ccopytype cra, csp, cgp
-# CHECK: encoding: [0xdb,0x00,0x31,0x3c]
+.ifndef MIN_ONLY
+# CHECK-INST-ISAV8: ccopytype cra, csp, cgp
+# CHECK-ISAV8: encoding: [0xdb,0x00,0x31,0x3c]
+# XCHERIMIN-ERR: [[#@LINE+1]]:1: error: instruction requires the following: CHERI Extension (all instructions)
 ccopytype c1, c2, c3
-# CHECK-INST: ccseal cra, csp, cgp
-# CHECK: encoding: [0xdb,0x00,0x31,0x3e]
+# CHECK-INST-ISAV8: ccseal cra, csp, cgp
+# CHECK-ISAV8: encoding: [0xdb,0x00,0x31,0x3e]
+# XCHERIMIN-ERR: [[#@LINE+1]]:1: error: instruction requires the following: CHERI Extension (all instructions)
 ccseal c1, c2, c3
+.endif
 # CHECK-INST: csealentry cra, csp
 # CHECK: encoding: [0xdb,0x00,0x11,0xff]
 csealentry c1, c2
@@ -167,9 +175,12 @@ jr.pcc x1
 # CHECK-INST: jalr.pcc zero, ra
 # CHECK: encoding: [0x5b,0x80,0x40,0xff]
 ret.pcc
-# CHECK-INST: cinvoke cra, csp
-# CHECK: encoding: [0xdb,0x80,0x20,0xfc]
+.ifndef MIN_ONLY
+# CHECK-INST-ISAV8: cinvoke cra, csp
+# CHECK-ISAV8: encoding: [0xdb,0x80,0x20,0xfc]
+# XCHERIMIN-ERR: [[#@LINE+1]]:1: error: instruction requires the following: CHERI Extension (all instructions)
 cinvoke c1, c2
+.endif
 
 # CHECK-INST: ctestsubset ra, csp, cgp
 # CHECK: encoding: [0xdb,0x00,0x31,0x40]
