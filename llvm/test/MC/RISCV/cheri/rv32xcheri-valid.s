@@ -182,12 +182,16 @@ ret.pcc
 cinvoke c1, c2
 .endif
 
-# CHECK-INST: ctestsubset ra, csp, cgp
-# CHECK: encoding: [0xdb,0x00,0x31,0x40]
+.ifndef MIN_ONLY
+# CHECK-INST-ISAV8: ctestsubset ra, csp, cgp
+# CHECK-ISAV8: encoding: [0xdb,0x00,0x31,0x40]
+# XCHERIMIN-ERR: [[#@LINE+1]]:1: error: instruction requires the following: CHERI Extension (all instructions)
 ctestsubset x1, c2, c3
-# CHECK-INST: ctestsubset ra, ddc, cgp
-# CHECK: encoding: [0xdb,0x00,0x30,0x40]
+# CHECK-INST-ISAV8: ctestsubset ra, ddc, cgp
+# CHECK-ISAV8: encoding: [0xdb,0x00,0x30,0x40]
+# XCHERIMIN-ERR: [[#@LINE+1]]:1: error: instruction requires the following: CHERI Extension (all instructions)
 ctestsubset x1, ddc, c3
+.endif
 
 # CHECK-INST: csetequalexact ra, csp, cgp
 # CHECK: encoding: [0xdb,0x00,0x31,0x42]

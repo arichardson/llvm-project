@@ -420,8 +420,9 @@ def CInvoke : RVInstCheriTwoSrc<0x7e, 0x1, 0, OPC_CHERI, (outs),
 // Assertion Instructions
 //===----------------------------------------------------------------------===//
 
-let Predicates = [HasCheri] in {
+let Predicates = [HasAllCheriInstrs] in
 def CTestSubset : Cheri_rr<0x20, "ctestsubset", GPR, GPCR, GPCRC0IsDDC>;
+let Predicates = [HasCheri] in {
 def CSEQX       : Cheri_rr<0x21, "csetequalexact", GPR, GPCR, GPCR>;
 
 def : InstAlias<"cseqx $rd, $cs1, $cs2", (CSEQX GPR:$rd, GPCR:$cs1, GPCR:$cs2)>;
@@ -1375,6 +1376,7 @@ def : CheriBccSwapPat<setule, BGEU>;
 
 /// Assertion Instructions
 
+let Predicates = [HasAllCheriInstrs] in
 def : PatGpcrGpcr<riscv_cap_subset_test, CTestSubset>;
 def : PatGpcrGpcr<riscv_cap_equal_exact, CSEQX>;
 
