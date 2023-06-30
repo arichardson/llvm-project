@@ -469,7 +469,7 @@ def : InstAlias<"cram $rd, $rs1", (CRAM GPR:$rd, GPR:$rs1)>;
 // Tag-Memory Access Instructions
 //===----------------------------------------------------------------------===//
 
-let Predicates = [HasCheri], hasSideEffects = 0, mayLoad = 1, mayStore = 0 in
+let Predicates = [HasAllCheriInstrs], hasSideEffects = 0, mayLoad = 1, mayStore = 0 in
 def CLoadTags : Cheri_r<0x12, "cloadtags", GPR, GPCRMemAtomic>;
 
 //===----------------------------------------------------------------------===//
@@ -1401,6 +1401,7 @@ def : PatGpr<int_cheri_representable_alignment_mask, CRAM>;
 
 /// Tag-Memory Access Instructions
 
+let Predicates = [HasAllCheriInstrs] in
 def : PatGpcr<int_cheri_cap_load_tags, CLoadTags>;
 
 /// Memory-Access with Explicit Address Type Instructions

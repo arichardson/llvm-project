@@ -237,9 +237,12 @@ crepresentablealignmentmask x1, x2
 # CHECK: encoding: [0xdb,0x00,0x91,0xfe]
 cram x1, x2
 
-# CHECK-INST: cloadtags ra, (csp)
-# CHECK: encoding: [0xdb,0x00,0x21,0xff]
+.ifndef MIN_ONLY
+# CHECK-INST-ISAV8: cloadtags ra, (csp)
+# CHECK-ISAV8: encoding: [0xdb,0x00,0x21,0xff]
+# XCHERIMIN-ERR: [[#@LINE+1]]:1: error: instruction requires the following: CHERI Extension (all instructions)
 cloadtags x1, (c2)
+.endif
 
 # CHECK-INST: lb.ddc ra, (sp)
 # CHECK: encoding: [0xdb,0x00,0x01,0xfa]
