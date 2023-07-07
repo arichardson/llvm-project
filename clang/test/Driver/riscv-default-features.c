@@ -13,6 +13,9 @@
 // RUN: %clang --target=riscv32-unknown-elf -march=rv32ixcheri -S -mno-xcheri-norvc -emit-llvm %s -o - | FileCheck %s -check-prefix=RV32-XCHERI-EXPLICIT-RVC
 // RUN: %clang --target=riscv64-unknown-elf -march=rv64ixcheri -S -mno-xcheri-norvc -emit-llvm %s -o - | FileCheck %s -check-prefix=RV64-XCHERI-EXPLICIT-RVC
 
+// RUN: %clang --target=riscv64-unknown-elf -march=rv64ixcheri -mxcheri-no-v8-compat -S -emit-llvm %s -o - | FileCheck %s -check-prefix=RV64-XCHERI-NOV8COMPAT
+// RUN: %clang --target=riscv64-unknown-elf -march=rv64ixcheri -mxcheri-v8-compat -S -emit-llvm %s -o - | FileCheck %s -check-prefix=RV64-XCHERI-V8COMPAT
+
 // RV32: "target-features"="+a,+c,+m,+relax,-save-restore"
 // RV64: "target-features"="+64bit,+a,+c,+m,+relax,-save-restore"
 
@@ -25,6 +28,9 @@
 // RV64-XCHERI-NORVC: "target-features"="+64bit,+relax,+xcheri,+xcheri-norvc,-save-restore"
 // RV32-XCHERI-EXPLICIT-RVC: "target-features"="+relax,+xcheri,-save-restore,-xcheri-norvc"
 // RV64-XCHERI-EXPLICIT-RVC: "target-features"="+64bit,+relax,+xcheri,-save-restore,-xcheri-norvc"
+
+// RV64-XCHERI-V8COMPAT: "target-features"="+64bit,+relax,+xcheri,-save-restore,-xcheri-no-v8-compat"
+// RV64-XCHERI-NOV8COMPAT: "target-features"="+64bit,+relax,+xcheri,+xcheri-no-v8-compat,-save-restore"
 
 // Dummy function
 int foo(){
