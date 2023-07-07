@@ -162,15 +162,8 @@ void riscv::getRISCVTargetFeatures(const Driver &D, const llvm::Triple &Triple,
     Features.push_back("-relax");
 
   if (Arg *A = Args.getLastArg(options::OPT_mabi_EQ)) {
-    bool IsPureCapability = isCheriPurecapABIName(A->getValue());
-    if (IsPureCapability) {
-      if (llvm::find(Features, "+xcheri") == Features.end()) {
-        D.Diag(diag::err_riscv_invalid_abi) << A->getValue()
-          << "pure capability ABI requires xcheri extension to be specified";
-        return;
-      }
+    if (isCheriPurecapABIName(A->getValue()))
       Features.push_back("+cap-mode");
-    }
   }
 
   // GCC Compatibility: -mno-save-restore is default, unless -msave-restore is
