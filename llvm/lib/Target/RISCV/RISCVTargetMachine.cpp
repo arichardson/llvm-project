@@ -45,7 +45,7 @@ extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeRISCVTarget() {
   initializeRISCVInsertVSETVLIPass(*PR);
 }
 
-static std::string computeDataLayout(const Triple &TT, StringRef FS,
+static std::string computeDataLayout(const Target &T, const Triple &TT, StringRef FS,
                                      const TargetOptions &Options) {
   assert((TT.isArch32Bit() || TT.isArch64Bit()) &&
          "only RV32 and RV64 are currently supported");
@@ -59,15 +59,20 @@ static std::string computeDataLayout(const Triple &TT, StringRef FS,
 
   StringRef CapTypes = "";
   StringRef PurecapOptions = "";
-  if (llvm::is_contained(llvm::split(FS, ','), "+xcheri")) {
+  // We use createMCSubtargetInfo() to handle implied feature bits.
+  std::unique_ptr<const MCSubtargetInfo> STI(
+    T.createMCSubtargetInfo(TT.str(), "", FS));
+  if (STI->getFeatureBits()[RISCV::FeatureCheri]) {
     if (TT.isArch64Bit())
       CapTypes = "-pf200:128:128:128:64";
     else
       CapTypes = "-pf200:64:64:64:32";
 
     RISCVABI::ABI ABI = RISCVABI::getTargetABI(Options.MCOptions.getABIName());
-    if (ABI != RISCVABI::ABI_Unknown && RISCVABI::isCheriPureCapABI(ABI))
+    if (ABI != RISCVABI::ABI_Unknown && RISCVABI::isCheriPureCapABI(ABI)) {
+      assert(STI->getFeatureBits()[RISCV::FeatureCapMode]);
       PurecapOptions = "-A200-P200-G200";
+    }
   }
 
   return ("e-m:e" + CapTypes + IntegerTypes + "-S128" + PurecapOptions).str();
@@ -86,7 +91,7 @@ RISCVTargetMachine::RISCVTargetMachine(const Target &T, const Triple &TT,
                                        Optional<Reloc::Model> RM,
                                        Optional<CodeModel::Model> CM,
                                        CodeGenOpt::Level OL, bool JIT)
-    : LLVMTargetMachine(T, computeDataLayout(TT, FS, Options), TT, CPU,
+    : LLVMTargetMachine(T, computeDataLayout(T, TT, FS, Options), TT, CPU,
                         FS, Options, getEffectiveRelocModel(TT, RM),
                         getEffectiveCodeModel(CM, CodeModel::Small), OL),
       TLOF(std::make_unique<RISCVELFTargetObjectFile>()) {
