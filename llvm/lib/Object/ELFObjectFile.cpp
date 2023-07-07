@@ -305,7 +305,7 @@ SubtargetFeatures ELFObjectFileBase::getRISCVFeatures() const {
   }
 
   if (PlatformFlags & ELF::EF_RISCV_CAP_MODE) {
-    Features.AddFeature("xcheri");
+    Features.AddFeature("cheri-capabilities");
     Features.AddFeature("cap-mode");
   }
 
@@ -346,10 +346,12 @@ SubtargetFeatures ELFObjectFileBase::getRISCVFeatures() const {
       case 'c':
         Features.AddFeature(Arch.take_front());
         break;
-      case 'x':
-        if (Arch.startswith("xcheri"))
-          Features.AddFeature("xcheri");
-        break; // Ignore unexpected features.
+      case 'x': {
+        StringRef Ext = Arch.take_until(
+            [](char C) { return isDigit(C) || C == '_' || C == '\0'; });
+        if (Ext == "xcheri" || Ext == "xcherimin")
+          Features.AddFeature(Ext);
+        }
       }
 
       // FIXME: Handle version numbers.

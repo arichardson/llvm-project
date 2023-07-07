@@ -100,6 +100,8 @@ private:
   bool HasRV64 = false;
   bool IsRV32E = false;
   bool HasCheri = false;
+  bool HasXCheriMin = false;
+  bool HasAllCheriInstrs = false;
   bool HasCheriISAv8Semantics = true;
   bool IsCapMode = false;
   bool EnableLinkerRelax = false;
@@ -187,6 +189,8 @@ public:
   bool is64Bit() const { return HasRV64; }
   bool isRV32E() const { return IsRV32E; }
   bool hasCheri() const { return HasCheri; }
+  bool hasXCheriMin() const { return HasXCheriMin; }
+  bool hasAllCheriInstrs() const { return HasAllCheriInstrs; }
   bool hasCheriISAv8Semantics() const { return HasCheriISAv8Semantics; }
   bool isCapMode() const { return IsCapMode; }
   bool enableLinkerRelax() const { return EnableLinkerRelax; }

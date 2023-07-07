@@ -47,6 +47,7 @@ static const RISCVSupportedExtension SupportedExtensions[] = {
     {"f", RISCVExtensionVersion{2, 0}},
     {"d", RISCVExtensionVersion{2, 0}},
     {"c", RISCVExtensionVersion{2, 0}},
+    {"xcherimin", RISCVExtensionVersion{0, 1}},
     {"xcheri", RISCVExtensionVersion{0, 0}},
 
     {"zfhmin", RISCVExtensionVersion{1, 0}},
@@ -898,6 +899,14 @@ std::vector<std::string> RISCVISAInfo::toFeatureVector() const {
                               ? "+experimental-" + ExtName
                               : "+" + ExtName;
     FeatureVector.push_back(Feature);
+    // It would be nice if the features implied in the Tablegen definitions
+    // were automatically added here...
+    if (ExtName == "xcheri") {
+      FeatureVector.push_back("+cheri-capabilities");
+    } else if (ExtName == "xcherimin") {
+      FeatureVector.push_back("+cheri-capabilities");
+      FeatureVector.push_back("+xcheri-no-v8-compat");
+    }
   }
   return FeatureVector;
 }

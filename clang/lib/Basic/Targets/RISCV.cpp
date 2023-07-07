@@ -311,7 +311,6 @@ bool RISCVTargetInfo::hasFeature(StringRef Feature) const {
                     .Case("riscv32", !Is64Bit)
                     .Case("riscv64", Is64Bit)
                     .Case("64bit", Is64Bit)
-                    .Case("xcheri", HasCheri)
                     .Default(None);
   if (Result.hasValue())
     return Result.getValue();
@@ -338,7 +337,7 @@ bool RISCVTargetInfo::handleTargetFeatures(std::vector<std::string> &Features,
   } else {
     ISAInfo = std::move(*ParseResult);
   }
-  if (ISAInfo->hasExtension("xcheri")) {
+  if (ISAInfo->hasExtension("xcheri") || ISAInfo->hasExtension("xcherimin")) {
     HasCheri = true;
     CapSize = XLen * 2;
     HasCheriISAv8Semantics =

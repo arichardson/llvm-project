@@ -369,6 +369,14 @@ def FeatureRV32E
 def IsRV32E : Predicate<"Subtarget->isRV32E()">,
                         AssemblerPredicate<(all_of FeatureRV32E)>;
 
+// The cheri-capabilities feature is used to handle the common subset between
+// xcheri and xcherimin.
+// TODO: Once the v8 compat has been deleted, xcheri could probably be a true
+// superset of xcherimin.
+def FeatureCheri
+    : SubtargetFeature<"cheri-capabilities", "HasCheri", "true",
+                       "Supports CHERI capabilities">;
+
 // TODO: Once all supported CheriBSD branches are ready for the new semantics
 // this feature should be enabled automatically.
 def FeatureNoCheriV8Compat
@@ -378,9 +386,14 @@ def HasCheriISAv8
     : Predicate<"Subtarget->hasCheriISAv8Semantics()">,
                 AssemblerPredicate<(all_of (not FeatureNoCheriV8Compat)),
                 "CHERI ISAv8 semantics (trapping, DDC/PCC relocation)">;
-def FeatureCheri
-    : SubtargetFeature<"xcheri", "HasCheri", "true",
-                       "Implements CHERI extension">;
+def FeatureXCheriMin
+    : SubtargetFeature<"xcherimin", "HasXCheriMin", "true",
+                       "Implements CHERI extension (minimal subset)",
+                       [FeatureCheri, FeatureNoCheriV8Compat]>;
+def FeatureAllCheriInstrs
+    : SubtargetFeature<"xcheri", "HasAllCheriInstrs", "true",
+                       "Implements CHERI extension (all instructions)",
+                       [FeatureCheri]>;
 def HasCheri : Predicate<"Subtarget->hasCheri()">,
                          AssemblerPredicate<(all_of FeatureCheri),
                          "CHERI Extension">;
