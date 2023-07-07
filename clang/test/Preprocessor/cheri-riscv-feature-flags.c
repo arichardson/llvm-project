@@ -2,6 +2,11 @@
 // RUN:   FileCheck %s --check-prefixes=CHECK,CHECK64 --implicit-check-not=cheri --implicit-check-not=CHERI
 // RUN: %riscv32_cheri_cc1 -E -dM -ffreestanding < /dev/null | \
 // RUN:   FileCheck %s --check-prefixes=CHECK,CHECK32 --implicit-check-not=cheri --implicit-check-not=CHERI
+/// Check for the new flags for removed ISAv8 compatibility:
+// RUN: %riscv64_cheri_cc1 -E -dM -ffreestanding -target-feature +xcheri-no-v8-compat < /dev/null | \
+// RUN:    FileCheck %s --check-prefixes=CHECK,CHECK64,CHECK-V9ISA --implicit-check-not=cheri --implicit-check-not=CHERI
+// RUN: %riscv32_cheri_cc1 -E -dM -ffreestanding -target-feature +xcheri-no-v8-compat < /dev/null | \
+// RUN:    FileCheck %s --check-prefixes=CHECK,CHECK32,CHECK-V9ISA --implicit-check-not=cheri --implicit-check-not=CHERI
 
 // CHECK32: #define  __CHERI_ADDRESS_BITS__ 32
 // CHECK64: #define  __CHERI_ADDRESS_BITS__ 64
@@ -26,3 +31,5 @@
 // CHECK: #define __clang_version__ "{{.+}}"
 // CHECK: #define __riscv_xcheri 0
 // CHECK: #define __riscv_xcheri_mode_dependent_jumps 1
+// CHECK-V9ISA: #define __riscv_xcheri_no_relocation 1
+// CHECK-V9ISA: #define __riscv_xcheri_tag_clear 1

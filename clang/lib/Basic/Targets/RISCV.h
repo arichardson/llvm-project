@@ -57,6 +57,7 @@ protected:
   std::unique_ptr<llvm::RISCVISAInfo> ISAInfo;
   int CapSize = -1;
   bool HasCheri = false;
+  bool HasCheriISAv8Semantics = true;
   void setCapabilityABITypes() {
     IntPtrType = TargetInfo::SignedIntCap;
   }
