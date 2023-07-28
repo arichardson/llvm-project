@@ -3405,6 +3405,9 @@ template <class ELFT> void ELFDumper<ELFT>::printCheriCapRelocs() {
         getFullSymbolName(Sym, &Sym - &FirstSym, ShndxTable, StrTable, UsingDynsym);
     if (Name.empty())
       continue;
+    // don't add mapping symbols as a valid symbol name
+    if (StringRef(Name).starts_with("$x") || StringRef(Name).starts_with("$d"))
+      continue;
     SymbolNames.insert({Start, Name});
   }
   // errs() << "Found " << CapRelocsDynRels.size()
