@@ -2856,6 +2856,9 @@ static bool isKnownNonZeroFromOperator(const Operator *I,
         return true;
       if (const auto *RP = getArgumentAliasingToReturnedPointer(Call, true))
         return isKnownNonZero(RP, Depth, Q);
+    } else if (const Value *RV = cast<CallBase>(I)->getReturnedArgOperand()) {
+      if (isKnownNonZero(RV, Depth, Q))
+        return true;
     }
 
     if (auto *II = dyn_cast<IntrinsicInst>(I)) {
@@ -2918,8 +2921,10 @@ static bool isKnownNonZeroFromOperator(const Operator *I,
       default:
         break;
       }
+      break;
     }
-    break;
+
+    return false;
   }
 
   KnownBits Known(BitWidth);
