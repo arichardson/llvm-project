@@ -144,7 +144,14 @@ constexpr usize kMinRoundedSize = 65536;
 static usize low_level_alloc_min_alignment = kLowLevelAllocatorDefaultAlignment;
 static LowLevelAllocateCallback low_level_alloc_callback;
 
+<<<<<<< HEAD
 void *LowLevelAllocator::Allocate(usize size) {
+=======
+static LowLevelAllocator Alloc;
+LowLevelAllocator &GetGlobalLowLevelAllocator() { return Alloc; }
+
+void *LowLevelAllocator::Allocate(uptr size) {
+>>>>>>> afd170bdd983006b281e7b3d5a2d4571d3e36352
   // Align allocation size.
   size = RoundUpTo(size, low_level_alloc_min_alignment);
   if (allocated_end_ - allocated_current_ < (sptr)size) {
