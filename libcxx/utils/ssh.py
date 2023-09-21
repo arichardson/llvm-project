@@ -25,24 +25,6 @@ import sys
 import tarfile
 import tempfile
 
-from shlex import quote as cmd_quote
-
-
-def ssh(args, command):
-    cmd = ["ssh", "-oBatchMode=yes"]
-    if args.extra_ssh_args is not None:
-        cmd.extend(shlex.split(args.extra_ssh_args))
-    return cmd + [args.host, command]
-
-
-def scp(args, src, dst):
-    cmd = ["scp", "-q", "-oBatchMode=yes"]
-    if args.extra_scp_args is not None:
-        cmd.extend(shlex.split(args.extra_scp_args))
-    return cmd + [src, "{}:{}".format(args.host, dst)]
-
-def runCommand(command, *args, **kwargs):
-    return subprocess.run(command, *args, **kwargs)
 
 def debug(cmdlineArgs, *args, **kwargs):
     if cmdlineArgs.debug:
@@ -122,6 +104,18 @@ def main():
     # That is effectively the value of %T on the remote host.
     localTmp, remoteTmp = createTempdir(args)
 
+    def ssh(command):
+        cmd = ["ssh", "-oBatchMode=yes"]
+        if args.extra_ssh_args is not None:
+            cmd.extend(shlex.split(args.extra_ssh_args))
+        return cmd + [args.host, command]
+
+    def scp(src, dst):
+        cmd = ["scp", "-q", "-oBatchMode=yes"]
+        if args.extra_scp_args is not None:
+            cmd.extend(shlex.split(args.extra_scp_args))
+        return cmd + [src, "{}:{}".format(args.host, dst)]
+
     def runCommand(command, *args_, **kwargs):
         if args.verbose:
             print(f"$ {' '.join(command)}")
@@ -130,7 +124,7 @@ def main():
     # Create a temporary directory where the test will be run.
     # That is effectively the value of %T on the remote host.
     tmp = runCommand(
-        ssh(args, "mktemp -d {}/libcxx.XXXXXXXXXX".format(args.tempdir)),
+        ssh("mktemp -d {}/libcxx.XXXXXXXXXX".format(args.tempdir)),
         universal_newlines=True,
         check=True,
         capture_output=True
@@ -163,12 +157,8 @@ def main():
             # Make sure we close the file before we scp it, because accessing
             # the temporary file while still open doesn't work on Windows.
             tmpTar.close()
-<<<<<<< HEAD
-            remoteTarball = uploadTarball(args, tmpTar.name, pathOnRemote(tmpTar.name))
-=======
             remoteTarball = pathOnRemote(tmpTar.name)
-            runCommand(scp(args, tmpTar.name, remoteTarball), check=True)
->>>>>>> 77d8ce5bb841a30f570bcbe63b570f19493c6a05
+            runCommand(scp(tmpTar.name, remoteTarball), check=True)
         finally:
             # Make sure we close the file in case an exception happens before
             # we've closed it above -- otherwise close() is idempotent.
@@ -200,11 +190,12 @@ def main():
             args.env.extend(args.prepend_env)
 
         if args.env:
-            env = list(map(cmd_quote, args.env))
+            env = list(map(shlex.quote, args.env))
             remoteCommands.append("export {}".format(" ".join(args.env)))
         remoteCommands.append(subprocess.list2cmdline(commandLine))
 
         # Finally, SSH to the remote host and execute all the commands.
+<<<<<<< HEAD
 <<<<<<< HEAD
         executeRemoteCommand = ssh(args, ' && '.join(remoteCommands))
         debug(args, "Executing test using", executeRemoteCommand)
@@ -212,15 +203,22 @@ def main():
 =======
         rc = runCommand(ssh(args, " && ".join(remoteCommands))).returncode
 >>>>>>> 77d8ce5bb841a30f570bcbe63b570f19493c6a05
+=======
+        rc = runCommand(ssh(" && ".join(remoteCommands))).returncode
+>>>>>>> 1ce70139ff280e57c31e8be3f70a67251b3bc23a
         return rc
 
     finally:
         # Make sure the temporary directory is removed when we're done.
 <<<<<<< HEAD
+<<<<<<< HEAD
         cleanupTempdir(args, localTmp, remoteTmp)
 =======
         runCommand(ssh(args, "rm -r {}".format(tmp)), check=True)
 >>>>>>> 77d8ce5bb841a30f570bcbe63b570f19493c6a05
+=======
+        runCommand(ssh("rm -r {}".format(tmp)), check=True)
+>>>>>>> 1ce70139ff280e57c31e8be3f70a67251b3bc23a
 
 
 if __name__ == "__main__":
