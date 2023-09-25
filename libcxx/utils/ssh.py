@@ -127,7 +127,8 @@ def main():
         ssh("mktemp -d {}/libcxx.XXXXXXXXXX".format(args.tempdir)),
         universal_newlines=True,
         check=True,
-        capture_output=True
+        capture_output=True,
+        stdin=subprocess.DEVNULL
     ).stdout.strip()
 
     # HACK:
@@ -145,7 +146,7 @@ def main():
         if args.codesign_identity:
             for exe in filter(isTestExe, commandLine):
                 codesign = ["codesign", "-f", "-s", args.codesign_identity, exe]
-                runCommand(codesign, env={}, check=True)
+                runCommand(codesign, env={}, check=True, stdin=subprocess.DEVNULL)
 
         # tar up the execution directory (which contains everything that's needed
         # to run the test), and copy the tarball over to the remote host.
@@ -158,7 +159,7 @@ def main():
             # the temporary file while still open doesn't work on Windows.
             tmpTar.close()
             remoteTarball = pathOnRemote(tmpTar.name)
-            runCommand(scp(tmpTar.name, remoteTarball), check=True)
+            runCommand(scp(tmpTar.name, remoteTarball), check=True, stdin=subprocess.DEVNULL)
         finally:
             # Make sure we close the file in case an exception happens before
             # we've closed it above -- otherwise close() is idempotent.
@@ -195,6 +196,8 @@ def main():
         remoteCommands.append(subprocess.list2cmdline(commandLine))
 
         # Finally, SSH to the remote host and execute all the commands.
+        # Make sure to forward stdin to the process so that the test suite
+        # can pipe stuff into the executor.
         rc = runCommand(ssh(" && ".join(remoteCommands))).returncode
         return rc
 
