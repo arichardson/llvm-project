@@ -107,12 +107,8 @@ if (LIBUNWIND_EXECUTOR)
   serialize_lit_string_param(SERIALIZED_LIT_PARAMS executor "${LIBUNWIND_EXECUTOR}")
 endif()
 
-<<<<<<< HEAD
-serialize_lit_param(cxx_abi_link_flag "\"${_cxx_abi_link_flag}\"")
-serialize_lit_param(enable_experimental False)
-=======
+serialize_lit_param(SERIALIZED_LIT_PARAMS cxx_abi_link_flag "\"${_cxx_abi_link_flag}\"")
 serialize_lit_param(SERIALIZED_LIT_PARAMS enable_experimental False)
->>>>>>> e5994229541bbe78c3e6eb548224b46f8c3c91be
 
 if (LLVM_USE_SANITIZER)
   serialize_lit_string_param(SERIALIZED_LIT_PARAMS use_sanitizer "${LLVM_USE_SANITIZER}")
