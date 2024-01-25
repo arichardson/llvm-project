@@ -28,6 +28,9 @@
 #include "llvm/Target/TargetMachine.h"
 #include <bitset>
 
+#define GET_RISCV_MACRO_FUSION_PRED_DECL
+#include "RISCVGenMacroFusion.inc"
+
 #define GET_SUBTARGETINFO_HEADER
 #include "RISCVGenSubtargetInfo.inc"
 
@@ -201,11 +204,6 @@ public:
   MVT typeForCapabilities() const {
     assert(HasCheri && "Cannot get capability type for non-CHERI");
     return is64Bit() ? MVT::c128 : MVT::c64;
-  }
-
-  bool hasMacroFusion() const {
-    return hasLUIADDIFusion() || hasAUIPCADDIFusion() || hasZExtHFusion() ||
-           hasZExtWFusion() || hasShiftedZExtWFusion() || hasLDADDFusion();
   }
 
   // Vector codegen related methods.
