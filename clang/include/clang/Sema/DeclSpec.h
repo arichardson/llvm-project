@@ -310,6 +310,8 @@ public:
   static const TST TST_typeof_unqualExpr = clang::TST_typeof_unqualExpr;
   static const TST TST_decltype = clang::TST_decltype;
   static const TST TST_decltype_auto = clang::TST_decltype_auto;
+  static const TST TST_typename_pack_indexing =
+      clang::TST_typename_pack_indexing;
 #define TRANSFORM_TYPE_TRAIT_DEF(_, Trait)                                     \
   static const TST TST_##Trait = clang::TST_##Trait;
 #include "clang/Basic/TransformTypeTraits.def"
@@ -392,6 +394,7 @@ private:
     Expr *ExprRep;
     TemplateIdAnnotation *TemplateIdRep;
   };
+  Expr *PackIndexingExpr = nullptr;
 
   /// ExplicitSpecifier - Store information about explicit spicifer.
   ExplicitSpecifier FS_explicit_specifier;
@@ -408,7 +411,7 @@ private:
 
   SourceLocation StorageClassSpecLoc, ThreadStorageClassSpecLoc;
   SourceRange TSWRange;
-  SourceLocation TSCLoc, TSSLoc, TSTLoc, AltiVecLoc, TSSatLoc;
+  SourceLocation TSCLoc, TSSLoc, TSTLoc, AltiVecLoc, TSSatLoc, EllipsisLoc;
   /// TSTNameLoc - If TypeSpecType is any of class, enum, struct, union,
   /// typename, then this is the location of the named type (if present);
   /// otherwise, it is the same as TSTLoc. Hence, the pair TSTLoc and
@@ -430,7 +433,8 @@ private:
 
   static bool isTypeRep(TST T) {
     return T == TST_atomic || T == TST_typename || T == TST_typeofType ||
-           T == TST_typeof_unqualType || isTransformTypeTrait(T);
+           T == TST_typeof_unqualType || isTransformTypeTrait(T) ||
+           T == TST_typename_pack_indexing;
   }
   static bool isExprRep(TST T) {
     return T == TST_typeofExpr || T == TST_typeof_unqualExpr ||
@@ -538,6 +542,13 @@ public:
     assert(isExprRep((TST) TypeSpecType) && "DeclSpec does not store an expr");
     return ExprRep;
   }
+
+  Expr *getPackIndexingExpr() const {
+    assert(TypeSpecType == TST_typename_pack_indexing &&
+           "DeclSpec is not a pack indexing expr");
+    return PackIndexingExpr;
+  }
+
   TemplateIdAnnotation *getRepAsTemplateId() const {
     assert(isTemplateIdRep((TST) TypeSpecType) &&
            "DeclSpec does not store a template id");
@@ -595,6 +606,7 @@ public:
   SourceLocation getAtomicSpecLoc() const { return TQ_atomicLoc; }
   SourceLocation getUnalignedSpecLoc() const { return TQ_unalignedLoc; }
   SourceLocation getPipeLoc() const { return TQ_pipeLoc; }
+  SourceLocation getEllipsisLoc() const { return EllipsisLoc; }
 
   /// Clear out all of the type qualifiers.
   void ClearTypeQualifiers() {
@@ -751,6 +763,9 @@ public:
                      const PrintingPolicy &Policy);
   bool SetTypeSpecSat(SourceLocation Loc, const char *&PrevSpec,
                       unsigned &DiagID);
+
+  void SetPackIndexingExpr(SourceLocation EllipsisLoc, Expr *Pack);
+
   bool SetTypeSpecError();
   void UpdateDeclRep(Decl *Rep) {
     assert(isDeclRep((TST) TypeSpecType));
@@ -1947,6 +1962,8 @@ private:
   /// this declarator as a parameter pack.
   SourceLocation EllipsisLoc;
 
+  Expr *PackIndexingExpr;
+
   friend struct DeclaratorChunk;
 
 public:
@@ -2071,6 +2088,7 @@ public:
     ObjCWeakProperty = false;
     CommaLoc = SourceLocation();
     EllipsisLoc = SourceLocation();
+    PackIndexingExpr = nullptr;
   }
 
   /// mayOmitIdentifier - Return true if the identifier is either optional or
@@ -2655,6 +2673,10 @@ public:
   bool hasEllipsis() const { return EllipsisLoc.isValid(); }
   SourceLocation getEllipsisLoc() const { return EllipsisLoc; }
   void setEllipsisLoc(SourceLocation EL) { EllipsisLoc = EL; }
+
+  bool hasPackIndexing() const { return PackIndexingExpr != nullptr; }
+  Expr *getPackIndexingExpr() const { return PackIndexingExpr; }
+  void setPackIndexingExpr(Expr *PI) { PackIndexingExpr = PI; }
 
   void setFunctionDefinitionKind(FunctionDefinitionKind Val) {
     FunctionDefinition = static_cast<unsigned>(Val);

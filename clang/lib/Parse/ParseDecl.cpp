@@ -4475,6 +4475,10 @@ void Parser::ParseDeclarationSpecifiers(
       ParseDecltypeSpecifier(DS);
       continue;
 
+    case tok::annot_pack_indexing_type:
+      ParsePackIndexingType(DS);
+      continue;
+
     case tok::annot_pragma_pack:
       HandlePragmaPack();
       continue;
@@ -5791,6 +5795,7 @@ bool Parser::isDeclarationSpecifier(
 
     // C++11 decltype and constexpr.
   case tok::annot_decltype:
+  case tok::annot_pack_indexing_type:
   case tok::kw_constexpr:
 
     // C++20 consteval and constinit.

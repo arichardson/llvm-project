@@ -646,6 +646,7 @@ static bool IsPossiblyOpaquelyQualifiedTypeInternal(const Type *T) {
   case Type::TypeOf:
   case Type::DependentName:
   case Type::Decltype:
+  case Type::PackIndexing:
   case Type::UnresolvedUsing:
   case Type::TemplateTypeParm:
     return true;
@@ -2312,6 +2313,15 @@ static Sema::TemplateDeductionResult DeduceTemplateArgumentsByTypeMatch(
     case Type::Pipe:
       // No template argument deduction for these types
       return Sema::TDK_Success;
+
+    case Type::PackIndexing: {
+      const PackIndexingType *PIT = P->getAs<PackIndexingType>();
+      if (PIT->hasSelectedType()) {
+        return DeduceTemplateArgumentsByTypeMatch(
+            S, TemplateParams, PIT->getSelectedType(), A, Info, Deduced, TDF);
+      }
+      return Sema::TDK_IncompletePack;
+    }
     }
 
   llvm_unreachable("Invalid Type Class!");
@@ -6496,6 +6506,15 @@ MarkUsedTemplateParameters(ASTContext &Ctx, QualType T,
       MarkUsedTemplateParameters(Ctx,
                                  cast<DecltypeType>(T)->getUnderlyingExpr(),
                                  OnlyDeduced, Depth, Used);
+    break;
+
+  case Type::PackIndexing:
+    if (!OnlyDeduced) {
+      MarkUsedTemplateParameters(Ctx, cast<PackIndexingType>(T)->getPattern(),
+                                 OnlyDeduced, Depth, Used);
+      MarkUsedTemplateParameters(Ctx, cast<PackIndexingType>(T)->getIndexExpr(),
+                                 OnlyDeduced, Depth, Used);
+    }
     break;
 
   case Type::UnaryTransform:
