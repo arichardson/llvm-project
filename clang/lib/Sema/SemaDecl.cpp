@@ -12836,7 +12836,8 @@ namespace {
       }
 
       if (OpaqueValueExpr *OVE = dyn_cast<OpaqueValueExpr>(E)) {
-        HandleValue(OVE->getSourceExpr());
+        if (Expr *SE = OVE->getSourceExpr())
+          HandleValue(SE);
         return;
       }
 
