@@ -484,7 +484,7 @@ PPCAsmPrinter::lookUpOrCreateTOCEntry(const MCSymbol *Sym, TOCEntryType Type,
 
 void PPCAsmPrinter::LowerSTACKMAP(StackMaps &SM, const MachineInstr &MI) {
   unsigned NumNOPBytes = MI.getOperand(1).getImm();
-  
+
   auto &Ctx = OutStreamer->getContext();
   MCSymbol *MILabel = Ctx.createTempSymbol();
   OutStreamer->emitLabel(MILabel);
@@ -2571,13 +2571,19 @@ void PPCAIXAsmPrinter::emitGlobalVariableHelper(const GlobalVariable *GV) {
     GVSym->setStorageClass(
         TargetLoweringObjectFileXCOFF::getStorageClassForGlobal(GV));
 
-    if (GVKind.isBSSLocal() || GVKind.isThreadBSSLocal())
+    if (GVKind.isBSSLocal() && Csect->getMappingClass() == XCOFF::XMC_TD) {
+      OutStreamer->emitZeros(Size);
+    } else if (GVKind.isBSSLocal() || GVKind.isThreadBSSLocal()) {
+      assert(Csect->getMappingClass() != XCOFF::XMC_TD &&
+             "BSS local toc-data already handled and TLS variables "
+             "incompatible with XMC_TD");
       OutStreamer->emitXCOFFLocalCommonSymbol(
           OutContext.getOrCreateSymbol(GVSym->getSymbolTableName()), Size,
           GVSym, Alignment);
-    else
+    } else {
       OutStreamer->emitCommonSymbol(GVSym, Size, Alignment,
                                     TailPaddingAmount::None);
+    }
     return;
   }
 
@@ -2739,8 +2745,17 @@ void PPCAIXAsmPrinter::emitEndOfAsmFile(Module &M) {
     TS->emitTCEntry(*I.first.first, I.first.second);
   }
 
-  for (const auto *GV : TOCDataGlobalVars)
-    emitGlobalVariableHelper(GV);
+  // Traverse the list of global variables twice, emitting all of the
+  // non-common global variables before the common ones, as emitting a
+  // .comm directive changes the scope from .toc to the common symbol.
+  for (const auto *GV : TOCDataGlobalVars) {
+    if (!GV->hasCommonLinkage())
+      emitGlobalVariableHelper(GV);
+  }
+  for (const auto *GV : TOCDataGlobalVars) {
+    if (GV->hasCommonLinkage())
+      emitGlobalVariableHelper(GV);
+  }
 }
 
 bool PPCAIXAsmPrinter::doInitialization(Module &M) {
@@ -2831,7 +2846,7 @@ void PPCAIXAsmPrinter::emitInstruction(const MachineInstr *MI) {
   case PPC::TD:
   case PPC::TDI: {
     if (MI->getNumOperands() < 5)
-      break; 
+      break;
     const MachineOperand &LangMO = MI->getOperand(3);
     const MachineOperand &ReasonMO = MI->getOperand(4);
     if (!LangMO.isImm() || !ReasonMO.isImm())
