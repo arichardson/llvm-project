@@ -114,7 +114,8 @@ bool RISCVTargetInfo::validateAsmConstraint(
     // A capability register.
     Info.setAllowsRegister();
     return HasCheri;
-  case 'S': // A symbolic address
+  case 's':
+  case 'S': // A symbol or label reference with a constant offset
     Info.setAllowsRegister();
     return true;
   case 'v':
