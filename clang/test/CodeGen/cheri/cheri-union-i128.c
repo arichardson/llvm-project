@@ -2,6 +2,13 @@
 // RUN: %riscv32_cheri_purecap_cc1 %s -emit-llvm -o - | FileCheck %s --check-prefix=CHECK-32
 // RUN: %riscv64_cheri_purecap_cc1 %s -emit-llvm -o - | FileCheck %s --check-prefix=CHECK-64
 
+// UTC_ARGS: --disable
+// CHECK-32: %union.u64 = type { ptr addrspace(200) }
+// CHECK-32: %union.u128 = type { ptr addrspace(200), [8 x i8] }
+// CHECK-64: %union.u64 = type { ptr addrspace(200) }
+// CHECK-64: %union.u128 = type { ptr addrspace(200) }
+// UTC_ARGS: --enable
+
 union u64 {
   __INT64_TYPE__ x;
   __intcap cap;
@@ -9,11 +16,11 @@ union u64 {
 extern union u64 global64;
 
 // CHECK-32-LABEL: define {{[^@]+}}@arg64
-// CHECK-32-SAME: (i64 [[U_COERCE:%.*]]) addrspace(200) #[[ATTR0:[0-9]+]] {
+// CHECK-32-SAME: (ptr addrspace(200) [[U_COERCE:%.*]]) addrspace(200) #[[ATTR0:[0-9]+]] {
 // CHECK-32-NEXT:  entry:
 // CHECK-32-NEXT:    [[U:%.*]] = alloca [[UNION_U64:%.*]], align 8, addrspace(200)
 // CHECK-32-NEXT:    [[COERCE_DIVE:%.*]] = getelementptr inbounds [[UNION_U64]], ptr addrspace(200) [[U]], i32 0, i32 0
-// CHECK-32-NEXT:    store i64 [[U_COERCE]], ptr addrspace(200) [[COERCE_DIVE]], align 8
+// CHECK-32-NEXT:    store ptr addrspace(200) [[U_COERCE]], ptr addrspace(200) [[COERCE_DIVE]], align 8
 // CHECK-32-NEXT:    [[TMP0:%.*]] = load i64, ptr addrspace(200) [[U]], align 8
 // CHECK-32-NEXT:    ret i64 [[TMP0]]
 //
@@ -32,8 +39,8 @@ __INT64_TYPE__ arg64(union u64 u) {
 // CHECK-32-LABEL: define {{[^@]+}}@call64
 // CHECK-32-SAME: () addrspace(200) #[[ATTR0]] {
 // CHECK-32-NEXT:  entry:
-// CHECK-32-NEXT:    [[TMP0:%.*]] = load i64, ptr addrspace(200) @global64, align 8
-// CHECK-32-NEXT:    [[CALL:%.*]] = call i64 @arg64(i64 [[TMP0]])
+// CHECK-32-NEXT:    [[TMP0:%.*]] = load ptr addrspace(200), ptr addrspace(200) @global64, align 8
+// CHECK-32-NEXT:    [[CALL:%.*]] = call i64 @arg64(ptr addrspace(200) [[TMP0]])
 // CHECK-32-NEXT:    ret void
 //
 // CHECK-64-LABEL: define {{[^@]+}}@call64
@@ -81,11 +88,11 @@ extern union u128 global128;
 // CHECK-32-NEXT:    ret i128 [[TMP0]]
 //
 // CHECK-64-LABEL: define {{[^@]+}}@arg128
-// CHECK-64-SAME: (i128 [[U_COERCE:%.*]]) addrspace(200) #[[ATTR0]] {
+// CHECK-64-SAME: (ptr addrspace(200) [[U_COERCE:%.*]]) addrspace(200) #[[ATTR0]] {
 // CHECK-64-NEXT:  entry:
 // CHECK-64-NEXT:    [[U:%.*]] = alloca [[UNION_U128:%.*]], align 16, addrspace(200)
 // CHECK-64-NEXT:    [[COERCE_DIVE:%.*]] = getelementptr inbounds [[UNION_U128]], ptr addrspace(200) [[U]], i32 0, i32 0
-// CHECK-64-NEXT:    store i128 [[U_COERCE]], ptr addrspace(200) [[COERCE_DIVE]], align 16
+// CHECK-64-NEXT:    store ptr addrspace(200) [[U_COERCE]], ptr addrspace(200) [[COERCE_DIVE]], align 16
 // CHECK-64-NEXT:    [[TMP0:%.*]] = load i128, ptr addrspace(200) [[U]], align 16
 // CHECK-64-NEXT:    ret i128 [[TMP0]]
 //
@@ -103,8 +110,8 @@ __int128 arg128(union u128 u) {
 // CHECK-64-LABEL: define {{[^@]+}}@call128
 // CHECK-64-SAME: () addrspace(200) #[[ATTR0]] {
 // CHECK-64-NEXT:  entry:
-// CHECK-64-NEXT:    [[TMP0:%.*]] = load i128, ptr addrspace(200) @global128, align 16
-// CHECK-64-NEXT:    [[CALL:%.*]] = call i128 @arg128(i128 [[TMP0]])
+// CHECK-64-NEXT:    [[TMP0:%.*]] = load ptr addrspace(200), ptr addrspace(200) @global128, align 16
+// CHECK-64-NEXT:    [[CALL:%.*]] = call i128 @arg128(ptr addrspace(200) [[TMP0]])
 // CHECK-64-NEXT:    ret void
 //
 void call128(void) {
