@@ -3456,6 +3456,7 @@ StringRef CXXNameMangler::getCallingConvQualifierName(CallingConv CC) {
   case CC_PreserveMost:
   case CC_PreserveAll:
   case CC_M68kRTD:
+  case CC_PreserveNone:
   case CC_CHERICCall:
   case CC_CHERICCallee:
   case CC_CHERICCallback:

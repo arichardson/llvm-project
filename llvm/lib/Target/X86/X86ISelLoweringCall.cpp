@@ -1260,6 +1260,7 @@ static bool mayTailCallThisCC(CallingConv::ID CC) {
   case CallingConv::C:
   case CallingConv::Win64:
   case CallingConv::X86_64_SysV:
+  case CallingConv::PreserveNone:
   // Callee pop conventions:
   case CallingConv::X86_ThisCall:
   case CallingConv::X86_StdCall:
@@ -1908,6 +1909,16 @@ SDValue X86TargetLowering::LowerFormalArguments(
     for (std::pair<Register, Register> Pair : MRI.liveins())
       MRI.disableCalleeSavedRegister(Pair.first);
   }
+
+  if (CallingConv::PreserveNone == CallConv)
+    for (unsigned I = 0, E = Ins.size(); I != E; ++I) {
+      if (Ins[I].Flags.isSwiftSelf() || Ins[I].Flags.isSwiftAsync() ||
+          Ins[I].Flags.isSwiftError()) {
+        errorUnsupported(DAG, dl,
+                         "Swift attributes can't be used with preserve_none");
+        break;
+      }
+    }
 
   return Chain;
 }
@@ -2559,6 +2570,16 @@ X86TargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
                                InGlue, dl);
     InGlue = Chain.getValue(1);
   }
+
+  if (CallingConv::PreserveNone == CallConv)
+    for (unsigned I = 0, E = Outs.size(); I != E; ++I) {
+      if (Outs[I].Flags.isSwiftSelf() || Outs[I].Flags.isSwiftAsync() ||
+          Outs[I].Flags.isSwiftError()) {
+        errorUnsupported(DAG, dl,
+                         "Swift attributes can't be used with preserve_none");
+        break;
+      }
+    }
 
   // Handle result values, copying them out of physregs into vregs that we
   // return.
