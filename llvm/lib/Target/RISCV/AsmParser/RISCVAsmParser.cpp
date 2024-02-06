@@ -3095,7 +3095,7 @@ bool RISCVAsmParser::parseDirectiveOption() {
 
     getTargetStreamer().emitDirectiveOptionNoRVC();
     clearFeatureBits(RISCV::FeatureStdExtC, "c");
-    clearFeatureBits(RISCV::FeatureStdExtZca, "+zca");
+    clearFeatureBits(RISCV::FeatureStdExtZca, "zca");
     return false;
   }
 
