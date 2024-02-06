@@ -2180,7 +2180,10 @@ static bool IsStandardConversion(Sema &S, Expr* From, QualType ToType,
              From->isIntegerConstantExpr(S.getASTContext())) {
     SCS.Second = ICK_Compatible_Conversion;
     FromType = ToType;
-  } else if (ToType->isFixedPointType() || FromType->isFixedPointType()) {
+  } else if ((ToType->isFixedPointType() &&
+              FromType->isConvertibleToFixedPointType()) ||
+             (FromType->isFixedPointType() &&
+              ToType->isConvertibleToFixedPointType())) {
     SCS.Second = ICK_Fixed_Point_Conversion;
     FromType = ToType;
   } else {
