@@ -7803,6 +7803,8 @@ Instruction *InstCombinerImpl::visitFCmpInst(FCmpInst &I) {
   const APFloat *C;
   if (match(Op1, m_APFloat(C)) && C->isInfinity()) {
     switch (C->isNegative() ? FCmpInst::getSwappedPredicate(Pred) : Pred) {
+    default:
+      break;
     case FCmpInst::FCMP_ORD:
     case FCmpInst::FCMP_UNO:
     case FCmpInst::FCMP_TRUE:
