@@ -301,7 +301,7 @@ Expected<SubtargetFeatures> ELFObjectFileBase::getRISCVFeatures() const {
   unsigned PlatformFlags = getPlatformFlags();
 
   if (PlatformFlags & ELF::EF_RISCV_RVC) {
-    Features.AddFeature("c");
+    Features.AddFeature("zca");
   }
 
   if (PlatformFlags & ELF::EF_RISCV_CAP_MODE) {
