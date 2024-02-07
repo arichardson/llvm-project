@@ -223,6 +223,7 @@ struct CommonConfig {
   uint64_t PadTo = 0;
   StringRef SplitDWO;
   StringRef SymbolsPrefix;
+  StringRef SymbolsPrefixRemove;
   StringRef AllocSectionsPrefix;
   DiscardType DiscardMode = DiscardType::None;
 
