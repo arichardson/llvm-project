@@ -1052,9 +1052,7 @@ void RISCVFrameLowering::determineCalleeSaves(MachineFunction &MF,
       CSRegs = CSGPRs;
 
     for (auto Reg : CSRegs)
-      // Only save x0-x15 for RVE.
-      if (Reg < RISCV::X16 || !Subtarget.isRVE())
-        SavedRegs.set(Reg);
+      SavedRegs.set(Reg);
 
     // According to psABI, if ilp32e/lp64e ABIs are used with an ISA that
     // has any of the registers x16-x31 and f0-f31, then these registers are
