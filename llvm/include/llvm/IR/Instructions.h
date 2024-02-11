@@ -49,6 +49,7 @@ class DataLayout;
 class StringRef;
 class Type;
 class Value;
+class UnreachableInst;
 
 enum class PreserveCheriTags {
   Unknown,
@@ -3512,6 +3513,12 @@ public:
 
   BasicBlock *getDefaultDest() const {
     return cast<BasicBlock>(getOperand(1));
+  }
+
+  /// Returns true if the default branch must result in immediate undefined
+  /// behavior, false otherwise.
+  bool defaultDestUndefined() const {
+    return isa<UnreachableInst>(getDefaultDest()->getFirstNonPHIOrDbg());
   }
 
   void setDefaultDest(BasicBlock *DefaultCase) {
