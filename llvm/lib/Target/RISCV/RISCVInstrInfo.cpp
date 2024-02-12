@@ -1224,7 +1224,7 @@ void RISCVInstrInfo::insertIndirectBranch(MachineBasicBlock &MBB,
     RC = &RISCV::GPCRRegClass;
     PseudoOpcode = RISCV::PseudoCJump;
   } else {
-    RC = &RISCV::GPRRegClass;
+    RC = &RISCV::GPRJALRRegClass;
     PseudoOpcode = RISCV::PseudoJump;
   }
 
