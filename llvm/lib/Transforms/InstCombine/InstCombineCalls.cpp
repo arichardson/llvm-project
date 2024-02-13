@@ -1082,7 +1082,8 @@ Instruction *InstCombinerImpl::foldIntrinsicIsFPClass(IntrinsicInst &II) {
   const FPClassTest OrderedMask = Mask & ~fcNan;
   const FPClassTest OrderedInvertedMask = ~OrderedMask & ~fcNan;
 
-  const bool IsStrict = II.isStrictFP();
+  const bool IsStrict =
+      II.getFunction()->getAttributes().hasFnAttr(Attribute::StrictFP);
 
   Value *FNegSrc;
   if (match(Src0, m_FNeg(m_Value(FNegSrc)))) {
