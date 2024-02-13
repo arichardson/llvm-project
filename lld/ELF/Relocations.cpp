@@ -210,8 +210,9 @@ static bool isAbsoluteValue(const Symbol &sym) {
 
 // Returns true if Expr refers a PLT entry.
 static bool needsPlt(RelExpr expr) {
-  return oneof<R_PLT, R_PLT_PC, R_PLT_GOTPLT, R_LOONGARCH_PLT_PAGE_PC,
-               R_PPC32_PLTREL, R_PPC64_CALL_PLT>(expr);
+  return oneof<R_PLT, R_PLT_PC, R_PLT_GOTREL, R_PLT_GOTPLT, R_GOTPLT_GOTREL,
+               R_GOTPLT_PC, R_LOONGARCH_PLT_PAGE_PC, R_PPC32_PLTREL,
+               R_PPC64_CALL_PLT>(expr);
 }
 
 bool lld::elf::needsGot(RelExpr expr) {
@@ -250,6 +251,8 @@ static RelExpr toPlt(RelExpr expr) {
     return R_PLT_PC;
   case R_ABS:
     return R_PLT;
+  case R_GOTREL:
+    return R_PLT_GOTREL;
   default:
     return expr;
   }
@@ -270,6 +273,8 @@ static RelExpr fromPlt(RelExpr expr) {
     return R_ABS;
   case R_PLT_GOTPLT:
     return R_GOTPLTREL;
+  case R_PLT_GOTREL:
+    return R_GOTREL;
   default:
     return expr;
   }
@@ -1034,10 +1039,10 @@ bool RelocationScanner::isStaticLinkTimeConstant(RelExpr e, RelType type,
             R_MIPS_CHERI_CAPTAB_INDEX_CALL_SMALL_IMMEDIATE,
             R_MIPS_CHERI_CAPTAB_REL,
             R_AARCH64_GOT_PAGE_PC, R_GOT_PC, R_GOTONLY_PC, R_GOTPLTONLY_PC,
-            R_PLT_PC, R_PLT_GOTPLT, R_PPC32_PLTREL, R_PPC64_CALL_PLT,
-            R_PPC64_RELAX_TOC, R_RISCV_ADD, R_AARCH64_GOT_PAGE,
-            R_LOONGARCH_PLT_PAGE_PC, R_LOONGARCH_GOT, R_LOONGARCH_GOT_PAGE_PC>(
-          e))
+            R_PLT_PC, R_PLT_GOTREL, R_PLT_GOTPLT, R_GOTPLT_GOTREL, R_GOTPLT_PC,
+            R_PPC32_PLTREL, R_PPC64_CALL_PLT, R_PPC64_RELAX_TOC, R_RISCV_ADD,
+            R_AARCH64_GOT_PAGE, R_LOONGARCH_PLT_PAGE_PC, R_LOONGARCH_GOT,
+            R_LOONGARCH_GOT_PAGE_PC>(e))
     return true;
 
   // Cheri capability relocations are never static link time constants since
@@ -1470,8 +1475,8 @@ static unsigned handleTlsRelocation(RelType type, Symbol &sym,
             R_LOONGARCH_GOT_PAGE_PC, R_GOT_OFF, R_TLSIE_HINT>(expr)) {
     ctx.hasTlsIe.store(true, std::memory_order_relaxed);
     // Initial-Exec relocs can be optimized to Local-Exec if the symbol is
-    // locally defined.
-    if (execOptimize && isLocalInExecutable) {
+    // locally defined.  This is not supported on SystemZ.
+    if (execOptimize && isLocalInExecutable && config->emachine != EM_S390) {
       c.addReloc({R_RELAX_TLS_IE_TO_LE, type, offset, addend, &sym});
     } else if (expr != R_TLSIE_HINT) {
       sym.setFlags(NEEDS_TLSIE);
@@ -1630,8 +1635,10 @@ void RelocationScanner::scan(ArrayRef<RelTy> rels) {
   // For EhInputSection, OffsetGetter expects the relocations to be sorted by
   // r_offset. In rare cases (.eh_frame pieces are reordered by a linker
   // script), the relocations may be unordered.
+  // On SystemZ, all sections need to be sorted by r_offset, to allow TLS
+  // relaxation to be handled correctly - see SystemZ::getTlsGdRelaxSkip.
   SmallVector<RelTy, 0> storage;
-  if (isa<EhInputSection>(sec))
+  if (isa<EhInputSection>(sec) || config->emachine == EM_S390)
     rels = sortRels(rels, storage);
 
   end = static_cast<const void *>(rels.end());
