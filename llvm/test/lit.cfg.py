@@ -197,6 +197,7 @@ tools.extend(
         "llvm-dis",
         "llvm-dwarfdump",
         "llvm-dwarfutil",
+        "llvm-dwp",
         "llvm-dlltool",
         "llvm-exegesis",
         "llvm-extract",
