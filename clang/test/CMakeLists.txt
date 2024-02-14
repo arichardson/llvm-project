@@ -130,6 +130,7 @@ if( NOT CLANG_BUILT_STANDALONE )
     llvm-profdata
     llvm-readelf
     llvm-readobj
+    llvm-readtapi
     llvm-strip
     llvm-symbolizer
     opt
