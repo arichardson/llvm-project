@@ -234,6 +234,7 @@ protected:
   bool HasIbm128;
   bool HasLongDouble;
   bool HasFPReturn;
+  bool HasFPTypes;
   bool HasStrictFP;
 
   unsigned short MaxAtomicPromoteWidth, MaxAtomicInlineWidth;
@@ -717,6 +718,9 @@ public:
   /// Determine whether return of a floating point value is supported
   /// on this target.
   virtual bool hasFPReturn() const { return HasFPReturn; }
+
+  /// Determine whether floating point types are supported for this target.
+  virtual bool hasFPTypes() const { return HasFPTypes; }
 
   /// Determine whether constrained floating point is supported on this target.
   virtual bool hasStrictFP() const { return HasStrictFP; }
@@ -1370,6 +1374,10 @@ public:
   virtual bool setABI(const std::string &Name) {
     return false;
   }
+
+  /// Make changes to the supported types which depend on both the target
+  /// features and ABI.
+  virtual void setSupportedArgTypes() {}
 
   /// Use the specified unit for FP math.
   ///
