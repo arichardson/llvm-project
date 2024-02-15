@@ -39,7 +39,6 @@ static inline bool isIntegerOrPtr(MVT VT) { return VT.isInteger() || VT == MVT::
 static inline bool isFloatingPoint(MVT VT) { return VT.isFloatingPoint(); }
 static inline bool isVector(MVT VT) { return VT.isVector(); }
 static inline bool isScalar(MVT VT) { return !VT.isVector(); }
-static inline bool isScalarInteger(MVT VT) { return VT.isScalarInteger(); }
 
 template <typename Predicate>
 static bool berase_if(MachineValueTypeSet &S, Predicate P) {
