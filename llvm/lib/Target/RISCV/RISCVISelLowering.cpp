@@ -690,7 +690,9 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
 
   if (Subtarget.hasStdExtA()) {
     setMaxAtomicSizeInBitsSupported(Subtarget.getXLen());
-    if (RISCVABI::isCheriPureCapABI(ABI))
+    if (Subtarget.hasStdExtZabha() && Subtarget.hasStdExtZacas())
+      setMinCmpXchgSizeInBits(8);
+    else if (RISCVABI::isCheriPureCapABI(ABI))
       setMinCmpXchgSizeInBits(8);
     else
       setMinCmpXchgSizeInBits(32);
@@ -20348,13 +20350,17 @@ RISCVTargetLowering::shouldExpandAtomicRMWInIR(AtomicRMWInst *AI) const {
     return AtomicExpansionKind::None;
 
   unsigned Size = AI->getType()->getPrimitiveSizeInBits();
-  if ((Size == 8 || Size == 16) &&
+  if (AI->getOperation() == AtomicRMWInst::Nand) {
+    if (Subtarget.hasStdExtZacas() &&
+        (Size >= 32 || Subtarget.hasStdExtZabha()))
+      return AtomicExpansionKind::CmpXChg;
+    if (Size < 32 && !RISCVABI::isCheriPureCapABI(Subtarget.getTargetABI()))
+      return AtomicExpansionKind::MaskedIntrinsic;
+  }
+
+  if ((Size == 8 || Size == 16) && !Subtarget.hasStdExtZabha() &&
       !RISCVABI::isCheriPureCapABI(Subtarget.getTargetABI()))
     return AtomicExpansionKind::MaskedIntrinsic;
-
-  if (Subtarget.hasStdExtZacas() && AI->getOperation() == AtomicRMWInst::Nand &&
-      (Size == Subtarget.getXLen() || Size == 32))
-    return AtomicExpansionKind::CmpXChg;
 
   return AtomicExpansionKind::None;
 }
@@ -20478,7 +20484,8 @@ RISCVTargetLowering::shouldExpandAtomicCmpXchgInIR(
     return AtomicExpansionKind::None;
 
   unsigned Size = CI->getCompareOperand()->getType()->getPrimitiveSizeInBits();
-  if ((Size == 8 || Size == 16) &&
+  if (!(Subtarget.hasStdExtZabha() && Subtarget.hasStdExtZacas()) &&
+      (Size == 8 || Size == 16) &&
       !RISCVABI::isCheriPureCapABI(Subtarget.getTargetABI()))
     return AtomicExpansionKind::MaskedIntrinsic;
   return AtomicExpansionKind::None;
