@@ -217,6 +217,7 @@ public:
     ELFIAMCU,
     TvOS,      // Apple tvOS
     WatchOS,   // Apple watchOS
+    BridgeOS,  // Apple bridgeOS
     DriverKit, // Apple DriverKit
     XROS,      // Apple XROS
     Mesa3D,
