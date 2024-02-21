@@ -13673,6 +13673,7 @@ struct NodeExtensionHelper {
     case ExtKind::FPExt:
       return RISCVISD::FP_EXTEND_VL;
     }
+    llvm_unreachable("Unknown ExtKind enum");
   }
 
   /// Get or create a value that can feed \p Root with the given extension \p
