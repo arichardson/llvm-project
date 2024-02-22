@@ -95,15 +95,16 @@ static bool Addrsig;
 static bool All;
 static bool ArchSpecificInfo;
 static bool BBAddrMap;
-bool ExpandRelocs;
 static bool CGProfile;
 static bool CheriCapRelocs;
 static bool CheriCapTable;
 static bool CheriCapTableMapping;
+static bool Decompress;
 bool Demangle;
 static bool DependentLibraries;
 static bool DynRelocs;
 static bool DynamicSymbols;
+bool ExpandRelocs;
 static bool ExtraSymInfo;
 static bool FileHeaders;
 static bool Headers;
@@ -218,6 +219,7 @@ static void parseOptions(const opt::InputArgList &Args) {
   opts::CheriCapTable = Args.hasArg(OPT_cap_table);
   opts::CheriCapTableMapping = Args.hasArg(OPT_cap_table_mapping);
   opts::CGProfile = Args.hasArg(OPT_cg_profile);
+  opts::Decompress = Args.hasArg(OPT_decompress);
   opts::Demangle = Args.hasFlag(OPT_demangle, OPT_no_demangle, false);
   opts::DependentLibraries = Args.hasArg(OPT_dependent_libraries);
   opts::DynRelocs = Args.hasArg(OPT_dyn_relocations);
@@ -445,9 +447,9 @@ static void dumpObject(ObjectFile &Obj, ScopedPrinter &Writer,
     Dumper->printSymbols(opts::Symbols, opts::DynamicSymbols,
                          opts::ExtraSymInfo, SymComp);
   if (!opts::StringDump.empty())
-    Dumper->printSectionsAsString(Obj, opts::StringDump);
+    Dumper->printSectionsAsString(Obj, opts::StringDump, opts::Decompress);
   if (!opts::HexDump.empty())
-    Dumper->printSectionsAsHex(Obj, opts::HexDump);
+    Dumper->printSectionsAsHex(Obj, opts::HexDump, opts::Decompress);
   if (opts::HashTable)
     Dumper->printHashTable();
   if (opts::GnuHashTable)
