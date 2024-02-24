@@ -21683,7 +21683,7 @@ TEST_F(FormatTest, BreakPenaltyAfterCastLParen) {
                "    int)aaaaaaaaaaaaaaaaaaaaaaaa);",
 
                Style);
-  Style.PenaltyBreakOpenParenthesis = 100000;
+  Style.PenaltyBreakOpenParenthesis = 100'000;
   verifyFormat("foo((int)\n"
                "        aaaaaaaaaaaaaaaaaaaaaaaa);",
                "foo((\n"
