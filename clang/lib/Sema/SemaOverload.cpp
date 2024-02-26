@@ -1887,6 +1887,13 @@ static bool IsVectorElementConversion(Sema &S, QualType FromType,
     return true;
   }
 
+  if ((FromType->isRealFloatingType() && ToType->isIntegralType(S.Context)) ||
+      (FromType->isIntegralOrUnscopedEnumerationType() &&
+       ToType->isRealFloatingType())) {
+    ICK = ICK_Floating_Integral;
+    return true;
+  }
+
   if (S.IsIntegralPromotion(From, FromType, ToType)) {
     ICK = ICK_Integral_Promotion;
     return true;
@@ -1895,13 +1902,6 @@ static bool IsVectorElementConversion(Sema &S, QualType FromType,
   if (FromType->isIntegralOrUnscopedEnumerationType() &&
       ToType->isIntegralType(S.Context)) {
     ICK = ICK_Integral_Conversion;
-    return true;
-  }
-
-  if ((FromType->isRealFloatingType() && ToType->isIntegralType(S.Context)) ||
-      (FromType->isIntegralOrUnscopedEnumerationType() &&
-       ToType->isRealFloatingType())) {
-    ICK = ICK_Floating_Integral;
     return true;
   }
 
