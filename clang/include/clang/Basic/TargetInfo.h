@@ -1426,7 +1426,7 @@ public:
       case LangOptions::SignReturnAddressScopeKind::All:
         return "all";
       }
-      assert(false && "Unexpected SignReturnAddressScopeKind");
+      llvm_unreachable("Unexpected SignReturnAddressScopeKind");
     }
 
     const char *getSignKeyStr() const {
@@ -1436,7 +1436,7 @@ public:
       case LangOptions::SignReturnAddressKeyKind::BKey:
         return "b_key";
       }
-      assert(false && "Unexpected SignReturnAddressKeyKind");
+      llvm_unreachable("Unexpected SignReturnAddressKeyKind");
     }
   };
 
