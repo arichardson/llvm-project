@@ -272,7 +272,6 @@ class CxxStandardLibraryTest(lit.formats.FileBasedTest):
             "[.]sh[.][^.]+$",
             "[.]gen[.][^.]+$",
             "[.]verify[.]cpp$",
-            "[.]fail[.]cpp$",
         ]
 
         sourcePath = testSuite.getSourcePath(pathInSuite)
