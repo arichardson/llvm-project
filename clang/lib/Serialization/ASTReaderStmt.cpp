@@ -2812,7 +2812,7 @@ void ASTStmtReader::VisitOpenACCAssociatedStmtConstruct(
 
 void ASTStmtReader::VisitOpenACCComputeConstruct(OpenACCComputeConstruct *S) {
   VisitStmt(S);
-  VisitOpenACCConstructStmt(S);
+  VisitOpenACCAssociatedStmtConstruct(S);
 }
 
 //===----------------------------------------------------------------------===//
