@@ -1,8 +1,8 @@
 // RUN: %clang_cc1 -std=c++14 -triple x86_64-unknown-unknown -fblocks %s -emit-llvm -o - | FileCheck %s -check-prefixes=CHECK,CHECK-O0
 // RUN: %clang_cc1 -std=c++14 -triple x86_64-unknown-unknown -fblocks -ftrivial-auto-var-init=pattern %s -emit-llvm -o - | FileCheck %s -check-prefixes=CHECK-O0,PATTERN,PATTERN-O0
-// RUN: %clang_cc1 -std=c++14 -triple x86_64-unknown-unknown -fblocks -ftrivial-auto-var-init=pattern %s -O1 -emit-llvm -o - | FileCheck %s -check-prefixes=CHECK-O1,PATTERN,PATTERN-O1
+// RUN: %clang_cc1 -std=c++14 -triple x86_64-unknown-unknown -fblocks -ftrivial-auto-var-init=pattern %s -O1 -emit-llvm -o - | FileCheck %s -check-prefixes=PATTERN,PATTERN-O1
 // RUN: %clang_cc1 -std=c++14 -triple x86_64-unknown-unknown -fblocks -ftrivial-auto-var-init=zero %s -emit-llvm -o - | FileCheck %s -check-prefixes=CHECK-O0,ZERO,ZERO-O0
-// RUN: %clang_cc1 -std=c++14 -triple x86_64-unknown-unknown -fblocks -ftrivial-auto-var-init=zero %s -O1 -emit-llvm -o - | FileCheck %s -check-prefixes=CHECK-O1,ZERO,ZERO-O1
+// RUN: %clang_cc1 -std=c++14 -triple x86_64-unknown-unknown -fblocks -ftrivial-auto-var-init=zero %s -O1 -emit-llvm -o - | FileCheck %s -check-prefixes=ZERO,ZERO-O1
 // RUN: %clang_cc1 -std=c++14 -triple i386-unknown-unknown -fblocks -ftrivial-auto-var-init=pattern %s -emit-llvm -o - | FileCheck %s -check-prefixes=CHECK-O0,PATTERN,PATTERN-O0
 
 #pragma clang diagnostic ignored "-Winaccessible-base"
@@ -1447,7 +1447,8 @@ TEST_CUSTOM(matchingreverse, matchingreverse, { .i = 0xf00f });
 // CHECK-O0:    call void @llvm.memcpy
 // CHECK-NOT:   !annotation
 // CHECK-O0:    call void @{{.*}}used{{.*}}%custom)
-// CHECK-O1:    store i32 61455, ptr %custom, align 4
+// PATTERN-O1:  store i32 61455, ptr %custom, align 4
+// ZERO-O1:     store i32 61455, ptr %custom, align 4
 // CHECK-NOT:   !annotation
 
 TEST_UNINIT(unmatched, unmatched);
@@ -1473,7 +1474,8 @@ TEST_CUSTOM(unmatched, unmatched, { .i = 0x3badbeef });
 // CHECK-O0:    call void @llvm.memcpy
 // CHECK-NOT:   !annotation
 // CHECK-O0:    call void @{{.*}}used{{.*}}%custom)
-// CHECK-O1:    store i32 1001242351, ptr {{.*}}, align 4
+// PATTERN-O1:  store i32 1001242351, ptr {{.*}}, align 4
+// ZERO-O1:     store i32 1001242351, ptr {{.*}}, align 4
 // CHECK-NOT:   !annotation
 
 TEST_UNINIT(unmatchedreverse, unmatchedreverse);

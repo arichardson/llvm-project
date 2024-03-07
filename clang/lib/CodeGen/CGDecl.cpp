@@ -1260,7 +1260,8 @@ static void emitStoresForConstant(CodeGenModule &CGM, const VarDecl &D,
     return;
   }
 
-  // If the initializer is small, use a handful of stores.
+  // If the initializer is small or trivialAutoVarInit is set, use a handful of
+  // stores.
   bool IsTrivialAutoVarInitPattern =
       CGM.getContext().getLangOpts().getTrivialAutoVarInit() ==
       LangOptions::TrivialAutoVarInitKind::Pattern;
