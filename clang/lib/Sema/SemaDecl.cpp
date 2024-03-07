@@ -20745,10 +20745,20 @@ void Sema::ActOnPragmaOpaque(IdentifierInfo* TypeName,
   TypeDecl->setOpaqueKey(KeyDecl);
 }
 
-Decl *Sema::ActOnTopLevelStmtDecl(Stmt *Statement) {
-  auto *New = TopLevelStmtDecl::Create(Context, Statement);
-  Context.getTranslationUnitDecl()->addDecl(New);
+TopLevelStmtDecl *Sema::ActOnStartTopLevelStmtDecl(Scope *S) {
+  auto *New = TopLevelStmtDecl::Create(Context, /*Statement=*/nullptr);
+  CurContext->addDecl(New);
+  PushDeclContext(S, New);
+  PushFunctionScope();
+  PushCompoundScope(false);
   return New;
+}
+
+void Sema::ActOnFinishTopLevelStmtDecl(TopLevelStmtDecl *D, Stmt *Statement) {
+  D->setStmt(Statement);
+  PopCompoundScope();
+  PopFunctionScopeInfo();
+  PopDeclContext();
 }
 
 void Sema::ActOnPragmaRedefineExtname(IdentifierInfo* Name,
