@@ -1943,8 +1943,10 @@ bool VectorLegalizer::tryExpandVecMathCall(SDNode *Node, RTLIB::Libcall LC,
   }
 
   // Emit a call to the vector function.
-  SDValue Callee = DAG.getExternalSymbol(VD->getVectorFnName().data(),
-                                         TLI.getPointerTy(DAG.getDataLayout()));
+  const auto &DataLayout = DAG.getDataLayout();
+  SDValue Callee = DAG.getExternalSymbol(
+      VD->getVectorFnName().data(),
+      TLI.getPointerTy(DataLayout, DataLayout.getProgramAddressSpace()));
   TargetLowering::CallLoweringInfo CLI(DAG);
   CLI.setDebugLoc(DL)
       .setChain(DAG.getEntryNode())
