@@ -197,17 +197,10 @@ typedef uptr OFF_T;
 #endif
 typedef u64  OFF64_T;
 
-#ifdef __CHERI_PURE_CAPABILITY__
-typedef __SIZE_TYPE__ operator_new_size_type;
-#elif (SANITIZER_WORDSIZE == 64) || SANITIZER_APPLE
-typedef uptr operator_new_size_type;
+#ifdef __SIZE_TYPE__
+typedef __SIZE_TYPE__ usize;
 #else
-# if defined(__s390__) && !defined(__s390x__)
-// Special case: 31-bit s390 has unsigned long as size_t.
-typedef unsigned long operator_new_size_type;
-# else
-typedef u32 operator_new_size_type;
-# endif
+typedef uptr usize;
 #endif
 
 #if (SANITIZER_WORDSIZE == 64)
