@@ -13766,6 +13766,7 @@ struct NodeExtensionHelper {
     MVT NarrowVT = getNarrowType(Root, *SupportsExt);
 
     SDValue Source = getSource();
+    assert(Subtarget.getTargetLowering()->isTypeLegal(Source.getValueType()));
     if (Source.getValueType() == NarrowVT)
       return Source;
 
@@ -13932,9 +13933,6 @@ struct NodeExtensionHelper {
 
       unsigned ScalarBits = VT.getScalarSizeInBits();
       unsigned NarrowScalarBits = NarrowVT.getScalarSizeInBits();
-
-      assert(
-          Subtarget.getTargetLowering()->isTypeLegal(NarrowElt.getValueType()));
 
       // Ensure the extension's semantic is equivalent to rvv vzext or vsext.
       if (ScalarBits != NarrowScalarBits * 2)
