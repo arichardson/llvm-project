@@ -71,7 +71,7 @@ createAMDGPUMCRegisterInfo(const Triple &TT, const MCTargetOptions &Options) {
 
 MCRegisterInfo *llvm::createGCNMCRegisterInfo(AMDGPUDwarfFlavour DwarfFlavour) {
   MCRegisterInfo *X = new MCRegisterInfo();
-  InitAMDGPUMCRegisterInfo(X, AMDGPU::PC_REG, DwarfFlavour);
+  InitAMDGPUMCRegisterInfo(X, AMDGPU::PC_REG, DwarfFlavour, DwarfFlavour);
   return X;
 }
 
