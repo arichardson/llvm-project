@@ -6273,6 +6273,8 @@ void llvm::getUnderlyingObjects(const Value *V,
       if (!LI || !LI->isLoopHeader(PN->getParent()) ||
           isSameUnderlyingObjectInLoop(PN, LI))
         append_range(Worklist, PN->incoming_values());
+      else
+        Objects.push_back(P);
       continue;
     }
 
