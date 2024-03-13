@@ -3499,11 +3499,13 @@ void RISCVAsmParser::emitVMSGE(MCInst &Inst, unsigned Opcode, SMLoc IDLoc,
                             .addOperand(Inst.getOperand(0))
                             .addOperand(Inst.getOperand(1))
                             .addOperand(Inst.getOperand(2))
-                            .addReg(RISCV::NoRegister));
+                            .addReg(RISCV::NoRegister)
+                            .setLoc(IDLoc));
     emitToStreamer(Out, MCInstBuilder(RISCV::VMNAND_MM)
                             .addOperand(Inst.getOperand(0))
                             .addOperand(Inst.getOperand(0))
-                            .addOperand(Inst.getOperand(0)));
+                            .addOperand(Inst.getOperand(0))
+                            .setLoc(IDLoc));
   } else if (Inst.getNumOperands() == 4) {
     // masked va >= x, vd != v0
     //
@@ -3515,11 +3517,13 @@ void RISCVAsmParser::emitVMSGE(MCInst &Inst, unsigned Opcode, SMLoc IDLoc,
                             .addOperand(Inst.getOperand(0))
                             .addOperand(Inst.getOperand(1))
                             .addOperand(Inst.getOperand(2))
-                            .addOperand(Inst.getOperand(3)));
+                            .addOperand(Inst.getOperand(3))
+                            .setLoc(IDLoc));
     emitToStreamer(Out, MCInstBuilder(RISCV::VMXOR_MM)
                             .addOperand(Inst.getOperand(0))
                             .addOperand(Inst.getOperand(0))
-                            .addReg(RISCV::V0));
+                            .addReg(RISCV::V0)
+                            .setLoc(IDLoc));
   } else if (Inst.getNumOperands() == 5 &&
              Inst.getOperand(0).getReg() == RISCV::V0) {
     // masked va >= x, vd == v0
@@ -3534,11 +3538,13 @@ void RISCVAsmParser::emitVMSGE(MCInst &Inst, unsigned Opcode, SMLoc IDLoc,
                             .addOperand(Inst.getOperand(1))
                             .addOperand(Inst.getOperand(2))
                             .addOperand(Inst.getOperand(3))
-                            .addReg(RISCV::NoRegister));
+                            .addReg(RISCV::NoRegister)
+                            .setLoc(IDLoc));
     emitToStreamer(Out, MCInstBuilder(RISCV::VMANDN_MM)
                             .addOperand(Inst.getOperand(0))
                             .addOperand(Inst.getOperand(0))
-                            .addOperand(Inst.getOperand(1)));
+                            .addOperand(Inst.getOperand(1))
+                            .setLoc(IDLoc));
   } else if (Inst.getNumOperands() == 5) {
     // masked va >= x, any vd
     //
@@ -3551,19 +3557,23 @@ void RISCVAsmParser::emitVMSGE(MCInst &Inst, unsigned Opcode, SMLoc IDLoc,
                             .addOperand(Inst.getOperand(1))
                             .addOperand(Inst.getOperand(2))
                             .addOperand(Inst.getOperand(3))
-                            .addReg(RISCV::NoRegister));
+                            .addReg(RISCV::NoRegister)
+                            .setLoc(IDLoc));
     emitToStreamer(Out, MCInstBuilder(RISCV::VMANDN_MM)
                             .addOperand(Inst.getOperand(1))
                             .addReg(RISCV::V0)
-                            .addOperand(Inst.getOperand(1)));
+                            .addOperand(Inst.getOperand(1))
+                            .setLoc(IDLoc));
     emitToStreamer(Out, MCInstBuilder(RISCV::VMANDN_MM)
                             .addOperand(Inst.getOperand(0))
                             .addOperand(Inst.getOperand(0))
-                            .addReg(RISCV::V0));
+                            .addReg(RISCV::V0)
+                            .setLoc(IDLoc));
     emitToStreamer(Out, MCInstBuilder(RISCV::VMOR_MM)
                             .addOperand(Inst.getOperand(0))
                             .addOperand(Inst.getOperand(1))
-                            .addOperand(Inst.getOperand(0)));
+                            .addOperand(Inst.getOperand(0))
+                            .setLoc(IDLoc));
   }
 }
 
@@ -4001,7 +4011,8 @@ bool RISCVAsmParser::processInstruction(MCInst &Inst, SMLoc IDLoc,
                             .addOperand(Inst.getOperand(0))
                             .addOperand(Inst.getOperand(1))
                             .addImm(Imm - 1)
-                            .addOperand(Inst.getOperand(3)));
+                            .addOperand(Inst.getOperand(3))
+                            .setLoc(IDLoc));
     return false;
   }
   case RISCV::PseudoVMSGEU_VI:
@@ -4019,7 +4030,8 @@ bool RISCVAsmParser::processInstruction(MCInst &Inst, SMLoc IDLoc,
                               .addOperand(Inst.getOperand(0))
                               .addOperand(Inst.getOperand(1))
                               .addOperand(Inst.getOperand(1))
-                              .addOperand(Inst.getOperand(3)));
+                              .addOperand(Inst.getOperand(3))
+                              .setLoc(IDLoc));
     } else {
       // Other immediate values can subtract one like signed.
       unsigned Opc = Inst.getOpcode() == RISCV::PseudoVMSGEU_VI
@@ -4029,7 +4041,8 @@ bool RISCVAsmParser::processInstruction(MCInst &Inst, SMLoc IDLoc,
                               .addOperand(Inst.getOperand(0))
                               .addOperand(Inst.getOperand(1))
                               .addImm(Imm - 1)
-                              .addOperand(Inst.getOperand(3)));
+                              .addOperand(Inst.getOperand(3))
+                              .setLoc(IDLoc));
     }
 
     return false;
