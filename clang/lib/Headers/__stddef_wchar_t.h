@@ -8,7 +8,13 @@
  */
 
 #if !defined(__cplusplus) || (defined(_MSC_VER) && !_NATIVE_WCHAR_T_DEFINED)
-#if !(defined(_WCHAR_T) || defined(_WCHAR_T_DECLARED))
+
+/*
+ * When -fbuiltin-headers-in-system-modules is set this is a non-modular header
+ * and needs to behave as if it was textual.
+ */
+#if !(defined(_WCHAR_T) || defined(_WCHAR_T_DECLARED)) ||                      \
+    (__has_feature(modules) && !__building_module(_Builtin_stddef))
 #define _WCHAR_T
 #define _WCHAR_T_DECLARED /* FreeBSD */
 

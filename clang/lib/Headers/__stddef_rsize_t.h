@@ -7,7 +7,12 @@
  *===-----------------------------------------------------------------------===
  */
 
-#if !(defined(_RSIZE_T) && !defined(_RSIZE_T_DEFINED))
+/*
+ * When -fbuiltin-headers-in-system-modules is set this is a non-modular header
+ * and needs to behave as if it was textual.
+ */
+#if !(defined(_RSIZE_T) || defined(_RSIZE_T_DEFINED)) ||                       \
+    (__has_feature(modules) && !__building_module(_Builtin_stddef))
 #define _RSIZE_T
 #define _RSIZE_T_DEFINED /* FreeBSD, inconsistent! */
 

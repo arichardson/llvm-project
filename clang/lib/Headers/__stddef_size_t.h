@@ -7,7 +7,12 @@
  *===-----------------------------------------------------------------------===
  */
 
-#if !(defined(_SIZE_T) || defined(_SIZE_T_DECLARED))
+/*
+ * When -fbuiltin-headers-in-system-modules is set this is a non-modular header
+ * and needs to behave as if it was textual.
+ */
+#if !(defined(_SIZE_T) || defined(_SIZE_T_DECLARED)) ||                        \
+    (__has_feature(modules) && !__building_module(_Builtin_stddef))
 #define _SIZE_T
 #define _SIZE_T_DECLARED /* FreeBSD */
 
