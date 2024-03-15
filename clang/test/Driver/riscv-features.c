@@ -44,8 +44,6 @@
 // XCHERI-NORVC: "-target-feature" "+xcheri-norvc"
 // XCHERI-NOT: "{{[+|-]}}xcheri-
 
-// RUN: %clang --target=riscv32-unknown-elf -### %s -munaligned-access 2>&1 | FileCheck %s -check-prefix=FAST-UNALIGNED-ACCESS
-// RUN: %clang --target=riscv32-unknown-elf -### %s -mno-unaligned-access 2>&1 | FileCheck %s -check-prefix=NO-FAST-UNALIGNED-ACCESS
 // RUN: %clang --target=riscv32-unknown-elf -### %s -mno-strict-align 2>&1 | FileCheck %s -check-prefix=FAST-UNALIGNED-ACCESS
 // RUN: %clang --target=riscv32-unknown-elf -### %s -mstrict-align 2>&1 | FileCheck %s -check-prefix=NO-FAST-UNALIGNED-ACCESS
 
