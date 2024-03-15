@@ -14750,6 +14750,7 @@ SDValue DAGCombiner::visitTRUNCATE(SDNode *N) {
   EVT VT = N->getValueType(0);
   EVT SrcVT = N0.getValueType();
   bool isLE = DAG.getDataLayout().isLittleEndian();
+  SDLoc DL(N);
 
   // trunc(undef) = undef
   if (N0.isUndef())
@@ -14757,10 +14758,10 @@ SDValue DAGCombiner::visitTRUNCATE(SDNode *N) {
 
   // fold (truncate (truncate x)) -> (truncate x)
   if (N0.getOpcode() == ISD::TRUNCATE)
-    return DAG.getNode(ISD::TRUNCATE, SDLoc(N), VT, N0.getOperand(0));
+    return DAG.getNode(ISD::TRUNCATE, DL, VT, N0.getOperand(0));
 
   // fold (truncate c1) -> c1
-  if (SDValue C = DAG.FoldConstantArithmetic(ISD::TRUNCATE, SDLoc(N), VT, {N0}))
+  if (SDValue C = DAG.FoldConstantArithmetic(ISD::TRUNCATE, DL, VT, {N0}))
     return C;
 
   // fold (truncate (ext x)) -> (ext x) or (truncate x) or x
@@ -14769,10 +14770,10 @@ SDValue DAGCombiner::visitTRUNCATE(SDNode *N) {
       N0.getOpcode() == ISD::ANY_EXTEND) {
     // if the source is smaller than the dest, we still need an extend.
     if (N0.getOperand(0).getValueType().bitsLT(VT))
-      return DAG.getNode(N0.getOpcode(), SDLoc(N), VT, N0.getOperand(0));
+      return DAG.getNode(N0.getOpcode(), DL, VT, N0.getOperand(0));
     // if the source is larger than the dest, than we just need the truncate.
     if (N0.getOperand(0).getValueType().bitsGT(VT))
-      return DAG.getNode(ISD::TRUNCATE, SDLoc(N), VT, N0.getOperand(0));
+      return DAG.getNode(ISD::TRUNCATE, DL, VT, N0.getOperand(0));
     // if the source and dest are the same type, we can drop both the extend
     // and the truncate.
     return N0.getOperand(0);
@@ -14786,8 +14787,8 @@ SDValue DAGCombiner::visitTRUNCATE(SDNode *N) {
     SDValue ExtVal = N0.getOperand(1);
     EVT ExtVT = cast<VTSDNode>(ExtVal)->getVT();
     if (ExtVT.bitsLT(VT) && TLI.preferSextInRegOfTruncate(VT, SrcVT, ExtVT)) {
-      SDValue TrX = DAG.getNode(ISD::TRUNCATE, SDLoc(N), VT, X);
-      return DAG.getNode(ISD::SIGN_EXTEND_INREG, SDLoc(N), VT, TrX, ExtVal);
+      SDValue TrX = DAG.getNode(ISD::TRUNCATE, DL, VT, X);
+      return DAG.getNode(ISD::SIGN_EXTEND_INREG, DL, VT, TrX, ExtVal);
     }
   }
 
@@ -14822,8 +14823,6 @@ SDValue DAGCombiner::visitTRUNCATE(SDNode *N) {
     if (isa<ConstantSDNode>(EltNo) && isTypeLegal(NVT)) {
       int Elt = EltNo->getAsZExtVal();
       int Index = isLE ? (Elt*SizeRatio) : (Elt*SizeRatio + (SizeRatio-1));
-
-      SDLoc DL(N);
       return DAG.getNode(ISD::EXTRACT_VECTOR_ELT, DL, TrTy,
                          DAG.getBitcast(NVT, N0.getOperand(0)),
                          DAG.getVectorIdxConstant(Index, DL));
@@ -14838,7 +14837,7 @@ SDValue DAGCombiner::visitTRUNCATE(SDNode *N) {
       SDValue Cond = N0.getOperand(0);
       SDValue TruncOp0 = DAG.getNode(ISD::TRUNCATE, SL, VT, N0.getOperand(1));
       SDValue TruncOp1 = DAG.getNode(ISD::TRUNCATE, SL, VT, N0.getOperand(2));
-      return DAG.getNode(ISD::SELECT, SDLoc(N), VT, Cond, TruncOp0, TruncOp1);
+      return DAG.getNode(ISD::SELECT, DL, VT, Cond, TruncOp0, TruncOp1);
     }
   }
 
@@ -14850,15 +14849,13 @@ SDValue DAGCombiner::visitTRUNCATE(SDNode *N) {
     KnownBits Known = DAG.computeKnownBits(Amt);
     unsigned Size = VT.getScalarSizeInBits();
     if (Known.countMaxActiveBits() <= Log2_32(Size)) {
-      SDLoc SL(N);
       EVT AmtVT = TLI.getShiftAmountTy(VT, DAG.getDataLayout());
-
-      SDValue Trunc = DAG.getNode(ISD::TRUNCATE, SL, VT, N0.getOperand(0));
+      SDValue Trunc = DAG.getNode(ISD::TRUNCATE, DL, VT, N0.getOperand(0));
       if (AmtVT != Amt.getValueType()) {
-        Amt = DAG.getZExtOrTrunc(Amt, SL, AmtVT);
+        Amt = DAG.getZExtOrTrunc(Amt, DL, AmtVT);
         AddToWorklist(Amt.getNode());
       }
-      return DAG.getNode(ISD::SHL, SL, VT, Trunc, Amt);
+      return DAG.getNode(ISD::SHL, DL, VT, Trunc, Amt);
     }
   }
 
@@ -14874,7 +14871,6 @@ SDValue DAGCombiner::visitTRUNCATE(SDNode *N) {
       TLI.isTruncateFree(SrcVT.getScalarType(), VT.getScalarType()) &&
       // Avoid creating illegal types if running after type legalizer.
       (!LegalTypes || TLI.isTypeLegal(VT.getScalarType()))) {
-    SDLoc DL(N);
     EVT SVT = VT.getScalarType();
     SmallVector<SDValue, 8> TruncOps;
     for (const SDValue &Op : N0->op_values()) {
@@ -14888,7 +14884,6 @@ SDValue DAGCombiner::visitTRUNCATE(SDNode *N) {
   if (N0.getOpcode() == ISD::SPLAT_VECTOR &&
       (!LegalTypes || TLI.isTypeLegal(VT.getScalarType())) &&
       (!LegalOperations || TLI.isOperationLegal(ISD::SPLAT_VECTOR, VT))) {
-    SDLoc DL(N);
     EVT SVT = VT.getScalarType();
     return DAG.getSplatVector(
         VT, DL, DAG.getNode(ISD::TRUNCATE, DL, SVT, N0->getOperand(0)));
@@ -14920,7 +14915,7 @@ SDValue DAGCombiner::visitTRUNCATE(SDNode *N) {
       for (unsigned i = 0, e = BuildVecNumElts; i != e; i += TruncEltOffset)
         Opnds.push_back(BuildVect.getOperand(i));
 
-      return DAG.getBuildVector(VT, SDLoc(N), Opnds);
+      return DAG.getBuildVector(VT, DL, Opnds);
     }
   }
 
@@ -14983,7 +14978,7 @@ SDValue DAGCombiner::visitTRUNCATE(SDNode *N) {
         AddToWorklist(NV.getNode());
         Opnds.push_back(NV);
       }
-      return DAG.getNode(ISD::CONCAT_VECTORS, SDLoc(N), VT, Opnds);
+      return DAG.getNode(ISD::CONCAT_VECTORS, DL, VT, Opnds);
     }
   }
 
@@ -14997,11 +14992,9 @@ SDValue DAGCombiner::visitTRUNCATE(SDNode *N) {
     if (VecSrcVT.isVector() && VecSrcVT.getScalarType() == VT &&
         (!LegalOperations ||
          TLI.isOperationLegal(ISD::EXTRACT_VECTOR_ELT, VecSrcVT))) {
-      SDLoc SL(N);
-
       unsigned Idx = isLE ? 0 : VecSrcVT.getVectorNumElements() - 1;
-      return DAG.getNode(ISD::EXTRACT_VECTOR_ELT, SL, VT, VecSrc,
-                         DAG.getVectorIdxConstant(Idx, SL));
+      return DAG.getNode(ISD::EXTRACT_VECTOR_ELT, DL, VT, VecSrc,
+                         DAG.getVectorIdxConstant(Idx, DL));
     }
   }
 
@@ -15046,7 +15039,6 @@ SDValue DAGCombiner::visitTRUNCATE(SDNode *N) {
       // we are extra cautious to not create an unsupported operation.
       // Target-specific changes are likely needed to avoid regressions here.
       if (VT.isScalarInteger() || TLI.isOperationLegal(N0.getOpcode(), VT)) {
-        SDLoc DL(N);
         SDValue NarrowL = DAG.getNode(ISD::TRUNCATE, DL, VT, N0.getOperand(0));
         SDValue NarrowR = DAG.getNode(ISD::TRUNCATE, DL, VT, N0.getOperand(1));
         return DAG.getNode(N0.getOpcode(), DL, VT, NarrowL, NarrowR);
@@ -15063,7 +15055,6 @@ SDValue DAGCombiner::visitTRUNCATE(SDNode *N) {
     if (((!LegalOperations && N0.getOpcode() == ISD::UADDO_CARRY) ||
          TLI.isOperationLegal(N0.getOpcode(), VT)) &&
         N0.hasOneUse() && !N0->hasAnyUseOfValue(1)) {
-      SDLoc DL(N);
       SDValue X = DAG.getNode(ISD::TRUNCATE, DL, VT, N0.getOperand(0));
       SDValue Y = DAG.getNode(ISD::TRUNCATE, DL, VT, N0.getOperand(1));
       SDVTList VTs = DAG.getVTList(VT, N0->getValueType(1));
@@ -15080,7 +15071,7 @@ SDValue DAGCombiner::visitTRUNCATE(SDNode *N) {
             VT.getScalarSizeInBits() &&
         hasOperation(N0.getOpcode(), VT)) {
       return getTruncatedUSUBSAT(VT, SrcVT, N0.getOperand(0), N0.getOperand(1),
-                                 DAG, SDLoc(N));
+                                 DAG, DL);
     }
     break;
   }
