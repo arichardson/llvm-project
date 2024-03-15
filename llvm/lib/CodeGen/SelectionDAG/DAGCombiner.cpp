@@ -601,7 +601,7 @@ namespace {
     SDValue foldLogicOfSetCCs(bool IsAnd, SDValue N0, SDValue N1,
                               const SDLoc &DL);
     SDValue foldSubToUSubSat(EVT DstVT, SDNode *N, const SDLoc &DL);
-    SDValue foldABSToABD(SDNode *N);
+    SDValue foldABSToABD(SDNode *N, const SDLoc &DL);
     SDValue unfoldMaskedMerge(SDNode *N);
     SDValue unfoldExtremeBitClearingToShifts(SDNode *N);
     SDValue SimplifySetCC(EVT VT, SDValue N0, SDValue N1, ISD::CondCode Cond,
@@ -10861,7 +10861,7 @@ SDValue DAGCombiner::visitSHLSAT(SDNode *N) {
 // (ABS (SUB (EXTEND a), (EXTEND b))).
 // (TRUNC (ABS (SUB (EXTEND a), (EXTEND b)))).
 // Generates UABD/SABD instruction.
-SDValue DAGCombiner::foldABSToABD(SDNode *N) {
+SDValue DAGCombiner::foldABSToABD(SDNode *N, const SDLoc &DL) {
   EVT SrcVT = N->getValueType(0);
 
   if (N->getOpcode() == ISD::TRUNCATE)
@@ -10873,7 +10873,6 @@ SDValue DAGCombiner::foldABSToABD(SDNode *N) {
   EVT VT = N->getValueType(0);
   SDValue AbsOp1 = N->getOperand(0);
   SDValue Op0, Op1;
-  SDLoc DL(N);
 
   if (AbsOp1.getOpcode() != ISD::SUB)
     return SDValue();
@@ -10932,9 +10931,10 @@ SDValue DAGCombiner::foldABSToABD(SDNode *N) {
 SDValue DAGCombiner::visitABS(SDNode *N) {
   SDValue N0 = N->getOperand(0);
   EVT VT = N->getValueType(0);
+  SDLoc DL(N);
 
   // fold (abs c1) -> c2
-  if (SDValue C = DAG.FoldConstantArithmetic(ISD::ABS, SDLoc(N), VT, {N0}))
+  if (SDValue C = DAG.FoldConstantArithmetic(ISD::ABS, DL, VT, {N0}))
     return C;
   // fold (abs (abs x)) -> (abs x)
   if (N0.getOpcode() == ISD::ABS)
@@ -10943,7 +10943,7 @@ SDValue DAGCombiner::visitABS(SDNode *N) {
   if (DAG.SignBitIsZero(N0))
     return N0;
 
-  if (SDValue ABD = foldABSToABD(N))
+  if (SDValue ABD = foldABSToABD(N, DL))
     return ABD;
 
   // fold (abs (sign_extend_inreg x)) -> (zero_extend (abs (truncate x)))
@@ -10953,7 +10953,6 @@ SDValue DAGCombiner::visitABS(SDNode *N) {
     if (TLI.isTruncateFree(VT, ExtVT) && TLI.isZExtFree(ExtVT, VT) &&
         TLI.isTypeDesirableForOp(ISD::ABS, ExtVT) &&
         hasOperation(ISD::ABS, ExtVT)) {
-      SDLoc DL(N);
       return DAG.getNode(
           ISD::ZERO_EXTEND, DL, VT,
           DAG.getNode(ISD::ABS, DL, ExtVT,
@@ -14861,7 +14860,7 @@ SDValue DAGCombiner::visitTRUNCATE(SDNode *N) {
   if (SDValue V = foldSubToUSubSat(VT, N0.getNode(), DL))
     return V;
 
-  if (SDValue ABD = foldABSToABD(N))
+  if (SDValue ABD = foldABSToABD(N, DL))
     return ABD;
 
   // Attempt to pre-truncate BUILD_VECTOR sources.
