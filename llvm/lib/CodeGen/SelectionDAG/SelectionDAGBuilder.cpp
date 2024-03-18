@@ -4900,9 +4900,7 @@ void SelectionDAGBuilder::visitMaskedScatter(const CallInst &I) {
   unsigned AS = Ptr->getType()->getScalarType()->getPointerAddressSpace();
   MachineMemOperand *MMO = DAG.getMachineFunction().getMachineMemOperand(
       MachinePointerInfo(AS), MachineMemOperand::MOStore,
-      // TODO: Make MachineMemOperands aware of scalable
-      // vectors.
-      MemoryLocation::UnknownSize, Alignment, I.getAAMetadata());
+      LocationSize::beforeOrAfterPointer(), Alignment, I.getAAMetadata());
   if (!UniformBase) {
     Base = DAG.getConstant(0, sdl, TLI.getPointerRangeTy(DAG.getDataLayout()));
     Index = getValue(Ptr);
@@ -5004,9 +5002,7 @@ void SelectionDAGBuilder::visitMaskedGather(const CallInst &I) {
   unsigned AS = Ptr->getType()->getScalarType()->getPointerAddressSpace();
   MachineMemOperand *MMO = DAG.getMachineFunction().getMachineMemOperand(
       MachinePointerInfo(AS), MachineMemOperand::MOLoad,
-      // TODO: Make MachineMemOperands aware of scalable
-      // vectors.
-      MemoryLocation::UnknownSize, Alignment, I.getAAMetadata(), Ranges);
+      LocationSize::beforeOrAfterPointer(), Alignment, I.getAAMetadata(), Ranges);
 
   if (!UniformBase) {
     Base = DAG.getConstant(0, sdl, TLI.getPointerRangeTy(DAG.getDataLayout()));

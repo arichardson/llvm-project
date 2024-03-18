@@ -8610,7 +8610,7 @@ SDValue SelectionDAG::getMemIntrinsicNode(
     MachineMemOperand::Flags Flags, LocationSize Size,
     const AAMDNodes &AAInfo) {
   if (Size.hasValue() && MemVT.isScalableVector())
-    Size = MemoryLocation::UnknownSize;
+    Size = LocationSize::beforeOrAfterPointer();
   else if (Size.hasValue() && !Size.getValue())
     Size = LocationSize::precise(MemVT.getStoreSize());
 
