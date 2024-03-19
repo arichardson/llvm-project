@@ -2670,6 +2670,23 @@ SDValue DAGCombiner::visitPTRADD(SDNode *N) {
   return SDValue();
 }
 
+// Attempt to form avgceilu(A, B) from (A | B) - ((A ^ B) >> 1)
+static SDValue combineFixedwidthToAVGCEILU(SDNode *N, SelectionDAG &DAG) {
+  const TargetLowering &TLI = DAG.getTargetLoweringInfo();
+  SDValue N0 = N->getOperand(0);
+  EVT VT = N0.getValueType();
+  SDLoc DL(N);
+  if (TLI.isOperationLegal(ISD::AVGCEILU, VT)) {
+    SDValue A, B;
+    if (sd_match(N, m_Sub(m_Or(m_Value(A), m_Value(B)),
+                          m_Srl(m_Xor(m_Deferred(A), m_Deferred(B)),
+                                m_SpecificInt(1))))) {
+      return DAG.getNode(ISD::AVGCEILU, DL, VT, A, B);
+    }
+  }
+  return SDValue();
+}
+
 /// Try to fold a 'not' shifted sign-bit with add/sub with constant operand into
 /// a shift and add with a different constant.
 static SDValue foldAddSubOfSignBit(SDNode *N, SelectionDAG &DAG) {
@@ -3988,6 +4005,10 @@ SDValue DAGCombiner::visitSUB(SDNode *N) {
     return V;
 
   if (SDValue V = foldAddSubOfSignBit(N, DAG))
+    return V;
+
+  // Try to match AVGCEILU fixedwidth pattern
+  if (SDValue V = combineFixedwidthToAVGCEILU(N, DAG))
     return V;
 
   if (SDValue V = foldAddSubMasked1(false, N0, N1, DAG, SDLoc(N)))
