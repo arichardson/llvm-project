@@ -425,6 +425,14 @@ def : SysReg<"vsiph", 0x254>;
 def : SysReg<"jvt", 0x017>;
 
 //===-----------------------------------------------
+// Resumable Non-Maskable Interrupts(Smrnmi) CSRs
+//===-----------------------------------------------
+def : SysReg<"mnscratch", 0x740>;
+def : SysReg<"mnepc", 0x741>;
+def : SysReg<"mncause", 0x742>;
+def : SysReg<"mnstatus", 0x744>;
+
+//===-----------------------------------------------
 // Non-standard Extensions
 //===-----------------------------------------------
 
