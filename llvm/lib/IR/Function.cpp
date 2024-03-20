@@ -25,6 +25,7 @@
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Cheri.h"
 #include "llvm/IR/Constant.h"
+#include "llvm/IR/ConstantRange.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/GlobalValue.h"
@@ -255,6 +256,13 @@ uint64_t Argument::getDereferenceableOrNullBytes() const {
 
 FPClassTest Argument::getNoFPClass() const {
   return getParent()->getParamNoFPClass(getArgNo());
+}
+
+std::optional<ConstantRange> Argument::getRange() const {
+  const Attribute RangeAttr = getAttribute(llvm::Attribute::Range);
+  if (RangeAttr.isValid())
+    return RangeAttr.getRange();
+  return std::nullopt;
 }
 
 bool Argument::hasNestAttr() const {
