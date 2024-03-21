@@ -795,7 +795,7 @@ static void computeKnownBitsFromCmp(const Value *V, CmpInst::Predicate Pred,
   }
   default:
     const APInt *Offset = nullptr;
-    if (match(LHS, m_CombineOr(m_V, m_Add(m_V, m_APInt(Offset)))) &&
+    if (match(LHS, m_CombineOr(m_V, m_AddLike(m_V, m_APInt(Offset)))) &&
         match(RHS, m_APInt(C))) {
       ConstantRange LHSRange = ConstantRange::makeAllowedICmpRegion(Pred, *C);
       if (Offset)
@@ -9427,7 +9427,7 @@ void llvm::findValuesAffectedByCondition(
       } else {
         // Handle (A + C1) u< C2, which is the canonical form of
         // A > C3 && A < C4.
-        if (match(A, m_Add(m_Value(X), m_ConstantInt())) &&
+        if (match(A, m_AddLike(m_Value(X), m_ConstantInt())) &&
             match(B, m_ConstantInt()))
           AddAffected(X);
 
