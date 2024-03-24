@@ -6951,6 +6951,11 @@ TargetLowering::prepareSREMEqFold(EVT SETCCVT, SDValue REMNode,
     // Q = floor((2 * A) / (2^K))
     APInt Q = (2 * A).udiv(APInt::getOneBitSet(W, K));
 
+    assert(APInt::getAllOnes(SVT.getSizeInBits()).ugt(A) &&
+           "We are expecting that A is always less than all-ones for SVT");
+    assert(APInt::getAllOnes(ShSVT.getSizeInBits()).ugt(K) &&
+           "We are expecting that K is always less than all-ones for ShSVT");
+
     // If D was a power of two, apply the alternate constant derivation.
     if (D0.isOne()) {
       // A = 2^(W-1)
@@ -6958,11 +6963,6 @@ TargetLowering::prepareSREMEqFold(EVT SETCCVT, SDValue REMNode,
       // - Q = 2^(W-K) - 1
       Q = APInt::getAllOnes(W - K).zext(W);
     }
-
-    assert(APInt::getAllOnes(SVT.getSizeInBits()).ugt(A) &&
-           "We are expecting that A is always less than all-ones for SVT");
-    assert(APInt::getAllOnes(ShSVT.getSizeInBits()).ugt(K) &&
-           "We are expecting that K is always less than all-ones for ShSVT");
 
     // If the divisor is 1 the result can be constant-folded. Likewise, we
     // don't care about INT_MIN lanes, those can be set to undef if appropriate.
