@@ -660,7 +660,8 @@ GotSection::GotSection()
   numEntries = target->gotHeaderEntriesNum;
 }
 
-void GotSection::addEntry(Symbol &sym) {
+void GotSection::addConstant(const Relocation &r) { relocations.push_back(r); }
+void GotSection::addEntry(const Symbol &sym) {
   // TODO: Separate out TLS IE entries for CHERI so we can pack them more
   // efficiently rather than consuming a whole capability-sized slot for an
   // integer.
@@ -668,14 +669,14 @@ void GotSection::addEntry(Symbol &sym) {
   symAux.back().gotIdx = numEntries++;
 }
 
-bool GotSection::addTlsDescEntry(Symbol &sym) {
+bool GotSection::addTlsDescEntry(const Symbol &sym) {
   assert(sym.auxIdx == symAux.size() - 1);
   symAux.back().tlsDescIdx = numEntries;
   numEntries += 2;
   return true;
 }
 
-bool GotSection::addDynTlsEntry(Symbol &sym) {
+bool GotSection::addDynTlsEntry(const Symbol &sym) {
   assert(sym.auxIdx == symAux.size() - 1);
   symAux.back().tlsGdIdx = numEntries;
   // Global Dynamic TLS entries take two GOT slots, except on CHERI where they
