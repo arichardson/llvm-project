@@ -308,6 +308,10 @@ public:
       CodeGenFunction &CGF, const CXXRecordDecl *VTableClass,
       BaseSubobject Base, const CXXRecordDecl *NearestVBase);
 
+  llvm::Constant *
+  getVTableAddressPointForConstExpr(BaseSubobject Base,
+                                    const CXXRecordDecl *VTableClass) override;
+
   llvm::GlobalVariable *getAddrOfVTable(const CXXRecordDecl *RD,
                                         CharUnits VPtrOffset) override;
 
@@ -648,7 +652,7 @@ CGCallee ItaniumCXXABI::EmitLoadOfMemberFunctionPointer(
 
   // Apply the adjustment and cast back to the original struct type
   // for consistency.
-  llvm::Value *This = ThisAddr.emitRawPointer(CGF);
+  llvm::Value *This = ThisAddr.getPointer();
   This = Builder.CreateInBoundsGEP(Builder.getInt8Ty(), This, Adj);
   ThisPtrForCall = This;
 
@@ -868,7 +872,7 @@ llvm::Value *ItaniumCXXABI::EmitMemberDataPointerAddress(
   CGBuilderTy &Builder = CGF.Builder;
 
   // Apply the offset, which we assume is non-null.
-  return Builder.CreateInBoundsGEP(CGF.Int8Ty, Base.emitRawPointer(CGF), MemPtr,
+  return Builder.CreateInBoundsGEP(CGF.Int8Ty, Base.getPointer(), MemPtr,
                                    "memptr.offset");
 }
 
@@ -1292,7 +1296,7 @@ void ItaniumCXXABI::emitVirtualObjectDelete(CodeGenFunction &CGF,
                                                         CGF.getPointerAlign());
 
     // Apply the offset.
-    llvm::Value *CompletePtr = Ptr.emitRawPointer(CGF);
+    llvm::Value *CompletePtr = Ptr.getPointer();
     CompletePtr =
         CGF.Builder.CreateInBoundsGEP(CGF.Int8Ty, CompletePtr, Offset);
 
@@ -1529,8 +1533,7 @@ llvm::Value *ItaniumCXXABI::emitDynamicCastCall(
       computeOffsetHint(CGF.getContext(), SrcDecl, DestDecl).getQuantity());
 
   // Emit the call to __dynamic_cast.
-  llvm::Value *Args[] = {ThisAddr.emitRawPointer(CGF), SrcRTTI, DestRTTI,
-                         OffsetHint};
+  llvm::Value *Args[] = {ThisAddr.getPointer(), SrcRTTI, DestRTTI, OffsetHint};
   llvm::Value *Value =
       CGF.EmitNounwindRuntimeCall(getItaniumDynamicCastFn(CGF), Args);
 
@@ -1619,7 +1622,7 @@ llvm::Value *ItaniumCXXABI::emitExactDynamicCast(
       VPtr, CGM.getTBAAVTablePtrAccessInfo(CGF.VoidPtrPtrTy));
   llvm::Value *Success = CGF.Builder.CreateICmpEQ(
       VPtr, getVTableAddressPoint(BaseSubobject(SrcDecl, *Offset), DestDecl));
-  llvm::Value *Result = ThisAddr.emitRawPointer(CGF);
+  llvm::Value *Result = ThisAddr.getPointer();
   if (!Offset->isZero())
     Result = CGF.Builder.CreateInBoundsGEP(
         CGF.CharTy, Result,
@@ -1659,7 +1662,7 @@ llvm::Value *ItaniumCXXABI::emitDynamicCastToVoid(CodeGenFunction &CGF,
         PtrDiffLTy, OffsetToTop, CGF.getPointerAlign(), "offset.to.top");
   }
   // Finally, add the offset to the pointer.
-  return CGF.Builder.CreateInBoundsGEP(CGF.Int8Ty, ThisAddr.emitRawPointer(CGF),
+  return CGF.Builder.CreateInBoundsGEP(CGF.Int8Ty, ThisAddr.getPointer(),
                                        OffsetToTop);
 }
 
@@ -1846,8 +1849,8 @@ void ItaniumCXXABI::EmitDestructorCall(CodeGenFunction &CGF,
   else
     Callee = CGCallee::forDirect(CGM.getAddrOfCXXStructor(GD), GD);
 
-  CGF.EmitCXXDestructorCall(GD, Callee, CGF.getAsNaturalPointerTo(This, ThisTy),
-                            ThisTy, VTT, VTTTy, nullptr);
+  CGF.EmitCXXDestructorCall(GD, Callee, This.getPointer(), ThisTy, VTT, VTTTy,
+                            nullptr);
 }
 
 void ItaniumCXXABI::emitVTableDefinitions(CodeGenVTables &CGVT,
@@ -2006,6 +2009,11 @@ llvm::Value *ItaniumCXXABI::getVTableAddressPointInStructorWithVTT(
                                        CGF.getPointerAlign());
 }
 
+llvm::Constant *ItaniumCXXABI::getVTableAddressPointForConstExpr(
+    BaseSubobject Base, const CXXRecordDecl *VTableClass) {
+  return getVTableAddressPoint(Base, VTableClass);
+}
+
 llvm::GlobalVariable *ItaniumCXXABI::getAddrOfVTable(const CXXRecordDecl *RD,
                                                      CharUnits VPtrOffset) {
   assert(VPtrOffset.isZero() && "Itanium ABI only supports zero vptr offsets");
@@ -2137,8 +2145,8 @@ llvm::Value *ItaniumCXXABI::EmitVirtualDestructorCall(
     ThisTy = D->getDestroyedType();
   }
 
-  CGF.EmitCXXDestructorCall(GD, Callee, This.emitRawPointer(CGF), ThisTy,
-                            nullptr, QualType(), nullptr);
+  CGF.EmitCXXDestructorCall(GD, Callee, This.getPointer(), ThisTy, nullptr,
+                            QualType(), nullptr);
   return nullptr;
 }
 
@@ -2211,7 +2219,7 @@ static llvm::Value *performTypeAdjustment(CodeGenFunction &CGF,
                                           int64_t VirtualAdjustment,
                                           bool IsReturnAdjustment) {
   if (!NonVirtualAdjustment && !VirtualAdjustment)
-    return InitialPtr.emitRawPointer(CGF);
+    return InitialPtr.getPointer();
 
   Address V = InitialPtr.withElementType(CGF.Int8Ty);
 
@@ -2253,10 +2261,10 @@ static llvm::Value *performTypeAdjustment(CodeGenFunction &CGF,
       }
     }
     // Adjust our pointer.
-    ResultPtr = CGF.Builder.CreateInBoundsGEP(V.getElementType(),
-                                              V.emitRawPointer(CGF), Offset);
+    ResultPtr = CGF.Builder.CreateInBoundsGEP(
+        V.getElementType(), V.getPointer(), Offset);
   } else {
-    ResultPtr = V.emitRawPointer(CGF);
+    ResultPtr = V.getPointer();
   }
 
   // In a derived-to-base conversion, the non-virtual adjustment is
@@ -2342,7 +2350,7 @@ Address ItaniumCXXABI::InitializeArrayCookie(CodeGenFunction &CGF,
         llvm::FunctionType::get(CGM.VoidTy, NumElementsPtr.getType(), false);
     llvm::FunctionCallee F =
         CGM.CreateRuntimeFunction(FTy, "__asan_poison_cxx_array_cookie");
-    CGF.Builder.CreateCall(F, NumElementsPtr.emitRawPointer(CGF));
+    CGF.Builder.CreateCall(F, NumElementsPtr.getPointer());
   }
 
   // Finally, compute a pointer to the actual data buffer by skipping
@@ -2373,7 +2381,7 @@ llvm::Value *ItaniumCXXABI::readArrayCookieImpl(CodeGenFunction &CGF,
       llvm::FunctionType::get(CGF.SizeTy, CGF.UnqualPtrTy, false);
   llvm::FunctionCallee F =
       CGM.CreateRuntimeFunction(FTy, "__asan_load_cxx_array_cookie");
-  return CGF.Builder.CreateCall(F, numElementsPtr.emitRawPointer(CGF));
+  return CGF.Builder.CreateCall(F, numElementsPtr.getPointer());
 }
 
 CharUnits ARMCXXABI::getArrayCookieSizeImpl(QualType elementType) {
@@ -2685,7 +2693,7 @@ void ItaniumCXXABI::EmitGuardedInit(CodeGenFunction &CGF,
 
     // Call __cxa_guard_release.  This cannot throw.
     CGF.EmitNounwindRuntimeCall(getGuardReleaseFn(CGM, guardPtrTy),
-                                guardAddr.emitRawPointer(CGF));
+                                guardAddr.getPointer());
   } else if (D.isLocalVarDecl()) {
     // For local variables, store 1 into the first byte of the guard variable
     // after the object initialization completes so that initialization is
@@ -3192,10 +3200,10 @@ LValue ItaniumCXXABI::EmitThreadLocalVarDeclLValue(CodeGenFunction &CGF,
 
   LValue LV;
   if (VD->getType()->isReferenceType())
-    LV = CGF.MakeNaturalAlignRawAddrLValue(CallVal, LValType);
+    LV = CGF.MakeNaturalAlignAddrLValue(CallVal, LValType);
   else
-    LV = CGF.MakeRawAddrLValue(CallVal, LValType,
-                               CGF.getContext().getDeclAlign(VD));
+    LV = CGF.MakeAddrLValue(CallVal, LValType,
+                            CGF.getContext().getDeclAlign(VD));
   // FIXME: need setObjCGCLValueClass?
   return LV;
 }
@@ -4681,7 +4689,7 @@ static void InitCatchParam(CodeGenFunction &CGF,
         CGF.Builder.CreateStore(Casted, ExnPtrTmp);
 
         // Bind the reference to the temporary.
-        AdjustedExn = ExnPtrTmp.emitRawPointer(CGF);
+        AdjustedExn = ExnPtrTmp.getPointer();
       }
     }
 
