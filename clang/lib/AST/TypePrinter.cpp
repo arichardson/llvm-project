@@ -558,7 +558,7 @@ void TypePrinter::printConstantArrayAfter(const ConstantArrayType *T,
   if (T->getSizeModifier() == ArraySizeModifier::Static)
     OS << "static ";
 
-  OS << T->getSize().getZExtValue() << ']';
+  OS << T->getZExtSize() << ']';
   printAfter(T->getElementType(), OS);
 }
 
