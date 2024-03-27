@@ -2991,6 +2991,7 @@ enum CXCallingConv {
   CXCallingConv_AArch64SVEPCS = 18,
   CXCallingConv_M68kRTD = 19,
   CXCallingConv_PreserveNone = 20,
+  CXCallingConv_RISCVVectorCall = 21,
 
   CXCallingConv_CHERICCall = 80,
   CXCallingConv_CHERICCallee = 81,

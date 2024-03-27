@@ -264,6 +264,9 @@ namespace CallingConv {
     /// except that the first parameter is mapped to x9.
     ARM64EC_Thunk_Native = 109,
 
+    /// Calling convention used for RISC-V V-extension.
+    RISCV_VectorCall = 110,
+
     /// CHERI_CCall - Calling convention used for CHERI when crossing a
     /// protection boundary.
     CHERI_CCall = 110,

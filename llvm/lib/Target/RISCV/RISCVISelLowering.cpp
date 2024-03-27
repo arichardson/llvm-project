@@ -19246,6 +19246,7 @@ SDValue RISCVTargetLowering::LowerFormalArguments(
   case CallingConv::Fast:
   case CallingConv::SPIR_KERNEL:
   case CallingConv::GRAAL:
+  case CallingConv::RISCV_VectorCall:
     break;
   case CallingConv::GHC:
     if (Subtarget.isRVE())
