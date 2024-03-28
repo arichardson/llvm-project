@@ -4,7 +4,7 @@
 
   @.str = private unnamed_addr constant [11 x i8] c"string %s\0A\00", align 1
   declare void @llvm.va_start(ptr) #0
-  declare void @llvm.va_copy(ptr, ptr) #0
+  declare void @llvm.va_copy.p0(ptr, ptr) #0
   declare i32 @printf(ptr, ...)
 
   define void @testVaCopyArg(ptr %fmt, ...) {
@@ -18,7 +18,7 @@
     call void @llvm.va_start(ptr %ap1)
     %0 = bitcast ptr %aq to ptr
     %1 = bitcast ptr %ap to ptr
-    call void @llvm.va_copy(ptr %0, ptr %1)
+    call void @llvm.va_copy.p0(ptr %0, ptr %1)
     %argp.cur = load ptr, ptr %aq, align 4
     %argp.next = getelementptr inbounds i8, ptr %argp.cur, i32 4
     store ptr %argp.next, ptr %aq, align 4

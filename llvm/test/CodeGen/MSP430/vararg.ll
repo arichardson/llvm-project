@@ -5,7 +5,7 @@ target triple = "msp430---elf"
 
 declare void @llvm.va_start(ptr) nounwind
 declare void @llvm.va_end(ptr) nounwind
-declare void @llvm.va_copy(ptr, ptr) nounwind
+declare void @llvm.va_copy.p0(ptr, ptr) nounwind
 
 define void @va_start(i16 %a, ...) nounwind {
 entry:
@@ -44,6 +44,6 @@ entry:
   %0 = bitcast ptr %vl2 to ptr
   %1 = bitcast ptr %vl.addr to ptr
 ; CHECK-DAG: mov r12, 0(r1)
-  call void @llvm.va_copy(ptr %0, ptr %1)
+  call void @llvm.va_copy.p0(ptr %0, ptr %1)
   ret void
 }

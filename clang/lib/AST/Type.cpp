@@ -178,7 +178,7 @@ ConstantArrayType::Create(const ASTContext &Ctx, QualType ET, QualType Can,
   auto *SzPtr = new (Ctx, alignof(ConstantArrayType::ExternalSize))
       ConstantArrayType::ExternalSize(Sz, SzExpr);
   return new (Ctx, alignof(ConstantArrayType))
-      ConstantArrayType(ET, Can, SzPtr, SzMod, Qual);
+      ConstantArrayType(ET, Can, SzPtr, SzMod, Qual, PIK);
 }
 
 unsigned ConstantArrayType::getNumAddressingBits(const ASTContext &Context,

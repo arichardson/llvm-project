@@ -57,7 +57,7 @@ define i32 @va_copy0(i32, ...) {
   call void @llvm.va_start(ptr nonnull %va)
   %vb = alloca ptr, align 8
   call void @llvm.lifetime.start.p0(i64 8, ptr nonnull %va)
-  call void @llvm.va_copy(ptr nonnull %vb, ptr nonnull %va)
+  call void @llvm.va_copy.p0(ptr nonnull %vb, ptr nonnull %va)
   call void @llvm.va_end(ptr nonnull %va)
   call void @llvm.lifetime.end.p0(i64 8, ptr nonnull %va)
   %p1 = va_arg ptr %vb, i32
@@ -110,7 +110,7 @@ define i32 @va_copy8(i32, ...) {
 
   %vc = alloca ptr, align 8
   call void @llvm.lifetime.start.p0(i64 8, ptr nonnull %va)
-  call void @llvm.va_copy(ptr nonnull %vc, ptr nonnull %va)
+  call void @llvm.va_copy.p0(ptr nonnull %vc, ptr nonnull %va)
   call void @llvm.va_end(ptr nonnull %va)
   %p8 = va_arg ptr %vc, ptr
   %p9 = va_arg ptr %vc, i64
@@ -142,6 +142,6 @@ declare void @use_double(double)
 
 declare void @llvm.lifetime.start.p0(i64, ptr nocapture)
 declare void @llvm.va_start(ptr)
-declare void @llvm.va_copy(ptr, ptr)
+declare void @llvm.va_copy.p0(ptr, ptr)
 declare void @llvm.va_end(ptr)
 declare void @llvm.lifetime.end.p0(i64, ptr nocapture)

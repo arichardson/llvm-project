@@ -3513,8 +3513,9 @@ class ConstantArrayType final : public ArrayType {
   }
 
   ConstantArrayType(QualType Et, QualType Can, ExternalSize *SzPtr,
-                    ArraySizeModifier SM, unsigned TQ)
-      : ArrayType(ConstantArray, Et, Can, SM, TQ, SzPtr->SizeExpr),
+                    ArraySizeModifier SM, unsigned TQ,
+                    std::optional<PointerInterpretationKind> PIK)
+      : ArrayType(ConstantArray, Et, Can, SM, TQ, PIK, SzPtr->SizeExpr),
         SizePtr(SzPtr) {
     ConstantArrayTypeBits.HasExternalSize = true;
     ConstantArrayTypeBits.SizeWidth = 0;

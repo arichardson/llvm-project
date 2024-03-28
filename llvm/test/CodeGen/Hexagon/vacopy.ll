@@ -13,7 +13,7 @@ entry:
   %vl = alloca [1 x %struct.__va_list_tag], align 8
   %vl_count = alloca [1 x %struct.__va_list_tag], align 8
   call void @llvm.va_start(ptr %vl)
-  call void @llvm.va_copy(ptr %vl_count, ptr %vl)
+  call void @llvm.va_copy.p0(ptr %vl_count, ptr %vl)
   ret void
 }
 
@@ -21,7 +21,7 @@ entry:
 declare void @llvm.va_start(ptr) #1
 
 ; Function Attrs: nounwind
-declare void @llvm.va_copy(ptr, ptr) #1
+declare void @llvm.va_copy.p0(ptr, ptr) #1
 
 ; Function Attrs: nounwind
 define i32 @main() #0 {

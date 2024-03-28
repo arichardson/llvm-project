@@ -4,7 +4,7 @@
 ; RUN: llc -mtriple=riscv64 -global-isel -stop-after=irtranslator -verify-machineinstrs < %s \
 ; RUN:   | FileCheck -check-prefix=RV64I %s
 
-declare void @llvm.va_copy(ptr, ptr)
+declare void @llvm.va_copy.p0(ptr, ptr)
 define void @test_va_copy(ptr %dest_list, ptr %src_list) {
   ; RV32I-LABEL: name: test_va_copy
   ; RV32I: bb.1 (%ir-block.0):
@@ -23,6 +23,6 @@ define void @test_va_copy(ptr %dest_list, ptr %src_list) {
   ; RV64I-NEXT:   [[COPY1:%[0-9]+]]:_(p0) = COPY $x11
   ; RV64I-NEXT:   G_INTRINSIC_W_SIDE_EFFECTS intrinsic(@llvm.va_copy), [[COPY]](p0), [[COPY1]](p0)
   ; RV64I-NEXT:   PseudoRET
-  call void @llvm.va_copy(ptr %dest_list, ptr %src_list)
+  call void @llvm.va_copy.p0(ptr %dest_list, ptr %src_list)
   ret void
 }

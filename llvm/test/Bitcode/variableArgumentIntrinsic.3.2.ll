@@ -30,5 +30,5 @@ define i32 @varArgIntrinsic(i32 %X, ...) {
 }
 
 declare void @llvm.va_start.p0i8(i8*)
-declare void @llvm.va_copy.p0i8.p0i8(i8*, i8*)
+declare void @llvm.va_copy.p0i8(i8*, i8*)
 declare void @llvm.va_end.p0i8(i8*)

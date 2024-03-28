@@ -26,7 +26,7 @@ entry:
 declare void @other_func(ptr) local_unnamed_addr
 
 declare void @llvm.va_start.p0(ptr) nounwind
-declare void @llvm.va_copy.p0.p0(ptr, ptr) nounwind
+declare void @llvm.va_copy.p0(ptr, ptr) nounwind
 
 define ptr @f9(i64 %a0, i64 %a1, i64 %a2, i64 %a3, i64 %a4, i64 %a5, i64 %a6, i64 %a7, i64 %a8, ...) nounwind {
 ; CHECK-LABEL: f9:
@@ -92,7 +92,7 @@ entry:
   %ap = alloca ptr, align 8
   %cp = alloca ptr, align 8
   call void @llvm.va_start.p0(ptr %ap)
-  call void @llvm.va_copy.p0.p0(ptr %cp, ptr %ap)
+  call void @llvm.va_copy.p0(ptr %cp, ptr %ap)
   ret void
 }
 

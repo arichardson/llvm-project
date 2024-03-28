@@ -7,7 +7,7 @@
 declare i32 @printf(ptr, ...) nounwind
 
 declare void @llvm.va_start(ptr)
-declare void @llvm.va_copy(ptr, ptr)
+declare void @llvm.va_copy.p0(ptr, ptr)
 declare void @llvm.va_end(ptr)
 
 %struct.va_list = type { i32, i32, ptr, ptr }
@@ -534,7 +534,7 @@ entry:
   %arg1 = va_arg ptr %ap1, i32
   %arg2 = va_arg ptr %ap1, i32
   %arg3 = va_arg ptr %ap1, i32
-  tail call void @llvm.va_copy(ptr %ap2, ptr %ap1)
+  tail call void @llvm.va_copy.p0(ptr %ap2, ptr %ap1)
   %arg4.1 = va_arg ptr %ap1, double
   %arg4.2 = va_arg ptr %ap2, double
   %arg5.1 = va_arg ptr %ap1, i32

@@ -17,7 +17,7 @@ entry:
 }
 
 declare void @llvm.va_start(ptr) nounwind
-declare void @llvm.va_copy(ptr, ptr) nounwind
+declare void @llvm.va_copy.p0(ptr, ptr) nounwind
 
 ; CHECK-LABEL: f5:
 ; CHECK: pushq
@@ -64,7 +64,7 @@ entry:
   %ap = alloca ptr, align 8
   %cp = alloca ptr, align 8
   call void @llvm.va_start(ptr %ap)
-  call void @llvm.va_copy(ptr %cp, ptr %ap)
+  call void @llvm.va_copy.p0(ptr %cp, ptr %ap)
   ret void
 }
 
@@ -80,7 +80,7 @@ entry:
   %ap = alloca ptr, align 8
   %cp = alloca ptr, align 8
   call void @llvm.va_start(ptr %ap)
-  call void @llvm.va_copy(ptr %cp, ptr %ap)
+  call void @llvm.va_copy.p0(ptr %cp, ptr %ap)
   ret void
 }
 

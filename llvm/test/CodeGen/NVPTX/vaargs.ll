@@ -25,7 +25,7 @@ entry:
 ; CHECK-NEXT:	 ld.u[[BITS]] [[VA_PTR:%(r|rd)[0-9]+]], [%SP+0];
 ; CHECK-NEXT:	 st.u[[BITS]] [%SP+{{[0-9]+}}], [[VA_PTR]];
 
-  call void @llvm.va_copy(ptr %al2, ptr %al)
+  call void @llvm.va_copy.p0(ptr %al2, ptr %al)
 
 ; Test va_arg(ap, int32_t)
 ; CHECK-NEXT:    ld.u[[BITS]] [[VA_PTR:%(r|rd)[0-9]+]], [%SP+0];
@@ -106,5 +106,5 @@ entry:
 
 declare void @llvm.va_start(ptr)
 declare void @llvm.va_end(ptr)
-declare void @llvm.va_copy(ptr, ptr)
+declare void @llvm.va_copy.p0(ptr, ptr)
 declare i32 @bar(i32, i32, i64, double, ptr)

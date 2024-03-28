@@ -6,7 +6,7 @@ declare void @llvm.lifetime.start.p0(i64, ptr nocapture)
 declare void @llvm.lifetime.end.p0(i64, ptr nocapture)
 declare void @llvm.va_start.p0(ptr)
 declare void @llvm.va_end.p0(ptr)
-declare void @llvm.va_copy.p0.p0(ptr, ptr)
+declare void @llvm.va_copy.p0(ptr, ptr)
 
 define i32 @func(ptr nocapture readnone %fmt, ...) {
 ; CHECK-LABEL: @func(
@@ -18,7 +18,7 @@ entry:
   call void @llvm.lifetime.start.p0(i64 32, ptr %va0)
   call void @llvm.va_start.p0(ptr %va0)
   call void @llvm.lifetime.start.p0(i64 32, ptr %va1)
-  call void @llvm.va_copy.p0.p0(ptr %va1, ptr %va0)
+  call void @llvm.va_copy.p0(ptr %va1, ptr %va0)
   call void @llvm.va_end.p0(ptr %va1)
   call void @llvm.lifetime.end.p0(i64 32, ptr %va1)
   call void @llvm.va_end.p0(ptr %va0)

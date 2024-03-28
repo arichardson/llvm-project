@@ -1383,7 +1383,7 @@ static bool upgradeIntrinsicFunction1(Function *F, Function *&NewFn) {
     }
     if (Name == "va_copy") {
       NewFn = Intrinsic::getDeclaration(F->getParent(), Intrinsic::vacopy,
-                                        { ArgTy, ArgTy });
+                                        { ArgTy });
       return true;
     }
     if (Name == "var.annotation" && F->arg_size() == 4) {

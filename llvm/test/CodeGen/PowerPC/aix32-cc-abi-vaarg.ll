@@ -30,7 +30,7 @@ entry:
   call void @llvm.lifetime.start.p0(i64 4, ptr nonnull %arg1)
   call void @llvm.lifetime.start.p0(i64 4, ptr nonnull %arg2)
   call void @llvm.va_start(ptr nonnull %arg1)
-  call void @llvm.va_copy(ptr nonnull %arg2, ptr nonnull %arg1)
+  call void @llvm.va_copy.p0(ptr nonnull %arg2, ptr nonnull %arg1)
   %argp.cur = load ptr, ptr %arg1, align 4
   %argp.next = getelementptr inbounds i8, ptr %argp.cur, i32 4
   store ptr %argp.next, ptr %arg1, align 4
@@ -90,7 +90,7 @@ entry:
 
 declare void @llvm.lifetime.start.p0(i64 immarg, ptr nocapture)
 declare void @llvm.va_start(ptr)
-declare void @llvm.va_copy(ptr, ptr)
+declare void @llvm.va_copy.p0(ptr, ptr)
 declare void @llvm.va_end(ptr)
 declare void @llvm.lifetime.end.p0(i64 immarg, ptr nocapture)
 
@@ -119,7 +119,7 @@ entry:
   call void @llvm.lifetime.start.p0(i64 4, ptr nonnull %arg1)
   call void @llvm.lifetime.start.p0(i64 4, ptr nonnull %arg2)
   call void @llvm.va_start(ptr nonnull %arg1)
-  call void @llvm.va_copy(ptr nonnull %arg2, ptr nonnull %arg1)
+  call void @llvm.va_copy.p0(ptr nonnull %arg2, ptr nonnull %arg1)
   %add = add nsw i32 %two, %one
   %add2 = add nsw i32 %add, %three
   %add3 = add nsw i32 %add2, %four
@@ -208,7 +208,7 @@ entry:
   call void @llvm.lifetime.start.p0(i64 4, ptr nonnull %arg1)
   call void @llvm.lifetime.start.p0(i64 4, ptr nonnull %arg2)
   call void @llvm.va_start(ptr nonnull %arg1)
-  call void @llvm.va_copy(ptr nonnull %arg2, ptr nonnull %arg1)
+  call void @llvm.va_copy.p0(ptr nonnull %arg2, ptr nonnull %arg1)
   %argp.cur = load ptr, ptr %arg1, align 4
   %argp.next = getelementptr inbounds i8, ptr %argp.cur, i32 8
   store ptr %argp.next, ptr %arg1, align 4
@@ -301,7 +301,7 @@ entry:
   call void @llvm.lifetime.start.p0(i64 4, ptr nonnull %arg1)
   call void @llvm.lifetime.start.p0(i64 4, ptr nonnull %arg2)
   call void @llvm.va_start(ptr nonnull %arg1)
-  call void @llvm.va_copy(ptr nonnull %arg2, ptr nonnull %arg1)
+  call void @llvm.va_copy.p0(ptr nonnull %arg2, ptr nonnull %arg1)
   %add = fadd double %one, %two
   %add2 = fadd double %add, %three
   %add3 = fadd double %add2, %four

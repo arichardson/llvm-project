@@ -836,7 +836,7 @@ define void @va3_caller() nounwind {
  ret void
 }
 
-declare void @llvm.va_copy(ptr, ptr)
+declare void @llvm.va_copy.p0(ptr, ptr)
 
 define i32 @va4_va_copy(i32 %argno, ...) nounwind {
 ; LP64-LP64F-LP64D-FPELIM-LABEL: va4_va_copy:
@@ -1008,7 +1008,7 @@ define i32 @va4_va_copy(i32 %argno, ...) nounwind {
   %wargs = alloca ptr
   call void @llvm.va_start(ptr %vargs)
   %1 = va_arg ptr %vargs, i32
-  call void @llvm.va_copy(ptr %wargs, ptr %vargs)
+  call void @llvm.va_copy.p0(ptr %wargs, ptr %vargs)
   %2 = load ptr, ptr %wargs, align 4
   call void @notdead(ptr %2)
   %3 = va_arg ptr %vargs, i32

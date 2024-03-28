@@ -115,13 +115,13 @@ define dso_local void @test_va_end() nounwind {
 ; CHECK-NEXT: ret
 }
 
-declare void @llvm.va_copy(ptr %dest, ptr %src)
+declare void @llvm.va_copy.p0(ptr %dest, ptr %src)
 
 @second_list = dso_local global %va_list zeroinitializer
 
 define dso_local void @test_va_copy() {
 ; CHECK-LABEL: test_va_copy:
-  call void @llvm.va_copy(ptr @second_list, ptr @var)
+  call void @llvm.va_copy.p0(ptr @second_list, ptr @var)
 
 ; CHECK: add x[[SRC:[0-9]+]], {{x[0-9]+}}, :lo12:var
 

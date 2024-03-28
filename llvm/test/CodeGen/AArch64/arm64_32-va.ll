@@ -5,7 +5,7 @@ define void @test_va_copy(ptr %dst, ptr %src) {
 ; CHECK: ldr [[PTR:w[0-9]+]], [x1]
 ; CHECK: str [[PTR]], [x0]
 
-  call void @llvm.va_copy(ptr %dst, ptr %src)
+  call void @llvm.va_copy.p0(ptr %dst, ptr %src)
   ret void
 }
 
@@ -49,6 +49,6 @@ define ptr @really_test_va_arg(ptr %list, i1 %tst) {
   ret ptr %res
 }
 
-declare void @llvm.va_start(ptr) 
+declare void @llvm.va_start(ptr)
 
-declare void @llvm.va_copy(ptr, ptr)
+declare void @llvm.va_copy.p0(ptr, ptr)

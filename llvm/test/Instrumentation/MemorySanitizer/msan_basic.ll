@@ -739,10 +739,10 @@ define <8 x ptr> @VectorOfPointers(ptr %p) nounwind uwtable sanitize_memory {
 
 ; Test handling of va_copy.
 
-declare void @llvm.va_copy.p0.p0(ptr, ptr) nounwind
+declare void @llvm.va_copy.p0(ptr, ptr) nounwind
 
 define void @VACopy(ptr %p1, ptr %p2) nounwind uwtable sanitize_memory {
-  call void @llvm.va_copy.p0.p0(ptr %p1, ptr %p2) nounwind
+  call void @llvm.va_copy.p0(ptr %p1, ptr %p2) nounwind
   ret void
 }
 

@@ -39,7 +39,7 @@ entry:
 ; CHECK-NEXT: return{{$}}
 define void @copy(ptr %ap, ptr %bp) {
 entry:
-  call void @llvm.va_copy.p0.p0(ptr %ap, ptr %bp)
+  call void @llvm.va_copy.p0(ptr %ap, ptr %bp)
   ret void
 }
 
@@ -203,4 +203,4 @@ entry:
 
 declare void @llvm.va_start.p0(ptr)
 declare void @llvm.va_end.p0(ptr)
-declare void @llvm.va_copy.p0.p0(ptr, ptr)
+declare void @llvm.va_copy.p0(ptr, ptr)

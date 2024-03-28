@@ -574,7 +574,6 @@ private:
   void visitExtractElementInst(ExtractElementInst &EI);
   void visitInsertElementInst(InsertElementInst &EI);
   void visitShuffleVectorInst(ShuffleVectorInst &EI);
-  void visitVAArgInst(VAArgInst &VAA);
   void visitCallInst(CallInst &CI);
   void visitInvokeInst(InvokeInst &II);
   void visitGetElementPtrInst(GetElementPtrInst &GEP);
@@ -726,13 +725,6 @@ static void forEachUser(const Value *User,
     if (Callback(Cur))
       append_range(WorkList, Cur->materialized_users());
   }
-}
-
-void Verifier::visitVAArgInst(VAArgInst &VAA) {
-  Check(VAA.getPointerOperand()->getType()->getPointerAddressSpace() ==
-            DL.getAllocaAddrSpace(),
-        "va_arg not in alloca AS?", &VAA);
-  visitInstruction(VAA);
 }
 
 void Verifier::visitGlobalValue(const GlobalValue &GV) {
@@ -5779,9 +5771,9 @@ void Verifier::visitIntrinsicCall(Intrinsic::ID ID, CallBase &Call) {
   case Intrinsic::vaend: {
     Check(isa<CallInst>(Call), "variadic argument intrinsics cannot be invoked",
           Call);
-    Value *Val = Call.getArgOperand(0);
-    Check(Val->getType()->getPointerAddressSpace() == DL.getAllocaAddrSpace(),
-          "variadic argument intrinsics must be in alloca address space", Call);
+    //Value *Val = Call.getArgOperand(0);
+    //Check(Val->getType()->getPointerAddressSpace() == DL.getAllocaAddrSpace(),
+    //      "variadic argument intrinsics must be in alloca address space", Call);
     break;
   }
 

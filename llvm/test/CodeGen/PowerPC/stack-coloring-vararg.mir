@@ -29,7 +29,7 @@
   if.then6.i.i:                                     ; preds = %entry
     %0 = bitcast ptr %ap2.i.i to ptr
     call void @llvm.lifetime.start.p0(i64 12, ptr nonnull %0)
-    call void @llvm.va_copy(ptr nonnull %0, ptr nonnull null)
+    call void @llvm.va_copy.p0(ptr nonnull %0, ptr nonnull null)
     ret void
 
   format_reason_ap.exit.i:                          ; preds = %entry
@@ -40,7 +40,7 @@
   }
   declare void @fprintf(ptr)
   ; Function Attrs: nounwind
-  declare void @llvm.va_copy(ptr, ptr) #1
+  declare void @llvm.va_copy.p0(ptr, ptr) #1
 
   attributes #0 = { argmemonly nounwind willreturn }
   attributes #1 = { nounwind }

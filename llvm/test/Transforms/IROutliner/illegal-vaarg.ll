@@ -5,7 +5,7 @@
 ; they may cause inconsistencies when outlining.
 
 declare void @llvm.va_start(ptr)
-declare void @llvm.va_copy(ptr, ptr)
+declare void @llvm.va_copy.p0(ptr, ptr)
 declare void @llvm.va_end(ptr)
 
 define i32 @func1(i32 %a, double %b, ptr %v, ...) nounwind {
@@ -36,7 +36,7 @@ entry:
   store double %b, ptr %b.addr, align 8
   call void @llvm.va_start(ptr %ap)
   %0 = va_arg ptr %ap, i32
-  call void @llvm.va_copy(ptr %v, ptr %ap)
+  call void @llvm.va_copy.p0(ptr %v, ptr %ap)
   call void @llvm.va_end(ptr %ap)
   store i32 %0, ptr %c, align 4
   %tmp = load i32, ptr %c, align 4
@@ -71,7 +71,7 @@ entry:
   store double %b, ptr %b.addr, align 8
   call void @llvm.va_start(ptr %ap)
   %0 = va_arg ptr %ap, i32
-  call void @llvm.va_copy(ptr %v, ptr %ap)
+  call void @llvm.va_copy.p0(ptr %v, ptr %ap)
   call void @llvm.va_end(ptr %ap)
   store i32 %0, ptr %c, align 4
   %tmp = load i32, ptr %c, align 4

@@ -93,7 +93,7 @@ void f5(int a, ...) {
   // WIN64-NEXT: store ptr %[[AP_NEXT3]], ptr %[[AP]]
   __builtin_va_list ap2;
   __builtin_va_copy(ap2, ap);
-  // WIN64: call void @llvm.va_copy.p0.p0
+  // WIN64: call void @llvm.va_copy.p0
   __builtin_va_end(ap);
   // WIN64: call void @llvm.va_end.p0
 }

@@ -32,14 +32,14 @@ define void @copy_to_global(ptr addrspace(200) nocapture readnone %y, i32 signex
   %2 = bitcast ptr addrspace(200) %1 to ptr addrspace(200)
   %3 = addrspacecast ptr addrspace(200) %2 to ptr
   call void @llvm.va_start.p200(ptr addrspace(200) %2)
-  call void @llvm.va_copy.p200.p200(ptr addrspace(200) @va_copy, ptr addrspace(200) %2)
+  call void @llvm.va_copy.p200(ptr addrspace(200) @va_copy, ptr addrspace(200) %2)
   call void @llvm.va_end.p200(ptr addrspace(200) %2)
   ret void
 }
 
 declare void @llvm.va_start.p200(ptr addrspace(200)) addrspace(200)
 
-declare void @llvm.va_copy.p200.p200(ptr addrspace(200), ptr addrspace(200)) addrspace(200)
+declare void @llvm.va_copy.p200(ptr addrspace(200), ptr addrspace(200)) addrspace(200)
 
 declare void @llvm.va_end.p200(ptr addrspace(200)) addrspace(200)
 
@@ -69,7 +69,7 @@ define ptr addrspace(200) @copy_from_global() addrspace(200) nounwind {
 ; CHECK-NEXT:    cincoffset $c11, $c11, 64
   %1 = alloca ptr addrspace(200), align 32, addrspace(200)
   %2 = bitcast ptr addrspace(200) %1 to ptr addrspace(200)
-  call void @llvm.va_copy.p200.p200(ptr addrspace(200) %2, ptr addrspace(200) @va_copy)
+  call void @llvm.va_copy.p200(ptr addrspace(200) %2, ptr addrspace(200) @va_copy)
   %3 = load ptr addrspace(200), ptr addrspace(200) %1, align 32
   ret ptr addrspace(200) %3
 }
