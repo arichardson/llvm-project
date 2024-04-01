@@ -64,6 +64,7 @@ def ConstantArrayType : TypeNode<ArrayType>;
 def IncompleteArrayType : TypeNode<ArrayType>;
 def VariableArrayType : TypeNode<ArrayType>;
 def DependentSizedArrayType : TypeNode<ArrayType>, AlwaysDependent;
+def ArrayParameterType : TypeNode<ConstantArrayType>;
 def DependentSizedExtVectorType : TypeNode<Type>, AlwaysDependent;
 def DependentAddressSpaceType : TypeNode<Type>, AlwaysDependent;
 def DependentPointerType : TypeNode<Type>, AlwaysDependent;

@@ -1306,6 +1306,14 @@ public:
     return Ctx.getDecayedType(originalType);
   }
 
+  QualType VisitArrayParameterType(const ArrayParameterType *T) {
+    QualType ArrTy = VisitConstantArrayType(T);
+    if (ArrTy.isNull())
+      return {};
+
+    return Ctx.getArrayParameterType(ArrTy);
+  }
+
   SUGARED_TYPE_CLASS(TypeOfExpr)
   SUGARED_TYPE_CLASS(TypeOf)
   SUGARED_TYPE_CLASS(Decltype)
@@ -4580,6 +4588,7 @@ static CachedProperties computeCachedProperties(const Type *T) {
   case Type::ConstantArray:
   case Type::IncompleteArray:
   case Type::VariableArray:
+  case Type::ArrayParameter:
     return Cache::get(cast<ArrayType>(T)->getElementType());
   case Type::Vector:
   case Type::ExtVector:
@@ -4668,6 +4677,7 @@ LinkageInfo LinkageComputer::computeTypeLinkageInfo(const Type *T) {
   case Type::ConstantArray:
   case Type::IncompleteArray:
   case Type::VariableArray:
+  case Type::ArrayParameter:
     return computeTypeLinkageInfo(cast<ArrayType>(T)->getElementType());
   case Type::Vector:
   case Type::ExtVector:
@@ -4863,6 +4873,7 @@ bool Type::canHaveNullability(bool ResultIfUnknown) const {
   case Type::Pipe:
   case Type::BitInt:
   case Type::DependentBitInt:
+  case Type::ArrayParameter:
     return false;
   }
   llvm_unreachable("bad type kind!");
