@@ -335,7 +335,7 @@ void freebsd::Linker::ConstructJob(Compilation &C, const JobAction &JA,
     // Use the static OpenMP runtime with -static-openmp
     bool StaticOpenMP = Args.hasArg(options::OPT_static_openmp) &&
                         !Args.hasArg(options::OPT_static);
-    addOpenMPRuntime(CmdArgs, ToolChain, Args, StaticOpenMP);
+    addOpenMPRuntime(C, CmdArgs, ToolChain, Args, StaticOpenMP);
 
     CmdArgs.push_back("--start-group");
     if (D.CCCIsCXX()) {
