@@ -3559,6 +3559,10 @@ bool TargetLowering::SimplifyDemandedVectorElts(
     }
     [[fallthrough]];
   }
+  case ISD::AVGCEILS:
+  case ISD::AVGCEILU:
+  case ISD::AVGFLOORS:
+  case ISD::AVGFLOORU:
   case ISD::OR:
   case ISD::XOR:
   case ISD::SUB:
