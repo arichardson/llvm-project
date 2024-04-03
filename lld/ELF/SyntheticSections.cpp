@@ -1730,10 +1730,12 @@ void RelocationBaseSection::partitionRels() {
     return;
   const RelType relativeRel = target->relativeRel;
   const std::optional<RelType> relativeFuncRel = target->relativeFuncRel;
-  const auto *firstNonRelativeReloc = llvm::partition(relocs, [=](auto &r) {
-    return r.type == relativeRel || r.type == relativeFuncRel;
-  });
-  numRelativeRelocs = firstNonRelativeReloc - relocs.begin();
+  numRelativeRelocs = std::stable_partition(relocs.begin(), relocs.end(),
+                                            [=](auto &r) {
+                                              return r.type == relativeRel ||
+                                                     r.type == relativeFuncRel;
+                                            }) -
+                      relocs.begin();
 }
 
 void RelocationBaseSection::finalizeContents() {

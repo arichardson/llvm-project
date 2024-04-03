@@ -83,10 +83,10 @@ int atomic(void) {
   // CHECK: atomicrmw nand ptr %valc, i8 6 seq_cst, align 1
  
   __sync_val_compare_and_swap((void **)0, (void *)0, (void *)0);
-  // X86:      [[PAIR:%[a-z0-9_.]+]] = cmpxchg ptr null, i32 0, i32 0 seq_cst seq_cst, align 4
-  // X86-NEXT: extractvalue { i32, i1 } [[PAIR]], 0
-  // SYSTEMZ:      [[PAIR:%[a-z0-9_.]+]] = cmpxchg ptr null, i64 0, i64 0 seq_cst seq_cst, align 8
-  // SYSTEMZ-NEXT: extractvalue { i64, i1 } [[PAIR]], 0
+  // X86:      [[PAIR:%[a-z0-9_.]+]] = cmpxchg ptr null, ptr null, ptr null seq_cst seq_cst, align 4
+  // X86-NEXT: extractvalue { ptr, i1 } [[PAIR]], 0
+  // SYSTEMZ:      [[PAIR:%[a-z0-9_.]+]] = cmpxchg ptr null, ptr null, ptr null seq_cst seq_cst, align 8
+  // SYSTEMZ-NEXT: extractvalue { ptr, i1 } [[PAIR]], 0
 
   if ( __sync_val_compare_and_swap(&valb, 0, 1)) {
     // CHECK: [[PAIR:%[a-z0-9_.]+]] = cmpxchg ptr %valb, i8 0, i8 1 seq_cst seq_cst, align 1
@@ -96,7 +96,7 @@ int atomic(void) {
   }
   
   __sync_bool_compare_and_swap((void **)0, (void *)0, (void *)0);
-  // CHECK: [[PAIR:%[a-z0-9_.]+]] = cmpxchg ptr null, ptr null, ptr null seq_cst seq_cst, align 4
+  // CHECK: [[PAIR:%[a-z0-9_.]+]] = cmpxchg ptr null, ptr null, ptr null seq_cst seq_cst, align [[ALIGN:[8|4]]]
   // CHECK-NEXT: extractvalue { ptr, i1 } [[PAIR]], 1
 
   __sync_lock_release(&val);
