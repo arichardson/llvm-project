@@ -261,6 +261,7 @@ public:
   const LegalizerInfo *getLegalizerInfo() const override;
   const RegisterBankInfo *getRegBankInfo() const override;
 
+  bool isTargetAndroid() const { return getTargetTriple().isAndroid(); }
   bool isTargetFuchsia() const { return getTargetTriple().isOSFuchsia(); }
 
   bool useConstantPoolForLargeInts() const;
