@@ -86,7 +86,6 @@
 #include "llvm/Transforms/Scalar/JumpThreading.h"
 #include "llvm/Transforms/Utils/CheriLogSetBounds.h"
 #include "llvm/Transforms/Utils/CheriSetBounds.h"
-#include "llvm/Transforms/Scalar/SimplifyCFG.h"
 #include "llvm/Transforms/Utils/Debugify.h"
 #include "llvm/Transforms/Utils/EntryExitInstrumenter.h"
 #include "llvm/Transforms/Utils/ModuleUtils.h"
@@ -755,11 +754,6 @@ static void addSanitizers(const Triple &TargetTriple,
     // from `buildInlinerPipeline`, which called after profile matching.
     PB.registerScalarOptimizerLateEPCallback(
         [](FunctionPassManager &FPM, OptimizationLevel Level) {
-          // RemoveTrapsPass expects trap blocks preceded by conditional
-          // branches, which usually is not the case without SimplifyCFG.
-          // TODO: Remove `SimplifyCFGPass` after switching to dedicated
-          // intrinsic.
-          FPM.addPass(SimplifyCFGPass());
           FPM.addPass(RemoveTrapsPass());
         });
   }
