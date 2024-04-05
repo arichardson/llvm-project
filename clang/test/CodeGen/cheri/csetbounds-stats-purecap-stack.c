@@ -2,11 +2,11 @@
 
 // RUN: rm -fv %t-debug.csv %t-nodebug.csv
 // RUN: %cheri_purecap_cc1 %s -cheri-bounds=conservative \
-// RUN:    -mllvm -collect-csetbounds-stats=csv -cheri-stats-file=%t-nodebug.csv -S -o /dev/null
+// RUN:    -mllvm -collect-csetbounds-stats=csv -mllvm -experimental-debuginfo-iterators=0 -cheri-stats-file=%t-nodebug.csv -S -o /dev/null
 // RUN: cat %t-nodebug.csv
 // RUN: FileCheck -input-file %t-nodebug.csv %s -check-prefixes CSV,CSV-NODEBUG
 // RUN: %cheri_purecap_cc1 %s -cheri-bounds=conservative -debug-info-kind=standalone \
-// RUN:   -mllvm -collect-csetbounds-stats=csv -cheri-stats-file=%t-debug.csv -S -o /dev/null
+// RUN:   -mllvm -collect-csetbounds-stats=csv -mllvm -experimental-debuginfo-iterators=0 -cheri-stats-file=%t-debug.csv -S -o /dev/null
 // RUN: cat %t-debug.csv
 // RUN: FileCheck -input-file %t-debug.csv %s -check-prefixes CSV,CSV-DEBUG
 
