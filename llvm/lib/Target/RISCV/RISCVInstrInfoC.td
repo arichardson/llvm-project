@@ -970,7 +970,7 @@ def : CompressPat<(JAL X0, simm12_lsb0:$offset),
                   (C_J simm12_lsb0:$offset)>;
 } //  Predicates = [HasStdExtC, NotCapMode]
 
-let Predicates = [HasStdExtC] in {
+let Predicates = [HasStdExtCOrZca] in {
 def : CompressPat<(BEQ GPRC:$rs1, X0, simm9_lsb0:$imm),
                   (C_BEQZ GPRC:$rs1, simm9_lsb0:$imm)>;
 let isCompressOnly = true in
