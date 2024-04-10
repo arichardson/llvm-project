@@ -2460,7 +2460,12 @@ public:
       Visit(Clause);
     }
   }
+  void VisitOpenACCDefaultClause(const OpenACCDefaultClause &Clause);
 };
+
+/// Nothing to do here, there are no sub-statements.
+void OpenACCClauseProfiler::VisitOpenACCDefaultClause(
+    const OpenACCDefaultClause &Clause) {}
 } // namespace
 
 void StmtProfiler::VisitOpenACCComputeConstruct(
