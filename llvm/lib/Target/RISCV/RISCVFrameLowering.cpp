@@ -1037,59 +1037,6 @@ void RISCVFrameLowering::determineCalleeSaves(MachineFunction &MF,
   // Mark BP as used if function has dedicated base pointer.
   if (hasBP(MF))
     SavedRegs.set(RISCVABI::getBPReg(STI.getTargetABI()));
-
-  // If interrupt is enabled and there are calls in the handler,
-  // unconditionally save all Caller-saved registers and
-  // all FP registers, regardless whether they are used.
-  MachineFrameInfo &MFI = MF.getFrameInfo();
-  auto &Subtarget = MF.getSubtarget<RISCVSubtarget>();
-
-  if (MF.getFunction().hasFnAttribute("interrupt") && MFI.hasCalls()) {
-
-    static const MCPhysReg CSGPRs[] = { RISCV::X1,      /* ra */
-      RISCV::X5, RISCV::X6, RISCV::X7,                  /* t0-t2 */
-      RISCV::X10, RISCV::X11,                           /* a0-a1, a2-a7 */
-      RISCV::X12, RISCV::X13, RISCV::X14, RISCV::X15, RISCV::X16, RISCV::X17,
-      RISCV::X28, RISCV::X29, RISCV::X30, RISCV::X31 /* t3-t6 */
-    };
-
-    static const MCPhysReg CSGPCRs[] = { RISCV::C1,     /* cra */
-      RISCV::C5, RISCV::C6, RISCV::C7,                  /* ct0-ct2 */
-      RISCV::C10, RISCV::C11,                           /* ca0-ca1, ca2-ca7 */
-      RISCV::C12, RISCV::C13, RISCV::C14, RISCV::C15, RISCV::C16, RISCV::C17,
-      RISCV::C28, RISCV::C29, RISCV::C30, RISCV::C31 /* ct3-ct6 */
-    };
-
-    ArrayRef<MCPhysReg> CSRegs;
-    if (RISCVABI::isCheriPureCapABI(STI.getTargetABI()))
-      CSRegs = CSGPCRs;
-    else
-      CSRegs = CSGPRs;
-
-    for (auto Reg : CSRegs)
-      SavedRegs.set(Reg);
-
-    // According to psABI, if ilp32e/lp64e ABIs are used with an ISA that
-    // has any of the registers x16-x31 and f0-f31, then these registers are
-    // considered temporaries, so we should also save x16-x31 here.
-    if (STI.getTargetABI() == RISCVABI::ABI_ILP32E ||
-        STI.getTargetABI() == RISCVABI::ABI_LP64E) {
-      for (MCPhysReg Reg = RISCV::X16; Reg <= RISCV::X31; Reg++)
-        SavedRegs.set(Reg);
-    }
-
-    if (Subtarget.hasStdExtF()) {
-
-      // If interrupt is enabled, this list contains all FP registers.
-      const MCPhysReg * Regs = MF.getRegInfo().getCalleeSavedRegs();
-
-      for (unsigned i = 0; Regs[i]; ++i)
-        if (RISCV::FPR16RegClass.contains(Regs[i]) ||
-            RISCV::FPR32RegClass.contains(Regs[i]) ||
-            RISCV::FPR64RegClass.contains(Regs[i]))
-          SavedRegs.set(Regs[i]);
-    }
-  }
 }
 
 std::pair<int64_t, Align>
