@@ -203,10 +203,6 @@ typedef __SIZE_TYPE__ usize;
 typedef uptr usize;
 #endif
 
-#if (SANITIZER_WORDSIZE == 64)
-static_assert(sizeof(operator_new_size_type) == 8, "");
-#endif
-
 typedef u64 tid_t;
 
 #if (SANITIZER_WORDSIZE == 64)

@@ -98,7 +98,9 @@ __riscv_restore_0:
   cincoffset csp, csp, 16
   cret
 
-# else
+# else // __CHERI_PURE_CAPABILITY__
+
+#ifndef __riscv_32e
 
   .globl  __riscv_restore_12
   .type   __riscv_restore_12,@function
@@ -163,8 +165,26 @@ __riscv_restore_0:
   lw      ra,  12(sp)
   addi    sp, sp, 16
   ret
+#else // __riscv_32e
 
-# endif
+  .globl  __riscv_restore_2
+  .type   __riscv_restore_2,@function
+  .globl  __riscv_restore_1
+  .type   __riscv_restore_1,@function
+  .globl  __riscv_restore_0
+  .type   __riscv_restore_0,@function
+__riscv_restore_2:
+__riscv_restore_1:
+__riscv_restore_0:
+  lw      s1,  0(sp)
+  lw      s0,  4(sp)
+  lw      ra,  8(sp)
+  addi    sp, sp, 12
+  ret
+
+#endif // __riscv_32e
+
+# endif // __CHERI_PURE_CAPABILITY__
 
 #elif __riscv_xlen == 64
 
@@ -261,7 +281,9 @@ __riscv_restore_0:
   cincoffset csp, csp, 16
   cret
 
-# else
+# else // __CHERI_PURE_CAPABILITY__
+
+#ifndef __riscv_64e
 
   .globl  __riscv_restore_12
   .type   __riscv_restore_12,@function
@@ -336,7 +358,25 @@ __riscv_restore_0:
   addi    sp, sp, 16
   ret
 
-# endif
+#else // __riscv_64e
+
+  .globl  __riscv_restore_2
+  .type   __riscv_restore_2,@function
+  .globl  __riscv_restore_1
+  .type   __riscv_restore_1,@function
+  .globl  __riscv_restore_0
+  .type   __riscv_restore_0,@function
+__riscv_restore_2:
+__riscv_restore_1:
+__riscv_restore_0:
+  ld      s1,  0(sp)
+  ld      s0,  8(sp)
+  ld      ra,  16(sp)
+  addi    sp, sp, 24
+  ret
+
+#endif // __riscv_64e
+#endif // __CHERI_PURE_CAPABILITY__
 
 #else
 # error "xlen must be 32 or 64 for save-restore implementation
