@@ -32,6 +32,7 @@
 #include "llvm/ADT/FoldingSet.h"
 #include "llvm/ADT/PointerIntPair.h"
 #include "llvm/ADT/ScopeExit.h"
+#include "llvm/ADT/STLForwardCompat.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringExtras.h"
@@ -10130,8 +10131,9 @@ bool InitializationSequence::Diagnose(Sema &S,
         // implicit.
         if (S.isImplicitlyDeleted(Best->Function))
           S.Diag(Kind.getLocation(), diag::err_ovl_deleted_special_init)
-            << S.getSpecialMember(cast<CXXMethodDecl>(Best->Function))
-            << DestType << ArgsRange;
+              << llvm::to_underlying(
+                     S.getSpecialMember(cast<CXXMethodDecl>(Best->Function)))
+              << DestType << ArgsRange;
         else
           S.Diag(Kind.getLocation(), diag::err_ovl_deleted_init)
               << DestType << ArgsRange;
