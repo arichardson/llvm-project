@@ -2463,8 +2463,7 @@ public:
   }
 
 #define VISIT_CLAUSE(CLAUSE_NAME)                                              \
-  void Visit##CLAUSE_NAME##Clause(                                      \
-      const OpenACC##CLAUSE_NAME##Clause &Clause);
+  void Visit##CLAUSE_NAME##Clause(const OpenACC##CLAUSE_NAME##Clause &Clause);
 
 #include "clang/Basic/OpenACCClauses.def"
 };
@@ -2473,8 +2472,7 @@ public:
 void OpenACCClauseProfiler::VisitDefaultClause(
     const OpenACCDefaultClause &Clause) {}
 
-void OpenACCClauseProfiler::VisitIfClause(
-    const OpenACCIfClause &Clause) {
+void OpenACCClauseProfiler::VisitIfClause(const OpenACCIfClause &Clause) {
   assert(Clause.hasConditionExpr() &&
          "if clause requires a valid condition expr");
   Profiler.VisitStmt(Clause.getConditionExpr());
