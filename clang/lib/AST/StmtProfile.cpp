@@ -2449,9 +2449,10 @@ void StmtProfiler::VisitTemplateArgument(const TemplateArgument &Arg) {
 namespace {
 class OpenACCClauseProfiler
     : public OpenACCClauseVisitor<OpenACCClauseProfiler> {
+  StmtProfiler &Profiler;
 
 public:
-  OpenACCClauseProfiler() = default;
+  OpenACCClauseProfiler(StmtProfiler &P) : Profiler(P) {}
 
   void VisitOpenACCClauseList(ArrayRef<const OpenACCClause *> Clauses) {
     for (const OpenACCClause *Clause : Clauses) {
@@ -2460,12 +2461,24 @@ public:
       Visit(Clause);
     }
   }
-  void VisitOpenACCDefaultClause(const OpenACCDefaultClause &Clause);
+
+#define VISIT_CLAUSE(CLAUSE_NAME)                                              \
+  void VisitOpenACC##CLAUSE_NAME##Clause(                                      \
+      const OpenACC##CLAUSE_NAME##Clause &Clause);
+
+#include "clang/Basic/OpenACCClauses.def"
 };
 
 /// Nothing to do here, there are no sub-statements.
 void OpenACCClauseProfiler::VisitOpenACCDefaultClause(
     const OpenACCDefaultClause &Clause) {}
+
+void OpenACCClauseProfiler::VisitOpenACCIfClause(
+    const OpenACCIfClause &Clause) {
+  assert(Clause.hasConditionExpr() &&
+         "if clause requires a valid condition expr");
+  Profiler.VisitStmt(Clause.getConditionExpr());
+}
 } // namespace
 
 void StmtProfiler::VisitOpenACCComputeConstruct(
@@ -2473,7 +2486,7 @@ void StmtProfiler::VisitOpenACCComputeConstruct(
   // VisitStmt handles children, so the AssociatedStmt is handled.
   VisitStmt(S);
 
-  OpenACCClauseProfiler P;
+  OpenACCClauseProfiler P{*this};
   P.VisitOpenACCClauseList(S->clauses());
 }
 

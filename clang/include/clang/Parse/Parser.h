@@ -3614,6 +3614,9 @@ private:
   OpenACCClauseParseResult OpenACCCannotContinue();
   OpenACCClauseParseResult OpenACCSuccess(OpenACCClause *Clause);
 
+  using OpenACCConditionExprParseResult =
+      std::pair<ExprResult, OpenACCParseCanContinue>;
+
   /// Parses the OpenACC directive (the entire pragma) including the clause
   /// list, but does not produce the main AST node.
   OpenACCDirectiveParseInfo ParseOpenACCDirective();
@@ -3660,6 +3663,8 @@ private:
   bool ParseOpenACCGangArgList();
   /// Parses a 'gang-arg', used for the 'gang' clause.
   bool ParseOpenACCGangArg();
+  /// Parses a 'condition' expr, ensuring it results in a
+  ExprResult ParseOpenACCConditionExpr();
 
 private:
   //===--------------------------------------------------------------------===//
