@@ -2036,6 +2036,8 @@ public:
   };
 
   bool IsLayoutCompatible(QualType T1, QualType T2) const;
+  bool IsPointerInterconvertibleBaseOf(const TypeSourceInfo *Base,
+                                       const TypeSourceInfo *Derived);
 
   bool CheckFunctionCall(FunctionDecl *FDecl, CallExpr *TheCall,
                          const FunctionProtoType *Proto);
