@@ -1292,9 +1292,12 @@ TEST(VPRecipeTest, dumpRecipeUnnamedVPValuesInPlan) {
   LLVMContext C;
 
   IntegerType *Int32 = IntegerType::get(C, 32);
+  auto *AI =
+      BinaryOperator::CreateAdd(UndefValue::get(Int32), UndefValue::get(Int32));
+  AI->setName("a");
   SmallVector<VPValue *, 2> Args;
   VPValue *ExtVPV1 = Plan.getOrAddLiveIn(ConstantInt::get(Int32, 1));
-  VPValue *ExtVPV2 = Plan.getOrAddLiveIn(ConstantInt::get(Int32, 2));
+  VPValue *ExtVPV2 = Plan.getOrAddLiveIn(AI);
   Args.push_back(ExtVPV1);
   Args.push_back(ExtVPV2);
   VPInstruction *I1 = new VPInstruction(Instruction::Add, {ExtVPV1, ExtVPV2});
@@ -1313,7 +1316,7 @@ TEST(VPRecipeTest, dumpRecipeUnnamedVPValuesInPlan) {
           VPV->dump();
           exit(0);
         },
-        testing::ExitedWithCode(0), "EMIT vp<%1> = add ir<1>, ir<2>");
+        testing::ExitedWithCode(0), "EMIT vp<%1> = add ir<1>, ir<%a>");
 
     // Test VPRecipeBase::dump().
     VPRecipeBase *R = I1;
@@ -1322,7 +1325,7 @@ TEST(VPRecipeTest, dumpRecipeUnnamedVPValuesInPlan) {
           R->dump();
           exit(0);
         },
-        testing::ExitedWithCode(0), "EMIT vp<%1> = add ir<1>, ir<2>");
+        testing::ExitedWithCode(0), "EMIT vp<%1> = add ir<1>, ir<%a>");
 
     // Test VPDef::dump().
     VPDef *D = I1;
@@ -1331,7 +1334,7 @@ TEST(VPRecipeTest, dumpRecipeUnnamedVPValuesInPlan) {
           D->dump();
           exit(0);
         },
-        testing::ExitedWithCode(0), "EMIT vp<%1> = add ir<1>, ir<2>");
+        testing::ExitedWithCode(0), "EMIT vp<%1> = add ir<1>, ir<%a>");
   }
   // Check printing I2.
   {
@@ -1364,13 +1367,17 @@ TEST(VPRecipeTest, dumpRecipeUnnamedVPValuesInPlan) {
         },
         testing::ExitedWithCode(0), "EMIT vp<%2> = mul vp<%1>, vp<%1>");
   }
+  delete AI;
 }
 
 TEST(VPRecipeTest, dumpRecipeUnnamedVPValuesNotInPlanOrBlock) {
   LLVMContext C;
   IntegerType *Int32 = IntegerType::get(C, 32);
+  auto *AI =
+      BinaryOperator::CreateAdd(UndefValue::get(Int32), UndefValue::get(Int32));
+  AI->setName("a");
   VPValue *ExtVPV1 = new VPValue(ConstantInt::get(Int32, 1));
-  VPValue *ExtVPV2 = new VPValue(ConstantInt::get(Int32, 2));
+  VPValue *ExtVPV2 = new VPValue(AI);
 
   VPInstruction *I1 = new VPInstruction(Instruction::Add, {ExtVPV1, ExtVPV2});
   VPInstruction *I2 = new VPInstruction(Instruction::Mul, {I1, I1});
@@ -1386,7 +1393,7 @@ TEST(VPRecipeTest, dumpRecipeUnnamedVPValuesNotInPlanOrBlock) {
           VPV->dump();
           exit(0);
         },
-        testing::ExitedWithCode(0), "EMIT <badref> = add ir<1>, ir<2>");
+        testing::ExitedWithCode(0), "EMIT <badref> = add ir<1>, ir<%a>");
 
     // Test VPRecipeBase::dump().
     VPRecipeBase *R = I1;
@@ -1395,7 +1402,7 @@ TEST(VPRecipeTest, dumpRecipeUnnamedVPValuesNotInPlanOrBlock) {
           R->dump();
           exit(0);
         },
-        testing::ExitedWithCode(0), "EMIT <badref> = add ir<1>, ir<2>");
+        testing::ExitedWithCode(0), "EMIT <badref> = add ir<1>, ir<%a>");
 
     // Test VPDef::dump().
     VPDef *D = I1;
@@ -1404,7 +1411,7 @@ TEST(VPRecipeTest, dumpRecipeUnnamedVPValuesNotInPlanOrBlock) {
           D->dump();
           exit(0);
         },
-        testing::ExitedWithCode(0), "EMIT <badref> = add ir<1>, ir<2>");
+        testing::ExitedWithCode(0), "EMIT <badref> = add ir<1>, ir<%a>");
   }
   // Check printing I2.
   {
@@ -1442,6 +1449,7 @@ TEST(VPRecipeTest, dumpRecipeUnnamedVPValuesNotInPlanOrBlock) {
   delete I1;
   delete ExtVPV2;
   delete ExtVPV1;
+  delete AI;
 }
 
 #endif
