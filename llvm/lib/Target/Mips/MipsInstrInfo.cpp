@@ -925,7 +925,7 @@ bool MipsInstrInfo::verifyInstruction(const MachineInstr &MI,
             Mips::CapJumpLinkPseudo) // Op2 here is implicitly c17:
           assert(OutputOp.isReg() && OutputOp.getReg() == Mips::C17);
         auto DelaySlotInstr = MI.getNextNode();
-        if (DelaySlotInstr->readsRegister(Mips::C17)) {
+        if (DelaySlotInstr->readsRegister(Mips::C17, nullptr)) {
           ErrInfo = "Filled CapJumpLinkPseudo delay slot with a read of $c17 "
                     "(which will have been clobbered!)";
           return false;

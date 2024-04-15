@@ -67,7 +67,12 @@ using namespace RISCV;
 
 } // namespace llvm::RISCVVPseudosTable
 
-#define DEBUG_TYPE "riscv-isntrinfo"
+namespace llvm::RISCV {
+
+#define GET_RISCVMaskedPseudosTable_IMPL
+#include "RISCVGenSearchableTables.inc"
+
+} // end namespace llvm::RISCV
 
 RISCVInstrInfo::RISCVInstrInfo(RISCVSubtarget &STI)
     : RISCVGenInstrInfo(RISCVABI::isCheriPureCapABI(STI.getTargetABI())
