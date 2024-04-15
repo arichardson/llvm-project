@@ -5247,26 +5247,14 @@ bool SelectionDAG::isADDLike(SDValue Op) const {
            haveNoCommonBitsSet(Op.getOperand(0), Op.getOperand(1));
   if (Opcode == ISD::XOR)
     return isMinSignedConstant(Op.getOperand(1));
+  if (Opcode == ISD::PTRADD)
+    return isa<ConstantSDNode>(Op.getOperand(1));
   return false;
 }
 
 bool SelectionDAG::isBaseWithConstantOffset(SDValue Op) const {
-  switch (Op.getOpcode()) {
-  case ISD::ADD:
-  case ISD::OR:
-  case ISD::PTRADD:
-    if (isa<ConstantSDNode>(Op.getOperand(1)))
-      break;
-    LLVM_FALLTHROUGH;
-  default:
-    return false;
-  }
-
-  if (Op.getOpcode() == ISD::OR &&
-      !MaskedValueIsZero(Op.getOperand(0), Op.getConstantOperandAPInt(1)))
-    return false;
-
-  return true;
+  return Op.getNumOperands() == 2 && isa<ConstantSDNode>(Op.getOperand(1)) &&
+         (Op.getOpcode() == ISD::ADD || isADDLike(Op));
 }
 
 bool SelectionDAG::isKnownNeverNaN(SDValue Op, bool SNaN, unsigned Depth) const {
