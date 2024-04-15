@@ -267,6 +267,9 @@ struct CommonConfig {
   bool DecompressDebugSections = false;
 
   DebugCompressionType CompressionType = DebugCompressionType::None;
+
+  SmallVector<std::pair<NameMatcher, llvm::DebugCompressionType>, 0>
+      compressSections;
 };
 
 } // namespace objcopy
