@@ -4040,7 +4040,8 @@ bool CodeGenModule::shouldEmitFunction(GlobalDecl GD) {
   // behavior may break ABI compatibility of the current unit.
   if (const Module *M = F->getOwningModule();
       M && M->getTopLevelModule()->isNamedModule() &&
-      getContext().getCurrentNamedModule() != M->getTopLevelModule())
+      getContext().getCurrentNamedModule() != M->getTopLevelModule() &&
+      !F->hasAttr<AlwaysInlineAttr>())
     return false;
 
   if (F->hasAttr<NoInlineAttr>())
