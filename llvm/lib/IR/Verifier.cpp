@@ -5795,14 +5795,10 @@ void Verifier::visitIntrinsicCall(Intrinsic::ID ID, CallBase &Call) {
     break;
   }
 
-  case Intrinsic::vastart:
   case Intrinsic::vacopy:
   case Intrinsic::vaend: {
     Check(isa<CallInst>(Call), "variadic argument intrinsics cannot be invoked",
           Call);
-    //Value *Val = Call.getArgOperand(0);
-    //Check(Val->getType()->getPointerAddressSpace() == DL.getAllocaAddrSpace(),
-    //      "variadic argument intrinsics must be in alloca address space", Call);
     break;
   }
 
@@ -5826,6 +5822,13 @@ void Verifier::visitIntrinsicCall(Intrinsic::ID ID, CallBase &Call) {
               "of the value computed by experimental_deoptimize");
     }
 
+    break;
+  }
+  case Intrinsic::vastart: {
+    Check(Call.getFunction()->isVarArg(),
+          "va_start called in a non-varargs function");
+    Check(isa<CallInst>(Call), "variadic argument intrinsics cannot be invoked",
+          Call);
     break;
   }
   case Intrinsic::vector_reduce_and:
