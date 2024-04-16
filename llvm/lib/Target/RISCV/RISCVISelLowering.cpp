@@ -13684,7 +13684,7 @@ static SDValue expandMul(SDNode *N, SelectionDAG &DAG,
   if (VT != Subtarget.getXLenVT())
     return SDValue();
 
-  if (!Subtarget.hasStdExtZba())
+  if (!Subtarget.hasStdExtZba() && !Subtarget.hasVendorXTHeadBa())
     return SDValue();
 
   ConstantSDNode *CNode = dyn_cast<ConstantSDNode>(N->getOperand(1));
