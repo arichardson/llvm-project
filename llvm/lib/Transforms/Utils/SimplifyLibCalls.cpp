@@ -305,7 +305,7 @@ static void annotateNonNullAndDereferenceable(CallInst *CI, ArrayRef<unsigned> A
   if (ConstantInt *LenC = dyn_cast<ConstantInt>(Size)) {
     annotateNonNullNoUndefBasedOnAccess(CI, ArgNos);
     annotateDereferenceableBytes(CI, ArgNos, LenC->getZExtValue());
-  } else if (isKnownNonZero(Size, /*Depth=*/0, DL)) {
+  } else if (isKnownNonZero(Size, DL)) {
     annotateNonNullNoUndefBasedOnAccess(CI, ArgNos);
     const APInt *X, *Y;
     uint64_t DerefMin = 1;
@@ -397,7 +397,7 @@ Value *LibCallSimplifier::optimizeStrNCat(CallInst *CI, IRBuilderBase &B) {
   Value *Size = CI->getArgOperand(2);
   uint64_t Len;
   annotateNonNullNoUndefBasedOnAccess(CI, 0);
-  if (isKnownNonZero(Size, /*Depth=*/0, DL))
+  if (isKnownNonZero(Size, DL))
     annotateNonNullNoUndefBasedOnAccess(CI, 1);
 
   // We don't do anything if length is not constant.
@@ -616,7 +616,7 @@ Value *LibCallSimplifier::optimizeStrNCmp(CallInst *CI, IRBuilderBase &B) {
   if (Str1P == Str2P) // strncmp(x,x,n)  -> 0
     return ConstantInt::get(CI->getType(), 0);
 
-  if (isKnownNonZero(Size, /*Depth=*/0, DL))
+  if (isKnownNonZero(Size, DL))
     annotateNonNullNoUndefBasedOnAccess(CI, {0, 1});
   // Get the length argument if it is constant.
   uint64_t Length;
@@ -754,7 +754,7 @@ Value *LibCallSimplifier::optimizeStpCpy(CallInst *CI, IRBuilderBase &B) {
 
 Value *LibCallSimplifier::optimizeStrLCpy(CallInst *CI, IRBuilderBase &B) {
   Value *Size = CI->getArgOperand(2);
-  if (isKnownNonZero(Size, /*Depth=*/0, DL))
+  if (isKnownNonZero(Size, DL))
     // Like snprintf, the function stores into the destination only when
     // the size argument is nonzero.
     annotateNonNullNoUndefBasedOnAccess(CI, 0);
@@ -838,7 +838,7 @@ Value *LibCallSimplifier::optimizeStringNCpy(CallInst *CI, bool RetEnd,
   Value *Src = CI->getArgOperand(1);
   Value *Size = CI->getArgOperand(2);
 
-  if (isKnownNonZero(Size, /*Depth=*/0, DL)) {
+  if (isKnownNonZero(Size, DL)) {
     // Both st{p,r}ncpy(D, S, N) access the source and destination arrays
     // only when N is nonzero.
     annotateNonNullNoUndefBasedOnAccess(CI, 0);
@@ -933,7 +933,7 @@ Value *LibCallSimplifier::optimizeStringLength(CallInst *CI, IRBuilderBase &B,
   Type *CharTy = B.getIntNTy(CharSize);
 
   if (isOnlyUsedInZeroEqualityComparison(CI) &&
-      (!Bound || isKnownNonZero(Bound, /*Depth=*/0, DL))) {
+      (!Bound || isKnownNonZero(Bound, DL))) {
     // Fold strlen:
     //   strlen(x) != 0 --> *x != 0
     //   strlen(x) == 0 --> *x == 0
@@ -1054,7 +1054,7 @@ Value *LibCallSimplifier::optimizeStrNLen(CallInst *CI, IRBuilderBase &B) {
   if (Value *V = optimizeStringLength(CI, B, 8, Bound))
     return V;
 
-  if (isKnownNonZero(Bound, /*Depth=*/0, DL))
+  if (isKnownNonZero(Bound, DL))
     annotateNonNullNoUndefBasedOnAccess(CI, 0);
   return nullptr;
 }
@@ -1298,7 +1298,7 @@ Value *LibCallSimplifier::optimizeMemChr(CallInst *CI, IRBuilderBase &B) {
   Value *SrcStr = CI->getArgOperand(0);
   Value *Size = CI->getArgOperand(2);
 
-  if (isKnownNonZero(Size, /*Depth=*/0, DL)) {
+  if (isKnownNonZero(Size, DL)) {
     annotateNonNullNoUndefBasedOnAccess(CI, 0);
     if (isOnlyUsedInEqualityComparison(CI, SrcStr))
       return memChrToCharCompare(CI, Size, B, DL);
@@ -2990,7 +2990,7 @@ Value *LibCallSimplifier::optimizeStrToInt(CallInst *CI, IRBuilderBase &B,
     // It would be readonly too, except that it still may write to errno.
     CI->addParamAttr(0, Attribute::NoCapture);
     EndPtr = nullptr;
-  } else if (!isKnownNonZero(EndPtr, /*Depth=*/0, DL))
+  } else if (!isKnownNonZero(EndPtr, DL))
     return nullptr;
 
   StringRef Str;
@@ -3427,7 +3427,7 @@ Value *LibCallSimplifier::optimizeSnPrintF(CallInst *CI, IRBuilderBase &B) {
     return V;
   }
 
-  if (isKnownNonZero(CI->getOperand(1), /*Depth=*/0, DL))
+  if (isKnownNonZero(CI->getOperand(1), DL))
     annotateNonNullNoUndefBasedOnAccess(CI, 0);
   return nullptr;
 }
