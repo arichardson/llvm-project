@@ -5795,7 +5795,6 @@ void Verifier::visitIntrinsicCall(Intrinsic::ID ID, CallBase &Call) {
     break;
   }
 
-  case Intrinsic::vastart:
   case Intrinsic::vacopy:
   case Intrinsic::vaend: {
     Check(isa<CallInst>(Call), "variadic argument intrinsics cannot be invoked",
