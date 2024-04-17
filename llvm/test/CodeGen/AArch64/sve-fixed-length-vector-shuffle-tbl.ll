@@ -562,13 +562,13 @@ define <8 x i16> @shuffle_index_indices_from_both_ops_i16(ptr %a, ptr %b) {
 ;
 ; SVE2_128_NOMAX-LABEL: shuffle_index_indices_from_both_ops_i16:
 ; SVE2_128_NOMAX:       // %bb.0:
-; SVE2_128_NOMAX-NEXT:    ptrue p0.h, vl8
 ; SVE2_128_NOMAX-NEXT:    cnth x8
 ; SVE2_128_NOMAX-NEXT:    adrp x9, .LCPI7_0
 ; SVE2_128_NOMAX-NEXT:    adrp x10, .LCPI7_1
 ; SVE2_128_NOMAX-NEXT:    mov z0.h, w8
 ; SVE2_128_NOMAX-NEXT:    ldr q1, [x9, :lo12:.LCPI7_0]
 ; SVE2_128_NOMAX-NEXT:    ldr q2, [x10, :lo12:.LCPI7_1]
+; SVE2_128_NOMAX-NEXT:    ptrue p0.h, vl8
 ; SVE2_128_NOMAX-NEXT:    mad z0.h, p0/m, z1.h, z2.h
 ; SVE2_128_NOMAX-NEXT:    ldr q1, [x0]
 ; SVE2_128_NOMAX-NEXT:    ldr q2, [x1]
@@ -578,13 +578,13 @@ define <8 x i16> @shuffle_index_indices_from_both_ops_i16(ptr %a, ptr %b) {
 ;
 ; SVE2_NOMIN_NOMAX-LABEL: shuffle_index_indices_from_both_ops_i16:
 ; SVE2_NOMIN_NOMAX:       // %bb.0:
-; SVE2_NOMIN_NOMAX-NEXT:    ptrue p0.h, vl8
 ; SVE2_NOMIN_NOMAX-NEXT:    cnth x8
 ; SVE2_NOMIN_NOMAX-NEXT:    adrp x9, .LCPI7_0
 ; SVE2_NOMIN_NOMAX-NEXT:    adrp x10, .LCPI7_1
 ; SVE2_NOMIN_NOMAX-NEXT:    mov z0.h, w8
 ; SVE2_NOMIN_NOMAX-NEXT:    ldr q1, [x9, :lo12:.LCPI7_0]
 ; SVE2_NOMIN_NOMAX-NEXT:    ldr q2, [x10, :lo12:.LCPI7_1]
+; SVE2_NOMIN_NOMAX-NEXT:    ptrue p0.h, vl8
 ; SVE2_NOMIN_NOMAX-NEXT:    mad z0.h, p0/m, z1.h, z2.h
 ; SVE2_NOMIN_NOMAX-NEXT:    ldr q1, [x0]
 ; SVE2_NOMIN_NOMAX-NEXT:    ldr q2, [x1]
@@ -600,9 +600,9 @@ define <8 x i16> @shuffle_index_indices_from_both_ops_i16(ptr %a, ptr %b) {
 ; SVE2_MIN_256_NOMAX-NEXT:    adrp x9, .LCPI7_1
 ; SVE2_MIN_256_NOMAX-NEXT:    add x9, x9, :lo12:.LCPI7_1
 ; SVE2_MIN_256_NOMAX-NEXT:    cnth x10
-; SVE2_MIN_256_NOMAX-NEXT:    mov z2.h, w10
 ; SVE2_MIN_256_NOMAX-NEXT:    ld1h { z0.h }, p0/z, [x8]
 ; SVE2_MIN_256_NOMAX-NEXT:    ld1h { z1.h }, p0/z, [x9]
+; SVE2_MIN_256_NOMAX-NEXT:    mov z2.h, w10
 ; SVE2_MIN_256_NOMAX-NEXT:    mad z0.h, p0/m, z2.h, z1.h
 ; SVE2_MIN_256_NOMAX-NEXT:    ldr q1, [x0]
 ; SVE2_MIN_256_NOMAX-NEXT:    ldr q2, [x1]
