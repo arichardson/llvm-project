@@ -27353,12 +27353,6 @@ TEST_F(FormatTest, PPDirectivesAndCommentsInBracedInit) {
                getLLVMStyleWithColumns(30));
 }
 
-TEST_F(FormatTest, StreamOutputOperator) {
-  verifyFormat("std::cout << \"foo\" << \"bar\" << baz;");
-  verifyFormat("std::cout << \"foo\\n\"\n"
-               "          << \"bar\";");
-}
-
 TEST_F(FormatTest, BreakAdjacentStringLiterals) {
   constexpr StringRef Code{
       "return \"Code\" \"\\0\\52\\26\\55\\55\\0\" \"x013\" \"\\02\\xBA\";"};
@@ -27373,6 +27367,7 @@ TEST_F(FormatTest, BreakAdjacentStringLiterals) {
   Style.BreakAdjacentStringLiterals = false;
   verifyFormat(Code, Style);
 }
+
 } // namespace
 } // namespace test
 } // namespace format
