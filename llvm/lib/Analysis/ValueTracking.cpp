@@ -4246,7 +4246,7 @@ std::pair<Value *, FPClassTest> llvm::fcmpToClassTest(FCmpInst::Predicate Pred,
                                                       Value *LHS, Value *RHS,
                                                       bool LookThroughSrc) {
   const APFloat *ConstRHS;
-  if (!match(RHS, m_APFloatAllowUndef(ConstRHS)))
+  if (!match(RHS, m_APFloatAllowPoison(ConstRHS)))
     return {nullptr, fcAllFlags};
 
   return fcmpToClassTest(Pred, F, LHS, ConstRHS, LookThroughSrc);
@@ -4647,7 +4647,7 @@ std::tuple<Value *, FPClassTest, FPClassTest>
 llvm::fcmpImpliesClass(CmpInst::Predicate Pred, const Function &F, Value *LHS,
                        Value *RHS, bool LookThroughSrc) {
   const APFloat *ConstRHS;
-  if (!match(RHS, m_APFloatAllowUndef(ConstRHS)))
+  if (!match(RHS, m_APFloatAllowPoison(ConstRHS)))
     return {nullptr, fcAllFlags, fcAllFlags};
 
   // TODO: Just call computeKnownFPClass for RHS to handle non-constants.
