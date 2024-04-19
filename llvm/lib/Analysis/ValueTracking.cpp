@@ -6397,6 +6397,10 @@ bool llvm::isIntrinsicReturningPointerAliasingArgumentWithoutCapturing(
     return true;
   case Intrinsic::ptrmask:
     return !MustPreserveNullness;
+  case Intrinsic::threadlocal_address:
+    // The underlying variable changes with thread ID. The Thread ID may change
+    // at coroutine suspend points.
+    return !Call->getParent()->getParent()->isPresplitCoroutine();
   default:
     return false;
   }
