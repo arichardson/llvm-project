@@ -4793,8 +4793,6 @@ public:
     const TemplateArgumentLoc *operator->() const { return &Arg; }
   };
 
-  TemplateArgumentLocInventIterator() { }
-
   explicit TemplateArgumentLocInventIterator(TreeTransform<Derived> &Self,
                                              InputIterator Iter)
     : Self(Self), Iter(Iter) { }
