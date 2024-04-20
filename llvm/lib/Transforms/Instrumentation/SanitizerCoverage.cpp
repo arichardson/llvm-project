@@ -993,7 +993,7 @@ void ModuleSanitizerCoverage::InjectCoverageAtBlock(Function &F, BasicBlock &BB,
     auto Load = IRB.CreateLoad(Int1Ty, FlagPtr);
     auto ThenTerm = SplitBlockAndInsertIfThen(
         IRB.CreateIsNull(Load), &*IP, false,
-        MDBuilder(IRB.getContext()).createBranchWeights(1, (1 << 20) - 1));
+        MDBuilder(IRB.getContext()).createUnlikelyBranchWeights());
     IRBuilder<> ThenIRB(ThenTerm);
     auto Store = ThenIRB.CreateStore(ConstantInt::getTrue(Int1Ty), FlagPtr);
     Load->setNoSanitizeMetadata();
@@ -1012,7 +1012,7 @@ void ModuleSanitizerCoverage::InjectCoverageAtBlock(Function &F, BasicBlock &BB,
     auto IsStackLower = IRB.CreateICmpULT(FrameAddrInt, LowestStack);
     auto ThenTerm = SplitBlockAndInsertIfThen(
         IsStackLower, &*IP, false,
-        MDBuilder(IRB.getContext()).createBranchWeights(1, (1 << 20) - 1));
+        MDBuilder(IRB.getContext()).createUnlikelyBranchWeights());
     IRBuilder<> ThenIRB(ThenTerm);
     auto Store = ThenIRB.CreateStore(FrameAddrInt, SanCovLowestStack);
     LowestStack->setNoSanitizeMetadata();
