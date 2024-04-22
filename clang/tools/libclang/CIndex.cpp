@@ -2804,6 +2804,10 @@ void OpenACCClauseEnqueue::VisitVectorLengthClause(
     const OpenACCVectorLengthClause &C) {
   Visitor.AddStmt(C.getIntExpr());
 }
+void OpenACCClauseEnqueue::VisitNumGangsClause(const OpenACCNumGangsClause &C) {
+  for (Expr *IE : C.getIntExprs())
+    Visitor.AddStmt(IE);
+}
 } // namespace
 
 void EnqueueVisitor::EnqueueChildren(const OpenACCClause *C) {
