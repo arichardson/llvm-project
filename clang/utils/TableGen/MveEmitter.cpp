@@ -659,9 +659,9 @@ public:
   std::vector<Ptr> Args;
   std::set<unsigned> AddressArgs;
   std::map<unsigned, std::string> IntegerArgs;
-  IRBuilderResult(StringRef CallPrefix, std::vector<Ptr> Args,
-                  std::set<unsigned> AddressArgs,
-                  std::map<unsigned, std::string> IntegerArgs)
+  IRBuilderResult(StringRef CallPrefix, const std::vector<Ptr> &Args,
+                  const std::set<unsigned> &AddressArgs,
+                  const std::map<unsigned, std::string> &IntegerArgs)
       : CallPrefix(CallPrefix), Args(Args), AddressArgs(AddressArgs),
         IntegerArgs(IntegerArgs) {}
   void genCode(raw_ostream &OS,
@@ -728,8 +728,9 @@ public:
   std::string IntrinsicID;
   std::vector<const Type *> ParamTypes;
   std::vector<Ptr> Args;
-  IRIntrinsicResult(StringRef IntrinsicID, std::vector<const Type *> ParamTypes,
-                    std::vector<Ptr> Args)
+  IRIntrinsicResult(StringRef IntrinsicID,
+                    const std::vector<const Type *> &ParamTypes,
+                    const std::vector<Ptr> &Args)
       : IntrinsicID(std::string(IntrinsicID)), ParamTypes(ParamTypes),
         Args(Args) {}
   void genCode(raw_ostream &OS,
