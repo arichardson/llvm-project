@@ -13725,9 +13725,8 @@ static SDValue expandMul(SDNode *N, SelectionDAG &DAG,
       SDValue X = DAG.getFreeze(N->getOperand(0));
       SDValue Shift1 =
           DAG.getNode(ISD::SHL, DL, VT, X, DAG.getConstant(ShiftAmt, DL, VT));
-      SDValue Shift2 =
-          DAG.getNode(ISD::SHL, DL, VT, X, DAG.getConstant(ScaleShift, DL, VT));
-      return DAG.getNode(ISD::ADD, DL, VT, Shift1, Shift2);
+      return DAG.getNode(RISCVISD::SHL_ADD, DL, VT, X,
+                         DAG.getConstant(ScaleShift, DL, VT), Shift1);
     }
   }
 
@@ -13761,10 +13760,9 @@ static SDValue expandMul(SDNode *N, SelectionDAG &DAG,
       SDValue X = DAG.getFreeze(N->getOperand(0));
       SDValue Shift1 =
           DAG.getNode(ISD::SHL, DL, VT, X, DAG.getConstant(ShiftAmt, DL, VT));
-      SDValue Shift2 =
-          DAG.getNode(ISD::SHL, DL, VT, X, DAG.getConstant(ScaleShift, DL, VT));
       return DAG.getNode(ISD::ADD, DL, VT, Shift1,
-                         DAG.getNode(ISD::ADD, DL, VT, Shift2, X));
+                         DAG.getNode(RISCVISD::SHL_ADD, DL, VT, X,
+                                     DAG.getConstant(ScaleShift, DL, VT), X));
     }
   }
 
