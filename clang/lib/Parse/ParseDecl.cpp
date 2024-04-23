@@ -2235,7 +2235,7 @@ Parser::DeclGroupPtrTy Parser::ParseDeclGroup(ParsingDeclSpec &DS,
   }
 
   if (getLangOpts().HLSL)
-    MaybeParseHLSLSemantics(D);
+    MaybeParseHLSLAnnotations(D);
 
   if (Tok.is(tok::kw_requires))
     ParseTrailingRequiresClause(D);
@@ -2482,7 +2482,7 @@ Parser::DeclGroupPtrTy Parser::ParseDeclGroup(ParsingDeclSpec &DS,
     ParseDeclarator(D);
 
     if (getLangOpts().HLSL)
-      MaybeParseHLSLSemantics(D);
+      MaybeParseHLSLAnnotations(D);
 
     if (!D.isInvalidType()) {
       // C++2a [dcl.decl]p1
@@ -7745,7 +7745,7 @@ void Parser::ParseParameterDeclarationClause(
     // Parse GNU attributes, if present.
     MaybeParseGNUAttributes(ParmDeclarator);
     if (getLangOpts().HLSL)
-      MaybeParseHLSLSemantics(DS.getAttributes());
+      MaybeParseHLSLAnnotations(DS.getAttributes());
 
     if (Tok.is(tok::kw_requires)) {
       // User tried to define a requires clause in a parameter declaration,
