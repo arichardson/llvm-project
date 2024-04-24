@@ -1720,8 +1720,9 @@ SDValue SelectionDAG::getConstant(const ConstantInt &Val, const SDLoc &DL,
   assert(Elt->getBitWidth() == EltVT.getSizeInBits() &&
          "APInt size does not match type size!");
   unsigned Opc = isT ? ISD::TargetConstant : ISD::Constant;
+  SDVTList VTs = getVTList(EltVT);
   FoldingSetNodeID ID;
-  AddNodeIDNode(ID, Opc, getVTList(EltVT), std::nullopt);
+  AddNodeIDNode(ID, Opc, VTs, std::nullopt);
   ID.AddPointer(Elt);
   ID.AddBoolean(isO);
   void *IP = nullptr;
@@ -1731,7 +1732,7 @@ SDValue SelectionDAG::getConstant(const ConstantInt &Val, const SDLoc &DL,
       return SDValue(N, 0);
 
   if (!N) {
-    N = newSDNode<ConstantSDNode>(isT, isO, Elt, EltVT);
+    N = newSDNode<ConstantSDNode>(isT, isO, Elt, VTs);
     CSEMap.InsertNode(N, IP);
     InsertNode(N);
     NewSDValueDbgMsg(SDValue(N, 0), "Creating constant: ", this);
@@ -1782,8 +1783,9 @@ SDValue SelectionDAG::getConstantFP(const ConstantFP &V, const SDLoc &DL,
   // value, so that we don't have problems with 0.0 comparing equal to -0.0, and
   // we don't have issues with SNANs.
   unsigned Opc = isTarget ? ISD::TargetConstantFP : ISD::ConstantFP;
+  SDVTList VTs = getVTList(EltVT);
   FoldingSetNodeID ID;
-  AddNodeIDNode(ID, Opc, getVTList(EltVT), std::nullopt);
+  AddNodeIDNode(ID, Opc, VTs, std::nullopt);
   ID.AddPointer(&V);
   void *IP = nullptr;
   SDNode *N = nullptr;
@@ -1792,7 +1794,7 @@ SDValue SelectionDAG::getConstantFP(const ConstantFP &V, const SDLoc &DL,
       return SDValue(N, 0);
 
   if (!N) {
-    N = newSDNode<ConstantFPSDNode>(isTarget, &V, EltVT);
+    N = newSDNode<ConstantFPSDNode>(isTarget, &V, VTs);
     CSEMap.InsertNode(N, IP);
     InsertNode(N);
   }
@@ -1839,8 +1841,9 @@ SDValue SelectionDAG::getGlobalAddress(const GlobalValue *GV, const SDLoc &DL,
   else
     Opc = isTargetGA ? ISD::TargetGlobalAddress : ISD::GlobalAddress;
 
+  SDVTList VTs = getVTList(VT);
   FoldingSetNodeID ID;
-  AddNodeIDNode(ID, Opc, getVTList(VT), std::nullopt);
+  AddNodeIDNode(ID, Opc, VTs, std::nullopt);
   ID.AddPointer(GV);
   ID.AddInteger(Offset);
   ID.AddInteger(TargetFlags);
@@ -1849,7 +1852,7 @@ SDValue SelectionDAG::getGlobalAddress(const GlobalValue *GV, const SDLoc &DL,
     return SDValue(E, 0);
 
   auto *N = newSDNode<GlobalAddressSDNode>(
-      Opc, DL.getIROrder(), DL.getDebugLoc(), GV, VT, Offset, TargetFlags);
+      Opc, DL.getIROrder(), DL.getDebugLoc(), GV, VTs, Offset, TargetFlags);
   CSEMap.InsertNode(N, IP);
     InsertNode(N);
   return SDValue(N, 0);
@@ -1857,14 +1860,15 @@ SDValue SelectionDAG::getGlobalAddress(const GlobalValue *GV, const SDLoc &DL,
 
 SDValue SelectionDAG::getFrameIndex(int FI, EVT VT, bool isTarget) {
   unsigned Opc = isTarget ? ISD::TargetFrameIndex : ISD::FrameIndex;
+  SDVTList VTs = getVTList(VT);
   FoldingSetNodeID ID;
-  AddNodeIDNode(ID, Opc, getVTList(VT), std::nullopt);
+  AddNodeIDNode(ID, Opc, VTs, std::nullopt);
   ID.AddInteger(FI);
   void *IP = nullptr;
   if (SDNode *E = FindNodeOrInsertPos(ID, IP))
     return SDValue(E, 0);
 
-  auto *N = newSDNode<FrameIndexSDNode>(FI, VT, isTarget);
+  auto *N = newSDNode<FrameIndexSDNode>(FI, VTs, isTarget);
   CSEMap.InsertNode(N, IP);
   InsertNode(N);
   return SDValue(N, 0);
@@ -1875,15 +1879,16 @@ SDValue SelectionDAG::getJumpTable(int JTI, EVT VT, bool isTarget,
   assert((TargetFlags == 0 || isTarget) &&
          "Cannot set target flags on target-independent jump tables");
   unsigned Opc = isTarget ? ISD::TargetJumpTable : ISD::JumpTable;
+  SDVTList VTs = getVTList(VT);
   FoldingSetNodeID ID;
-  AddNodeIDNode(ID, Opc, getVTList(VT), std::nullopt);
+  AddNodeIDNode(ID, Opc, VTs, std::nullopt);
   ID.AddInteger(JTI);
   ID.AddInteger(TargetFlags);
   void *IP = nullptr;
   if (SDNode *E = FindNodeOrInsertPos(ID, IP))
     return SDValue(E, 0);
 
-  auto *N = newSDNode<JumpTableSDNode>(JTI, VT, isTarget, TargetFlags);
+  auto *N = newSDNode<JumpTableSDNode>(JTI, VTs, isTarget, TargetFlags);
   CSEMap.InsertNode(N, IP);
   InsertNode(N);
   return SDValue(N, 0);
@@ -1906,8 +1911,9 @@ SDValue SelectionDAG::getConstantPool(const Constant *C, EVT VT,
                     ? getDataLayout().getABITypeAlign(C->getType())
                     : getDataLayout().getPrefTypeAlign(C->getType());
   unsigned Opc = isTarget ? ISD::TargetConstantPool : ISD::ConstantPool;
+  SDVTList VTs = getVTList(VT);
   FoldingSetNodeID ID;
-  AddNodeIDNode(ID, Opc, getVTList(VT), std::nullopt);
+  AddNodeIDNode(ID, Opc, VTs, std::nullopt);
   ID.AddInteger(Alignment->value());
   ID.AddInteger(Offset);
   ID.AddPointer(C);
@@ -1916,7 +1922,7 @@ SDValue SelectionDAG::getConstantPool(const Constant *C, EVT VT,
   if (SDNode *E = FindNodeOrInsertPos(ID, IP))
     return SDValue(E, 0);
 
-  auto *N = newSDNode<ConstantPoolSDNode>(isTarget, C, VT, Offset, *Alignment,
+  auto *N = newSDNode<ConstantPoolSDNode>(isTarget, C, VTs, Offset, *Alignment,
                                           TargetFlags);
   CSEMap.InsertNode(N, IP);
   InsertNode(N);
@@ -1933,8 +1939,9 @@ SDValue SelectionDAG::getConstantPool(MachineConstantPoolValue *C, EVT VT,
   if (!Alignment)
     Alignment = getDataLayout().getPrefTypeAlign(C->getType());
   unsigned Opc = isTarget ? ISD::TargetConstantPool : ISD::ConstantPool;
+  SDVTList VTs = getVTList(VT);
   FoldingSetNodeID ID;
-  AddNodeIDNode(ID, Opc, getVTList(VT), std::nullopt);
+  AddNodeIDNode(ID, Opc, VTs, std::nullopt);
   ID.AddInteger(Alignment->value());
   ID.AddInteger(Offset);
   C->addSelectionDAGCSEId(ID);
@@ -1943,7 +1950,7 @@ SDValue SelectionDAG::getConstantPool(MachineConstantPoolValue *C, EVT VT,
   if (SDNode *E = FindNodeOrInsertPos(ID, IP))
     return SDValue(E, 0);
 
-  auto *N = newSDNode<ConstantPoolSDNode>(isTarget, C, VT, Offset, *Alignment,
+  auto *N = newSDNode<ConstantPoolSDNode>(isTarget, C, VTs, Offset, *Alignment,
                                           TargetFlags);
   CSEMap.InsertNode(N, IP);
   InsertNode(N);
@@ -1981,7 +1988,7 @@ SDValue SelectionDAG::getValueType(EVT VT) {
 SDValue SelectionDAG::getExternalSymbol(const char *Sym, EVT VT) {
   SDNode *&N = ExternalSymbols[Sym];
   if (N) return SDValue(N, 0);
-  N = newSDNode<ExternalSymbolSDNode>(false, Sym, 0, VT);
+  N = newSDNode<ExternalSymbolSDNode>(false, Sym, 0, getVTList(VT));
   InsertNode(N);
   return SDValue(N, 0);
 }
@@ -1995,7 +2002,7 @@ SDValue SelectionDAG::getMCSymbol(MCSymbol *Sym, EVT VT) {
   SDNode *&N = MCSymbols[Sym];
   if (N)
     return SDValue(N, 0);
-  N = newSDNode<MCSymbolSDNode>(Sym, VT);
+  N = newSDNode<MCSymbolSDNode>(Sym, getVTList(VT));
   InsertNode(N);
   return SDValue(N, 0);
 }
@@ -2005,7 +2012,7 @@ SDValue SelectionDAG::getTargetExternalSymbol(const char *Sym, EVT VT,
   SDNode *&N =
       TargetExternalSymbols[std::pair<std::string, unsigned>(Sym, TargetFlags)];
   if (N) return SDValue(N, 0);
-  N = newSDNode<ExternalSymbolSDNode>(true, Sym, TargetFlags, VT);
+  N = newSDNode<ExternalSymbolSDNode>(true, Sym, TargetFlags, getVTList(VT));
   InsertNode(N);
   return SDValue(N, 0);
 }
@@ -2229,9 +2236,10 @@ SDValue SelectionDAG::getVectorShuffle(EVT VT, const SDLoc &dl, SDValue N1,
     }
   }
 
+  SDVTList VTs = getVTList(VT);
   FoldingSetNodeID ID;
   SDValue Ops[2] = { N1, N2 };
-  AddNodeIDNode(ID, ISD::VECTOR_SHUFFLE, getVTList(VT), Ops);
+  AddNodeIDNode(ID, ISD::VECTOR_SHUFFLE, VTs, Ops);
   for (int i = 0; i != NElts; ++i)
     ID.AddInteger(MaskVec[i]);
 
@@ -2245,7 +2253,7 @@ SDValue SelectionDAG::getVectorShuffle(EVT VT, const SDLoc &dl, SDValue N1,
   int *MaskAlloc = OperandAllocator.Allocate<int>(NElts);
   llvm::copy(MaskVec, MaskAlloc);
 
-  auto *N = newSDNode<ShuffleVectorSDNode>(VT, dl.getIROrder(),
+  auto *N = newSDNode<ShuffleVectorSDNode>(VTs, dl.getIROrder(),
                                            dl.getDebugLoc(), MaskAlloc);
   createOperands(N, Ops);
 
@@ -2267,14 +2275,15 @@ SDValue SelectionDAG::getCommutedVectorShuffle(const ShuffleVectorSDNode &SV) {
 }
 
 SDValue SelectionDAG::getRegister(unsigned RegNo, EVT VT) {
+  SDVTList VTs = getVTList(VT);
   FoldingSetNodeID ID;
-  AddNodeIDNode(ID, ISD::Register, getVTList(VT), std::nullopt);
+  AddNodeIDNode(ID, ISD::Register, VTs, std::nullopt);
   ID.AddInteger(RegNo);
   void *IP = nullptr;
   if (SDNode *E = FindNodeOrInsertPos(ID, IP))
     return SDValue(E, 0);
 
-  auto *N = newSDNode<RegisterSDNode>(RegNo, VT);
+  auto *N = newSDNode<RegisterSDNode>(RegNo, VTs);
   N->SDNodeBits.IsDivergent = TLI->isSDNodeSourceOfDivergence(N, FLI, UA);
   CSEMap.InsertNode(N, IP);
   InsertNode(N);
@@ -2323,9 +2332,10 @@ SDValue SelectionDAG::getBlockAddress(const BlockAddress *BA, EVT VT,
                                       int64_t Offset, bool isTarget,
                                       unsigned TargetFlags) {
   unsigned Opc = isTarget ? ISD::TargetBlockAddress : ISD::BlockAddress;
+  SDVTList VTs = getVTList(VT);
 
   FoldingSetNodeID ID;
-  AddNodeIDNode(ID, Opc, getVTList(VT), std::nullopt);
+  AddNodeIDNode(ID, Opc, VTs, std::nullopt);
   ID.AddPointer(BA);
   ID.AddInteger(Offset);
   ID.AddInteger(TargetFlags);
@@ -2333,7 +2343,7 @@ SDValue SelectionDAG::getBlockAddress(const BlockAddress *BA, EVT VT,
   if (SDNode *E = FindNodeOrInsertPos(ID, IP))
     return SDValue(E, 0);
 
-  auto *N = newSDNode<BlockAddressSDNode>(Opc, VT, BA, Offset, TargetFlags);
+  auto *N = newSDNode<BlockAddressSDNode>(Opc, VTs, BA, Offset, TargetFlags);
   CSEMap.InsertNode(N, IP);
   InsertNode(N);
   return SDValue(N, 0);
@@ -2378,9 +2388,10 @@ SDValue SelectionDAG::getBitcast(EVT VT, SDValue V) {
 
 SDValue SelectionDAG::getAddrSpaceCast(const SDLoc &dl, EVT VT, SDValue Ptr,
                                        unsigned SrcAS, unsigned DestAS) {
+  SDVTList VTs = getVTList(VT);
   SDValue Ops[] = {Ptr};
   FoldingSetNodeID ID;
-  AddNodeIDNode(ID, ISD::ADDRSPACECAST, getVTList(VT), Ops);
+  AddNodeIDNode(ID, ISD::ADDRSPACECAST, VTs, Ops);
   ID.AddInteger(SrcAS);
   ID.AddInteger(DestAS);
 
@@ -2389,7 +2400,7 @@ SDValue SelectionDAG::getAddrSpaceCast(const SDLoc &dl, EVT VT, SDValue Ptr,
     return SDValue(E, 0);
 
   auto *N = newSDNode<AddrSpaceCastSDNode>(dl.getIROrder(), dl.getDebugLoc(),
-                                           VT, SrcAS, DestAS);
+                                           VTs, SrcAS, DestAS);
   createOperands(N, Ops);
 
   CSEMap.InsertNode(N, IP);
@@ -5763,14 +5774,14 @@ static SDValue foldCONCAT_VECTORS(const SDLoc &DL, EVT VT,
 
 /// Gets or creates the specified node.
 SDValue SelectionDAG::getNode(unsigned Opcode, const SDLoc &DL, EVT VT) {
+  SDVTList VTs = getVTList(VT);
   FoldingSetNodeID ID;
-  AddNodeIDNode(ID, Opcode, getVTList(VT), std::nullopt);
+  AddNodeIDNode(ID, Opcode, VTs, std::nullopt);
   void *IP = nullptr;
   if (SDNode *E = FindNodeOrInsertPos(ID, DL, IP))
     return SDValue(E, 0);
 
-  auto *N = newSDNode<SDNode>(Opcode, DL.getIROrder(), DL.getDebugLoc(),
-                              getVTList(VT));
+  auto *N = newSDNode<SDNode>(Opcode, DL.getIROrder(), DL.getDebugLoc(), VTs);
   CSEMap.InsertNode(N, IP);
 
   InsertNode(N);
@@ -6717,16 +6728,17 @@ SDValue SelectionDAG::getAssertAlign(const SDLoc &DL, SDValue Val, Align A) {
   if (A == Align(1))
     return Val;
 
+  SDVTList VTs = getVTList(Val.getValueType());
   FoldingSetNodeID ID;
-  AddNodeIDNode(ID, ISD::AssertAlign, getVTList(Val.getValueType()), {Val});
+  AddNodeIDNode(ID, ISD::AssertAlign, VTs, {Val});
   ID.AddInteger(A.value());
 
   void *IP = nullptr;
   if (SDNode *E = FindNodeOrInsertPos(ID, DL, IP))
     return SDValue(E, 0);
 
-  auto *N = newSDNode<AssertAlignSDNode>(DL.getIROrder(), DL.getDebugLoc(),
-                                         Val.getValueType(), A);
+  auto *N =
+      newSDNode<AssertAlignSDNode>(DL.getIROrder(), DL.getDebugLoc(), VTs, A);
   createOperands(N, {Val});
 
   CSEMap.InsertNode(N, IP);
@@ -12007,17 +12019,17 @@ HandleSDNode::~HandleSDNode() {
 
 GlobalAddressSDNode::GlobalAddressSDNode(unsigned Opc, unsigned Order,
                                          const DebugLoc &DL,
-                                         const GlobalValue *GA, EVT VT,
+                                         const GlobalValue *GA, SDVTList VTs,
                                          int64_t o, unsigned TF)
-    : SDNode(Opc, Order, DL, getSDVTList(VT)), Offset(o), TargetFlags(TF) {
+    : SDNode(Opc, Order, DL, VTs), Offset(o), TargetFlags(TF) {
   TheGlobal = GA;
 }
 
 AddrSpaceCastSDNode::AddrSpaceCastSDNode(unsigned Order, const DebugLoc &dl,
-                                         EVT VT, unsigned SrcAS,
+                                         SDVTList VTs, unsigned SrcAS,
                                          unsigned DestAS)
-    : SDNode(ISD::ADDRSPACECAST, Order, dl, getSDVTList(VT)),
-      SrcAddrSpace(SrcAS), DestAddrSpace(DestAS) {}
+    : SDNode(ISD::ADDRSPACECAST, Order, dl, VTs), SrcAddrSpace(SrcAS),
+      DestAddrSpace(DestAS) {}
 
 MemSDNode::MemSDNode(unsigned Opc, unsigned Order, const DebugLoc &dl,
                      SDVTList VTs, EVT memvt, MachineMemOperand *mmo)
