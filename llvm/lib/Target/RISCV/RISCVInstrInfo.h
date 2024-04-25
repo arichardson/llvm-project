@@ -288,6 +288,9 @@ public:
       SmallVectorImpl<MachineInstr *> &DelInstrs,
       DenseMap<unsigned, unsigned> &InstrIdxForVirtReg) const override;
 
+  bool hasReassociableOperands(const MachineInstr &Inst,
+                               const MachineBasicBlock *MBB) const override;
+
   bool hasReassociableSibling(const MachineInstr &Inst,
                               bool &Commuted) const override;
 
@@ -295,6 +298,10 @@ public:
                                    bool Invert) const override;
 
   std::optional<unsigned> getInverseOpcode(unsigned Opcode) const override;
+
+  void getReassociateOperandIndices(
+      const MachineInstr &Root, unsigned Pattern,
+      std::array<unsigned, 5> &OperandIndices) const override;
 
   ArrayRef<std::pair<MachineMemOperand::Flags, const char *>>
   getSerializableMachineMemOperandTargetFlags() const override;
@@ -319,6 +326,13 @@ protected:
 
 private:
   unsigned getInstBundleLength(const MachineInstr &MI) const;
+
+  bool isVectorAssociativeAndCommutative(const MachineInstr &MI,
+                                         bool Invert = false) const;
+  bool areRVVInstsReassociable(const MachineInstr &MI1,
+                               const MachineInstr &MI2) const;
+  bool hasReassociableVectorSibling(const MachineInstr &Inst,
+                                    bool &Commuted) const;
 };
 
 namespace RISCV {
