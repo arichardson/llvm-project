@@ -247,7 +247,6 @@ MCELFStreamer *createRISCVELFStreamer(MCContext &C,
                                       bool RelaxAll) {
   RISCVELFStreamer *S =
       new RISCVELFStreamer(C, std::move(MAB), std::move(MOW), std::move(MCE));
-  S->getAssembler().setRelaxAll(RelaxAll);
   return S;
 }
 } // namespace llvm
