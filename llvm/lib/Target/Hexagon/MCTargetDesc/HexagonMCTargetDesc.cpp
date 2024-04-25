@@ -387,8 +387,7 @@ static MCTargetStreamer *createMCAsmTargetStreamer(MCStreamer &S,
 static MCStreamer *createMCStreamer(Triple const &T, MCContext &Context,
                                     std::unique_ptr<MCAsmBackend> &&MAB,
                                     std::unique_ptr<MCObjectWriter> &&OW,
-                                    std::unique_ptr<MCCodeEmitter> &&Emitter,
-                                    bool RelaxAll) {
+                                    std::unique_ptr<MCCodeEmitter> &&Emitter) {
   return createHexagonELFStreamer(T, Context, std::move(MAB), std::move(OW),
                                   std::move(Emitter));
 }

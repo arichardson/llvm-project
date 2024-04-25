@@ -82,8 +82,7 @@ protected:
 MCELFStreamer *createMipsELFStreamer(MCContext &Context,
                                      std::unique_ptr<MCAsmBackend> MAB,
                                      std::unique_ptr<MCObjectWriter> OW,
-                                     std::unique_ptr<MCCodeEmitter> Emitter,
-                                     bool RelaxAll);
+                                     std::unique_ptr<MCCodeEmitter> Emitter);
 } // end namespace llvm
 
 #endif // LLVM_LIB_TARGET_MIPS_MCTARGETDESC_MIPSELFSTREAMER_H

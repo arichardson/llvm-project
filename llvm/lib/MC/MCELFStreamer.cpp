@@ -874,8 +874,7 @@ void MCELFStreamer::createAttributesSection(
 MCStreamer *llvm::createELFStreamer(MCContext &Context,
                                     std::unique_ptr<MCAsmBackend> &&MAB,
                                     std::unique_ptr<MCObjectWriter> &&OW,
-                                    std::unique_ptr<MCCodeEmitter> &&CE,
-                                    bool RelaxAll) {
+                                    std::unique_ptr<MCCodeEmitter> &&CE) {
   MCELFStreamer *S =
       new MCELFStreamer(Context, std::move(MAB), std::move(OW), std::move(CE));
   return S;
