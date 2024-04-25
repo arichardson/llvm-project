@@ -1205,8 +1205,8 @@ defvar RV32 = DefaultMode;
 def RV64           : HwMode<"+64bit", [IsRV64]>;
 
 def FeatureCheri
-    : SubtargetFeature<"xcheri", "HasCheri", "true",
-                       "Implements CHERI extension">;
+    : RISCVExtension<"xcheri", 0 , 0,
+                     "Implements CHERI extension", [], "HasCheri">;
 def HasCheri : Predicate<"Subtarget->hasCheri()">,
                          AssemblerPredicate<(all_of FeatureCheri),
                          "CHERI Extension">;
