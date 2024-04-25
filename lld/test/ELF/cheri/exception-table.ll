@@ -18,10 +18,10 @@
 ; RV64-OBJ-RELOCS-NEXT:   0x20 R_RISCV_CHERI_CAPABILITY_CODE .L_Z4testll$local 0x5C
 ; RV64-OBJ-RELOCS-NEXT:   0x40 R_RISCV_CHERI_CAPABILITY_CODE .L_Z4testll$local 0x48
 ; RV64-OBJ-RELOCS-NEXT:   0x80 R_RISCV_CHERI_CAPABILITY_CODE .L_Z5test2ll$local 0x44
-; RV64-OBJ-RELOCS-NEXT:   0x95 R_RISCV_ADD32 <null> 0x0
-; RV64-OBJ-RELOCS-NEXT:   0x95 R_RISCV_SUB32 <null> 0x0
+; RV64-OBJ-RELOCS-NEXT:   0x95 R_RISCV_ADD32 .L0 0x0
+; RV64-OBJ-RELOCS-NEXT:   0x95 R_RISCV_SUB32 .L0 0x0
 ; RV64-OBJ-RELOCS-NEXT:   0xA4 R_RISCV_ADD32 .L_ZTIl.DW.stub 0x0
-; RV64-OBJ-RELOCS-NEXT:   0xA4 R_RISCV_SUB32 <null> 0x0
+; RV64-OBJ-RELOCS-NEXT:   0xA4 R_RISCV_SUB32 .L0 0x0
 ; RV64-OBJ-RELOCS-NEXT:   0xC0 R_RISCV_CHERI_CAPABILITY_CODE .L_Z9test_weakll$local 0x1C
 ; RV64-OBJ-RELOCS-NEXT: }
 
@@ -104,7 +104,7 @@
 ; RV64-RELOCS-NEXT:   0x002{{.+}} Base: 0x[[#%x,TEST_ADDR]] (.L_Z4testll$local+72) Length: 116 Perms: Code
 ; RV64-RELOCS-NEXT:   0x002{{.+}} Base: 0x[[#%x,TEST2_ADDR]] (.L_Z5test2ll$local+68) Length: 124 Perms: Code
 ; Next one references the local symbol, and uses that length rather than the override:
-; RV64-RELOCS-NEXT:   0x002{{.+}} Base: 0x[[#%x,TEST_WEAK_ADDR]] (.L_Z9test_weakll$local+28) Length: 52 Perms: Code
+; RV64-RELOCS-NEXT:   0x002{{.+}} Base: 0x[[#%x,TEST_WEAK_ADDR]] (.L0 +28) Length: 52 Perms: Code
 ; RV64-RELOCS-NEXT:   0x003{{.+}} Base: 0x[[#%x,PLT0_ADDR:]] (<unknown symbol>+0) Length: 80 Perms: Code
 ; RV64-RELOCS-NEXT:   0x003{{.+}} Base: 0x[[#%x,PLT0_ADDR]] (<unknown symbol>+0) Length: 80 Perms: Code
 ; RV64-RELOCS-NEXT:   0x003{{.+}} Base: 0x[[#%x,PLT0_ADDR]] (<unknown symbol>+0) Length: 80 Perms: Code

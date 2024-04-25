@@ -4901,7 +4901,7 @@ emitArraySubscriptGEP(CodeGenFunction &CGF, Address Addr, ArrayRef<llvm::Value *
     }
   } else {
     // For now don't setbounds for OMPArraySectionExpr
-    assert(isa<OMPArraySectionExpr>(E) && "Called with wrong expr type");
+    assert(isa<ArraySectionExpr>(E) && "Called with wrong expr type");
   }
   if (inbounds) {
     return CGF.EmitCheckedInBoundsGEP(Addr, indices, elementType, signedIndices,
