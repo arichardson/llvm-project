@@ -3243,7 +3243,7 @@ bool SelectionDAGLegalize::ExpandNode(SDNode *Node) {
       break;
     }
 
-    LLVM_FALLTHROUGH;
+    [[fallthrough]];
   }
   case ISD::BITCAST:
     if ((Tmp1 = EmitStackConvert(Node->getOperand(0), Node->getValueType(0),
