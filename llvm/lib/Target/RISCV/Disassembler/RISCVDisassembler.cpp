@@ -228,7 +228,7 @@ static DecodeStatus DecodeGPRPairRegisterClass(MCInst &Inst, uint32_t RegNo,
   return MCDisassembler::Success;
 }
 
-static DecodeStatus DecodeSR07RegisterClass(MCInst &Inst, uint64_t RegNo,
+static DecodeStatus DecodeSR07RegisterClass(MCInst &Inst, uint32_t RegNo,
                                             uint64_t Address,
                                             const void *Decoder) {
   if (RegNo >= 8)
@@ -301,7 +301,7 @@ static DecodeStatus DecodeVRM8RegisterClass(MCInst &Inst, uint32_t RegNo,
   return MCDisassembler::Success;
 }
 
-static DecodeStatus decodeVMaskReg(MCInst &Inst, uint64_t RegNo,
+static DecodeStatus decodeVMaskReg(MCInst &Inst, uint32_t RegNo,
                                    uint64_t Address,
                                    const MCDisassembler *Decoder) {
   if (RegNo > 2) {
@@ -407,13 +407,13 @@ static DecodeStatus decodeXTHeadMemPair(MCInst &Inst, uint32_t Insn,
                                         uint64_t Address,
                                         const MCDisassembler *Decoder);
 
-static DecodeStatus decodeZcmpRlist(MCInst &Inst, unsigned Imm,
+static DecodeStatus decodeZcmpRlist(MCInst &Inst, uint32_t Imm,
                                     uint64_t Address, const void *Decoder);
 
 static DecodeStatus decodeRegReg(MCInst &Inst, uint32_t Insn, uint64_t Address,
                                  const MCDisassembler *Decoder);
 
-static DecodeStatus decodeZcmpSpimm(MCInst &Inst, unsigned Imm,
+static DecodeStatus decodeZcmpSpimm(MCInst &Inst, uint32_t Imm,
                                     uint64_t Address, const void *Decoder);
 
 static DecodeStatus decodeCSSPushPopchk(MCInst &Inst, uint32_t Insn,
@@ -516,7 +516,7 @@ static DecodeStatus decodeXTHeadMemPair(MCInst &Inst, uint32_t Insn,
   return MCDisassembler::Success;
 }
 
-static DecodeStatus decodeZcmpRlist(MCInst &Inst, unsigned Imm,
+static DecodeStatus decodeZcmpRlist(MCInst &Inst, uint32_t Imm,
                                     uint64_t Address, const void *Decoder) {
   if (Imm <= 3)
     return MCDisassembler::Fail;
@@ -533,7 +533,7 @@ static DecodeStatus decodeRegReg(MCInst &Inst, uint32_t Insn, uint64_t Address,
   return MCDisassembler::Success;
 }
 
-static DecodeStatus decodeZcmpSpimm(MCInst &Inst, unsigned Imm,
+static DecodeStatus decodeZcmpSpimm(MCInst &Inst, uint32_t Imm,
                                     uint64_t Address, const void *Decoder) {
   Inst.addOperand(MCOperand::createImm(Imm));
   return MCDisassembler::Success;
