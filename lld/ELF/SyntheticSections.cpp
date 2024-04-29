@@ -3463,6 +3463,8 @@ void elf::combineEhSections() {
     if (sec->flags & SHF_WRITE)
       eh.flags |= SHF_WRITE; // TODO: Or should we just do Flags |= Sec->Flags?
     eh.sections.push_back(sec);
+    if (sec->flags & SHF_WRITE)
+      eh.flags |= SHF_WRITE;
     llvm::append_range(eh.dependentSections, sec->dependentSections);
   }
 
