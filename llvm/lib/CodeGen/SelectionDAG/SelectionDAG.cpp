@@ -5185,6 +5185,16 @@ bool SelectionDAG::canCreateUndefOrPoison(SDValue Op, const APInt &DemandedElts,
   case ISD::FREEZE:
   case ISD::CONCAT_VECTORS:
   case ISD::INSERT_SUBVECTOR:
+  case ISD::SADDSAT:
+  case ISD::UADDSAT:
+  case ISD::SSUBSAT:
+  case ISD::USUBSAT:
+  case ISD::MULHU:
+  case ISD::MULHS:
+  case ISD::SMIN:
+  case ISD::SMAX:
+  case ISD::UMIN:
+  case ISD::UMAX:
   case ISD::AND:
   case ISD::XOR:
   case ISD::ROTL:
@@ -5205,6 +5215,7 @@ bool SelectionDAG::canCreateUndefOrPoison(SDValue Op, const APInt &DemandedElts,
   case ISD::BUILD_PAIR:
     return false;
 
+  case ISD::SELECT_CC:
   case ISD::SETCC: {
     // Integer setcc cannot create undef or poison.
     if (Op.getOperand(0).getValueType().isInteger())
@@ -5214,7 +5225,8 @@ bool SelectionDAG::canCreateUndefOrPoison(SDValue Op, const APInt &DemandedElts,
     // based on options and flags. The options and flags also cause special
     // nonan condition codes to be used. Those condition codes may be preserved
     // even if the nonan flag is dropped somewhere.
-    ISD::CondCode CCCode = cast<CondCodeSDNode>(Op.getOperand(2))->get();
+    unsigned CCOp = Opcode == ISD::SETCC ? 2 : 4;
+    ISD::CondCode CCCode = cast<CondCodeSDNode>(Op.getOperand(CCOp))->get();
     if (((unsigned)CCCode & 0x10U))
       return true;
 
@@ -5231,6 +5243,8 @@ bool SelectionDAG::canCreateUndefOrPoison(SDValue Op, const APInt &DemandedElts,
     return false;
 
   case ISD::SHL:
+  case ISD::SRL:
+  case ISD::SRA:
     // If the max shift amount isn't in range, then the shift can create poison.
     return !getValidMaximumShiftAmountConstant(Op, DemandedElts);
 
