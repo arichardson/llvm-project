@@ -16399,7 +16399,7 @@ bool AArch64TargetLowering::lowerInterleavedStore(StoreInst *SI,
 bool AArch64TargetLowering::lowerDeinterleaveIntrinsicToLoad(
     IntrinsicInst *DI, LoadInst *LI) const {
   // Only deinterleave2 supported at present.
-  if (DI->getIntrinsicID() != Intrinsic::experimental_vector_deinterleave2)
+  if (DI->getIntrinsicID() != Intrinsic::vector_deinterleave2)
     return false;
 
   // Only a factor of 2 supported at present.
@@ -16474,7 +16474,7 @@ bool AArch64TargetLowering::lowerDeinterleaveIntrinsicToLoad(
 bool AArch64TargetLowering::lowerInterleaveIntrinsicToStore(
     IntrinsicInst *II, StoreInst *SI) const {
   // Only interleave2 supported at present.
-  if (II->getIntrinsicID() != Intrinsic::experimental_vector_interleave2)
+  if (II->getIntrinsicID() != Intrinsic::vector_interleave2)
     return false;
 
   // Only a factor of 2 supported at present.
