@@ -2970,17 +2970,20 @@ Instruction *InstCombinerImpl::visitGetElementPtrInst(GetElementPtrInst &GEP) {
       // as:
       //   %newptr = getelementptr i32, ptr %ptr, i64 %idx1
       //   %newgep = getelementptr i32, ptr %newptr, i64 %idx2
-      // CHERI - we cannot create out-of-bounds geps
       bool IsInBounds = CanPreserveInBounds(
           cast<OverflowingBinaryOperator>(GEP.getOperand(1))->hasNoSignedWrap(),
           Idx1, Idx2);
+
+      // CHERI - we cannot create out-of-bounds geps
       if (IsCapability && !IsInBounds &&
           !cheri::isKnownUntaggedCapability(GEP.getPointerOperand(), &DL))
         return nullptr;
-      auto *NewPtr = Builder.CreateGEP(GEP.getResultElementType(),
-                                       GEP.getPointerOperand(), Idx1);
-      return GetElementPtrInst::Create(GEP.getResultElementType(), NewPtr,
-                                       Idx2);
+      auto *NewPtr =
+          Builder.CreateGEP(GEP.getResultElementType(), GEP.getPointerOperand(),
+                            Idx1, "", IsInBounds);
+      return replaceInstUsesWith(
+          GEP, Builder.CreateGEP(GEP.getResultElementType(), NewPtr, Idx2, "",
+                                 IsInBounds));
     }
     ConstantInt *C;
     if (match(GEP.getOperand(1), m_OneUse(m_SExtLike(m_OneUse(m_NSWAdd(
@@ -3000,10 +3003,13 @@ Instruction *InstCombinerImpl::visitGetElementPtrInst(GetElementPtrInst &GEP) {
         return nullptr;
       auto *NewPtr = Builder.CreateGEP(
           GEP.getResultElementType(), GEP.getPointerOperand(),
-          Builder.CreateSExt(Idx1, GEP.getOperand(1)->getType()));
-      return GetElementPtrInst::Create(
-          GEP.getResultElementType(), NewPtr,
-          Builder.CreateSExt(C, GEP.getOperand(1)->getType()));
+          Builder.CreateSExt(Idx1, GEP.getOperand(1)->getType()), "",
+          IsInBounds);
+      return replaceInstUsesWith(
+          GEP,
+          Builder.CreateGEP(GEP.getResultElementType(), NewPtr,
+                            Builder.CreateSExt(C, GEP.getOperand(1)->getType()),
+                            "", IsInBounds));
     }
   }
 
