@@ -186,7 +186,7 @@ private:
   /// All vector operands are promoted to a vector type with larger element
   /// type, and the start value is promoted to a larger scalar type. Then the
   /// result is truncated back to the original scalar type.
-  void PromoteReduction(SDNode *Node, SmallVectorImpl<SDValue> &Results);
+  SDValue PromoteReduction(SDNode *Node);
 
   SDValue ExpandPARITY(SDValue Op, const SDLoc &dl);
 
@@ -3033,8 +3033,7 @@ SDValue SelectionDAGLegalize::ExpandPARITY(SDValue Op, const SDLoc &dl) {
   return DAG.getNode(ISD::AND, dl, VT, Result, DAG.getConstant(1, dl, VT));
 }
 
-void SelectionDAGLegalize::PromoteReduction(SDNode *Node,
-                                            SmallVectorImpl<SDValue> &Results) {
+SDValue SelectionDAGLegalize::PromoteReduction(SDNode *Node) {
   MVT VecVT = Node->getOperand(1).getSimpleValueType();
   MVT NewVecVT = TLI.getTypeToPromoteTo(Node->getOpcode(), VecVT);
   MVT ScalarVT = Node->getSimpleValueType(0);
@@ -3068,10 +3067,8 @@ void SelectionDAGLegalize::PromoteReduction(SDNode *Node,
                             Node->getFlags());
 
   assert(ScalarVT.isFloatingPoint() && "Only FP promotion is supported");
-  Res = DAG.getNode(ISD::FP_ROUND, DL, ScalarVT, Res,
-                    DAG.getIntPtrConstant(0, DL, /*isTarget=*/true));
-
-  Results.push_back(Res);
+  return DAG.getNode(ISD::FP_ROUND, DL, ScalarVT, Res,
+                     DAG.getIntPtrConstant(0, DL, /*isTarget=*/true));
 }
 
 bool SelectionDAGLegalize::ExpandNode(SDNode *Node) {
@@ -5734,7 +5731,7 @@ void SelectionDAGLegalize::PromoteNode(SDNode *Node) {
   case ISD::VP_REDUCE_FMAX:
   case ISD::VP_REDUCE_FMIN:
   case ISD::VP_REDUCE_SEQ_FADD:
-    PromoteReduction(Node, Results);
+    Results.push_back(PromoteReduction(Node));
     break;
   }
 
