@@ -913,7 +913,8 @@ SDValue LoongArchTargetLowering::getTLSDescAddr(GlobalAddressSDNode *N,
                                                 SelectionDAG &DAG, unsigned Opc,
                                                 bool Large) const {
   SDLoc DL(N);
-  EVT Ty = getPointerTy(DAG.getDataLayout());
+  unsigned GlobalAS = DAG.getDataLayout().getDefaultGlobalsAddressSpace();
+  EVT Ty = getPointerTy(DAG.getDataLayout(), GlobalAS);
   const GlobalValue *GV = N->getGlobal();
 
   // This is not actually used, but is necessary for successfully matching the
