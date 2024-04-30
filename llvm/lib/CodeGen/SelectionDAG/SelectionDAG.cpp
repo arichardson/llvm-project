@@ -5279,13 +5279,13 @@ bool SelectionDAG::canCreateUndefOrPoison(SDValue Op, const APInt &DemandedElts,
   return true;
 }
 
-bool SelectionDAG::isADDLike(SDValue Op) const {
+bool SelectionDAG::isADDLike(SDValue Op, bool NoWrap) const {
   unsigned Opcode = Op.getOpcode();
   if (Opcode == ISD::OR)
     return Op->getFlags().hasDisjoint() ||
            haveNoCommonBitsSet(Op.getOperand(0), Op.getOperand(1));
   if (Opcode == ISD::XOR)
-    return isMinSignedConstant(Op.getOperand(1));
+    return !NoWrap && isMinSignedConstant(Op.getOperand(1));
   if (Opcode == ISD::PTRADD)
     return isa<ConstantSDNode>(Op.getOperand(1));
   return false;
