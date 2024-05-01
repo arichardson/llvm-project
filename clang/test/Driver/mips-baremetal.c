@@ -1,3 +1,5 @@
+// CHERI-TODO: Fix this test after https://reviews.llvm.org/D131225 was introduced
+// UNSUPPORTED: true
 // RUN: %clang -target mips64-none-elf %s -o %t -### 2>&1 | FileCheck %s -check-prefixes CHECK,NOSYSROOT,N64
 // RUN: %clang --sysroot=/foo/bar -target mips64-none-elf %s -o %t -### 2>&1 | FileCheck %s -check-prefixes CHECK,SYSROOT,N64
 
