@@ -57,8 +57,6 @@ public:
 
   BitVector getReservedRegs(const MachineFunction &MF) const override;
 
-  bool isConstantPhysReg(MCRegister PhysReg) const override;
-
   bool requiresRegisterScavenging(const MachineFunction &MF) const override;
 
   /// Stack Frame Processing Methods
