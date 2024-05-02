@@ -267,6 +267,8 @@ def GPRNoX0X2 : GPRRegisterClass<(sub GPR, X0, X2)>;
 // by tablegen.
 def GPRJALR : GPRRegisterClass<(sub GPR, (sequence "X%u", 0, 5))>;
 
+def GPRJALRNonX7 : GPRRegisterClass<(sub GPRJALR, X7)>;
+
 def GPRC : GPRRegisterClass<(add (sequence "X%u", 10, 15),
                                  (sequence "X%u", 8, 9))>;
 
@@ -284,6 +286,7 @@ def GPCRC : RegisterClass<"RISCV", [CLenVT], 64, (add
 def GPRTC : GPRRegisterClass<(add (sequence "X%u", 6, 7),
                                   (sequence "X%u", 10, 17),
                                   (sequence "X%u", 28, 31))>;
+def GPRTCNonX7 : GPRRegisterClass<(sub GPRTC, X7)>;
 
 def GPCRTC : RegisterClass<"RISCV", [CLenVT], 64, (add
     (sequence "C%u", 5, 7),
