@@ -1038,10 +1038,7 @@ public:
       setAllowFPContractAcrossStatement();
   }
 
-  void setDisallowOptimizations() {
-    setFPPreciseEnabled(true);
-    setDisallowFPContract();
-  }
+  void setDisallowOptimizations() { setFPPreciseEnabled(true); }
 
   storage_type getAsOpaqueInt() const {
     return (static_cast<storage_type>(Options.getAsOpaqueInt())
