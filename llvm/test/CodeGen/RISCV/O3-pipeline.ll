@@ -121,7 +121,6 @@
 ; CHECK-NEXT:       RISC-V Merge Base Offset
 ; CHECK-NEXT:       RISC-V Insert VSETVLI pass
 ; CHECK-NEXT:       Cheri Get Address Elimination
-; CHECK-NEXT:       RISC-V Dead register definitions
 ; CHECK-NEXT:       RISC-V Insert Read/Write CSR Pass
 ; CHECK-NEXT:       RISC-V Insert Write VXRM Pass
 ; CHECK-NEXT:       Detect Dead Lanes
@@ -149,6 +148,7 @@
 ; CHECK-NEXT:       Greedy Register Allocator
 ; CHECK-NEXT:       Virtual Register Rewriter
 ; CHECK-NEXT:       RISC-V Coalesce VSETVLI pass
+; CHECK-NEXT:       RISC-V Dead register definitions
 ; CHECK-NEXT:       Virtual Register Map
 ; CHECK-NEXT:       Live Register Matrix
 ; CHECK-NEXT:       Greedy Register Allocator

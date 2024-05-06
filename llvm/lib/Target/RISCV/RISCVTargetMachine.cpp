@@ -418,6 +418,9 @@ FunctionPass *RISCVPassConfig::createRVVRegAllocPass(bool Optimized) {
 bool RISCVPassConfig::addRegAssignAndRewriteFast() {
   addPass(createRVVRegAllocPass(false));
   addPass(createRISCVCoalesceVSETVLIPass());
+  if (TM->getOptLevel() != CodeGenOptLevel::None &&
+      EnableRISCVDeadRegisterElimination)
+    addPass(createRISCVDeadRegisterDefinitionsPass());
   return TargetPassConfig::addRegAssignAndRewriteFast();
 }
 
@@ -425,6 +428,9 @@ bool RISCVPassConfig::addRegAssignAndRewriteOptimized() {
   addPass(createRVVRegAllocPass(true));
   addPass(createVirtRegRewriter(false));
   addPass(createRISCVCoalesceVSETVLIPass());
+  if (TM->getOptLevel() != CodeGenOptLevel::None &&
+      EnableRISCVDeadRegisterElimination)
+    addPass(createRISCVDeadRegisterDefinitionsPass());
   return TargetPassConfig::addRegAssignAndRewriteOptimized();
 }
 
@@ -567,9 +573,6 @@ void RISCVPassConfig::addPreRegAlloc() {
   addPass(createRISCVInsertVSETVLIPass());
   if (TM->getOptLevel() != CodeGenOptLevel::None)
     addPass(createCheriGetAddressElimPass());
-  if (TM->getOptLevel() != CodeGenOptLevel::None &&
-      EnableRISCVDeadRegisterElimination)
-    addPass(createRISCVDeadRegisterDefinitionsPass());
   addPass(createRISCVInsertReadWriteCSRPass());
   addPass(createRISCVInsertWriteVXRMPass());
 }
