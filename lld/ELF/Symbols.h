@@ -260,14 +260,15 @@ protected:
          uint8_t stOther, uint8_t type)
       : file(file), nameData(name.data()), nameSize(name.size()), type(type),
         binding(binding), stOther(stOther), symbolKind(k),
-        usedByDynReloc(false), isPreemptible(false), isUsedInRegularObj(false),
-        used(false), exportDynamic(false), inDynamicList(false),
-        referenced(false), referencedAfterWrap(false), traced(false),
-        hasVersionSuffix(false), isInIplt(false), gotInIgot(false),
-        folded(false), needsTocRestore(false), scriptDefined(false),
-        dsoProtected(false), needsCopy(false), needsGot(false), needsPlt(false),
-        needsTlsDesc(false), needsTlsGd(false), needsTlsGdToIe(false),
-        needsGotDtprel(false), needsTlsIe(false), hasDirectReloc(false) {}
+        usedByDynReloc(false), isSectionStartSymbol(false),
+        isPreemptible(false), isUsedInRegularObj(false), used(false),
+        exportDynamic(false), inDynamicList(false), referenced(false),
+        referencedAfterWrap(false), traced(false), hasVersionSuffix(false),
+        isInIplt(false), gotInIgot(false), folded(false),
+        needsTocRestore(false), scriptDefined(false), dsoProtected(false),
+        needsCopy(false), needsGot(false), needsPlt(false), needsTlsDesc(false),
+        needsTlsGd(false), needsTlsGdToIe(false), needsGotDtprel(false),
+        needsTlsIe(false), hasDirectReloc(false) {}
 
 public:
   // True if this symbol is in the Iplt sub-section of the Plt and the Igot
