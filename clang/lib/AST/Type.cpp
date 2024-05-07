@@ -263,7 +263,8 @@ void DependentSizedArrayType::Profile(
   ID.AddPointer(ET.getAsOpaquePtr());
   ID.AddInteger(llvm::to_underlying(SizeMod));
   ID.AddInteger(TypeQuals);
-  E->Profile(ID, Context, true);
+  if (E)
+    E->Profile(ID, Context, true);
   ID.AddBoolean(PIK.has_value());
   if (PIK.has_value())
     ID.AddInteger(*PIK);
