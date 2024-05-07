@@ -764,7 +764,7 @@ using namespace clang::targets;
 TargetInfo *
 TargetInfo::CreateTargetInfo(DiagnosticsEngine &Diags,
                              const std::shared_ptr<TargetOptions> &Opts) {
-  llvm::Triple Triple(llvm::Triple::normalize(Opts->Triple));
+  llvm::Triple Triple(Opts->Triple);
 
   // FIXME: this is probably not the right place to add this
   if (Triple.isMIPS() && Opts->ABI == "purecap") {
