@@ -240,7 +240,7 @@ public:
     return AtomicExpansionKind::None;
   }
 
-  AtomicExpansionKind shouldCastAtomicRMWIInIR(AtomicRMWInst *) const override {
+  AtomicExpansionKind shouldCastAtomicRMWIInIR(AtomicRMWInst *, const DataLayout &) const override {
     return AtomicExpansionKind::None;
   }
 
