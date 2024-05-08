@@ -1538,9 +1538,6 @@ def BranchProtection : DiagGroup<"branch-protection">;
 // Warnings for HLSL Clang extensions
 def HLSLExtension : DiagGroup<"hlsl-extensions">;
 
-// Warning for mix packoffset and non-packoffset.
-def HLSLMixPackOffset : DiagGroup<"mix-packoffset">;
-
 // Warnings for DXIL validation
 def DXILValidation : DiagGroup<"dxil-validation">;
 
