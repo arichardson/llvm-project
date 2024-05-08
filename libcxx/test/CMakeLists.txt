@@ -4,6 +4,12 @@ set(LIBCXX_TEST_LINKER_FLAGS "" CACHE STRING
 set(LIBCXX_TEST_COMPILER_FLAGS "" CACHE STRING
     "Additonal linker flags to pass when compiling the tests")
 add_subdirectory(tools)
+# When the tools add clang-tidy support, the dependencies need to be updated.
+# This cannot be done in the tools CMakeLists.txt since that does not update
+# the status in this (a parent) directory.
+if(TARGET cxx-tidy)
+  list(APPEND LIBCXX_TEST_DEPS cxx-tidy)
+endif()
 
 # By default, libcxx and libcxxabi share a library directory.
 if (NOT LIBCXX_CXX_ABI_LIBRARY_PATH)
