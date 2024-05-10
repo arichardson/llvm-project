@@ -570,11 +570,11 @@ void RISCVPassConfig::addPreRegAlloc() {
   addPass(createRISCVPreRAExpandPseudoPass());
   if (TM->getOptLevel() != CodeGenOptLevel::None)
     addPass(createRISCVMergeBaseOffsetOptPass());
-  addPass(createRISCVInsertVSETVLIPass());
   if (TM->getOptLevel() != CodeGenOptLevel::None)
     addPass(createCheriGetAddressElimPass());
   addPass(createRISCVInsertReadWriteCSRPass());
   addPass(createRISCVInsertWriteVXRMPass());
+  addPass(createRISCVInsertVSETVLIPass());
 }
 
 void RISCVPassConfig::addFastRegAlloc() {
