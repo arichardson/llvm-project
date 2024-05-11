@@ -155,7 +155,7 @@ bool link(ArrayRef<const char *> args, llvm::raw_ostream &stdoutOS,
       "--warning-limit=0 to see all warnings)\n";
 
   config = ConfigWrapper();
-  script = std::make_unique<LinkerScript>();
+  script = ScriptWrapper();
 
   symAux.emplace_back();
 
