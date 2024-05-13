@@ -6311,7 +6311,9 @@ bool Sema::isTemplateTemplateParameterAtLeastAsSpecializedAs(
     //   specialized as A.
     SmallVector<TemplateArgument, 4> SugaredPArgs;
     if (CheckTemplateArgumentList(AArg, Loc, PArgList, false, SugaredPArgs,
-                                  PArgs) ||
+                                  PArgs, /*UpdateArgsWithConversions=*/true,
+                                  /*ConstraintsNotSatisfied=*/nullptr,
+                                  /*PartialOrderTTP=*/true) ||
         Trap.hasErrorOccurred())
       return false;
   }
