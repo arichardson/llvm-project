@@ -6359,11 +6359,11 @@ void SelectionDAGBuilder::visitVectorHistogram(const CallInst &I,
       MemoryLocation::UnknownSize, Alignment, I.getAAMetadata(), Ranges);
 
   if (!UniformBase) {
-    Base = DAG.getConstant(0, sdl, TLI.getPointerTy(DAG.getDataLayout()));
+    Base = DAG.getConstant(0, sdl, TLI.getPointerTy(DAG.getDataLayout(), AS));
     Index = getValue(Ptr);
     IndexType = ISD::SIGNED_SCALED;
     Scale =
-        DAG.getTargetConstant(1, sdl, TLI.getPointerTy(DAG.getDataLayout()));
+        DAG.getTargetConstant(1, sdl, TLI.getPointerTy(DAG.getDataLayout(), AS));
   }
 
   EVT IdxVT = Index.getValueType();
