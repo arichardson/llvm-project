@@ -1281,6 +1281,8 @@ static void readConfigs(opt::InputArgList &args) {
   config->emitRelocs = args.hasArg(OPT_emit_relocs);
   config->enableNewDtags =
       args.hasFlag(OPT_enable_new_dtags, OPT_disable_new_dtags, true);
+  config->enableNonContiguousRegions =
+      args.hasArg(OPT_enable_non_contiguous_regions);
   config->entry = args.getLastArgValue(OPT_entry);
 
   errorHandler().errorHandlingScript =
@@ -3153,7 +3155,7 @@ template <class ELFT> void LinkerDriver::link(opt::InputArgList &args) {
     // sectionBases.
     for (SectionCommand *cmd : script->sectionCommands)
       if (auto *osd = dyn_cast<OutputDesc>(cmd))
-        osd->osec.finalizeInputSections();
+        osd->osec.finalizeInputSections(&script.s);
   }
 
   // Two input sections with different output sections should not be folded.
