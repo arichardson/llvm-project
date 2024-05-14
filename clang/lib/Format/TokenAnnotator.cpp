@@ -126,7 +126,9 @@ public:
                    const AdditionalKeywords &Keywords,
                    SmallVector<ScopeType> &Scopes)
       : Style(Style), Line(Line), CurrentToken(Line.First), AutoFound(false),
-        IsCpp(Style.isCpp()), Keywords(Keywords), Scopes(Scopes) {
+        IsCpp(Style.isCpp()), LangOpts(getFormattingLangOpts(Style)),
+        Keywords(Keywords), Scopes(Scopes) {
+    assert(IsCpp == LangOpts.CXXOperatorNames);
     Contexts.push_back(Context(tok::unknown, 1, /*IsExpression=*/false));
     resetTokenMetadata();
   }
@@ -562,7 +564,7 @@ private:
           (CurrentToken->is(tok::l_paren) && CurrentToken->Next &&
            CurrentToken->Next->isOneOf(tok::star, tok::amp, tok::caret));
       if ((CurrentToken->Previous->isOneOf(tok::kw_const, tok::kw_auto) ||
-           CurrentToken->Previous->isTypeName(IsCpp)) &&
+           CurrentToken->Previous->isTypeName(LangOpts)) &&
           !(CurrentToken->is(tok::l_brace) ||
             (CurrentToken->is(tok::l_paren) && !ProbablyFunctionTypeLParen))) {
         Contexts.back().IsExpression = false;
@@ -2626,7 +2628,7 @@ private:
       return true;
 
     // MyClass a;
-    if (PreviousNotConst->isTypeName(IsCpp))
+    if (PreviousNotConst->isTypeName(LangOpts))
       return true;
 
     // type[] a in Java
@@ -2730,7 +2732,7 @@ private:
     }
 
     if (Tok.Next->is(tok::question) ||
-        (Tok.Next->is(tok::ampamp) && !Tok.Previous->isTypeName(IsCpp))) {
+        (Tok.Next->is(tok::ampamp) && !Tok.Previous->isTypeName(LangOpts))) {
       return false;
     }
 
@@ -2759,9 +2761,10 @@ private:
     }
 
     // Heuristically try to determine whether the parentheses contain a type.
-    auto IsQualifiedPointerOrReference = [](FormatToken *T, bool IsCpp) {
+    auto IsQualifiedPointerOrReference = [](FormatToken *T,
+                                            const LangOptions &LangOpts) {
       // This is used to handle cases such as x = (foo *const)&y;
-      assert(!T->isTypeName(IsCpp) && "Should have already been checked");
+      assert(!T->isTypeName(LangOpts) && "Should have already been checked");
       // Strip trailing qualifiers such as const or volatile when checking
       // whether the parens could be a cast to a pointer/reference type.
       while (T) {
@@ -2793,8 +2796,8 @@ private:
     bool ParensAreType =
         !Tok.Previous ||
         Tok.Previous->isOneOf(TT_TemplateCloser, TT_TypeDeclarationParen) ||
-        Tok.Previous->isTypeName(IsCpp) ||
-        IsQualifiedPointerOrReference(Tok.Previous, IsCpp);
+        Tok.Previous->isTypeName(LangOpts) ||
+        IsQualifiedPointerOrReference(Tok.Previous, LangOpts);
     bool ParensCouldEndDecl =
         Tok.Next->isOneOf(tok::equal, tok::semi, tok::l_brace, tok::greater);
     if (ParensAreType && !ParensCouldEndDecl)
@@ -3068,6 +3071,7 @@ private:
   FormatToken *CurrentToken;
   bool AutoFound;
   bool IsCpp;
+  LangOptions LangOpts;
   const AdditionalKeywords &Keywords;
 
   SmallVector<ScopeType> &Scopes;
@@ -3642,7 +3646,8 @@ void TokenAnnotator::annotate(AnnotatedLine &Line) {
 
 // This function heuristically determines whether 'Current' starts the name of a
 // function declaration.
-static bool isFunctionDeclarationName(bool IsCpp, const FormatToken &Current,
+static bool isFunctionDeclarationName(const LangOptions &LangOpts,
+                                      const FormatToken &Current,
                                       const AnnotatedLine &Line,
                                       FormatToken *&ClosingParen) {
   assert(Current.Previous);
@@ -3661,7 +3666,7 @@ static bool isFunctionDeclarationName(bool IsCpp, const FormatToken &Current,
   }
 
   auto skipOperatorName =
-      [IsCpp](const FormatToken *Next) -> const FormatToken * {
+      [&LangOpts](const FormatToken *Next) -> const FormatToken * {
     for (; Next; Next = Next->Next) {
       if (Next->is(TT_OverloadedOperatorLParen))
         return Next;
@@ -3680,7 +3685,7 @@ static bool isFunctionDeclarationName(bool IsCpp, const FormatToken &Current,
         Next = Next->Next;
         continue;
       }
-      if ((Next->isTypeName(IsCpp) || Next->is(tok::identifier)) &&
+      if ((Next->isTypeName(LangOpts) || Next->is(tok::identifier)) &&
           Next->Next && Next->Next->isPointerOrReference()) {
         // For operator void*(), operator char*(), operator Foo*().
         Next = Next->Next;
@@ -3696,8 +3701,10 @@ static bool isFunctionDeclarationName(bool IsCpp, const FormatToken &Current,
     return nullptr;
   };
 
+  const auto *Next = Current.Next;
+  const bool IsCpp = LangOpts.CXXOperatorNames;
+
   // Find parentheses of parameter list.
-  const FormatToken *Next = Current.Next;
   if (Current.is(tok::kw_operator)) {
     if (Previous.Tok.getIdentifierInfo() &&
         !Previous.isOneOf(tok::kw_return, tok::kw_co_return)) {
@@ -3777,7 +3784,7 @@ static bool isFunctionDeclarationName(bool IsCpp, const FormatToken &Current,
       Tok = Tok->MatchingParen;
       continue;
     }
-    if (Tok->is(tok::kw_const) || Tok->isTypeName(IsCpp) ||
+    if (Tok->is(tok::kw_const) || Tok->isTypeName(LangOpts) ||
         Tok->isOneOf(TT_PointerOrReference, TT_StartOfName, tok::ellipsis)) {
       return true;
     }
@@ -3840,7 +3847,7 @@ void TokenAnnotator::calculateFormattingInformation(AnnotatedLine &Line) const {
       AfterLastAttribute = Tok;
     if (const bool IsCtorOrDtor = Tok->is(TT_CtorDtorDeclName);
         IsCtorOrDtor ||
-        isFunctionDeclarationName(IsCpp, *Tok, Line, ClosingParen)) {
+        isFunctionDeclarationName(LangOpts, *Tok, Line, ClosingParen)) {
       if (!IsCtorOrDtor)
         Tok->setFinalizedType(TT_FunctionDeclarationName);
       LineIsFunctionDeclaration = true;
@@ -4450,7 +4457,7 @@ bool TokenAnnotator::spaceRequiredBetween(const AnnotatedLine &Line,
     if (Left.Tok.isLiteral())
       return true;
     // for (auto a = 0, b = 0; const auto & c : {1, 2, 3})
-    if (Left.isTypeOrIdentifier(IsCpp) && Right.Next && Right.Next->Next &&
+    if (Left.isTypeOrIdentifier(LangOpts) && Right.Next && Right.Next->Next &&
         Right.Next->Next->is(TT_RangeBasedForLoopColon)) {
       return getTokenPointerOrReferenceAlignment(Right) !=
              FormatStyle::PAS_Left;
@@ -4493,7 +4500,7 @@ bool TokenAnnotator::spaceRequiredBetween(const AnnotatedLine &Line,
     if (Right.is(tok::l_brace) && Right.is(BK_Block))
       return true;
     // for (auto a = 0, b = 0; const auto& c : {1, 2, 3})
-    if (BeforeLeft && BeforeLeft->isTypeOrIdentifier(IsCpp) && Right.Next &&
+    if (BeforeLeft && BeforeLeft->isTypeOrIdentifier(LangOpts) && Right.Next &&
         Right.Next->is(TT_RangeBasedForLoopColon)) {
       return getTokenPointerOrReferenceAlignment(Left) !=
              FormatStyle::PAS_Right;
@@ -4537,7 +4544,7 @@ bool TokenAnnotator::spaceRequiredBetween(const AnnotatedLine &Line,
   if (Right.isPointerOrReference()) {
     const FormatToken *Previous = &Left;
     while (Previous && Previous->isNot(tok::kw_operator)) {
-      if (Previous->is(tok::identifier) || Previous->isTypeName(IsCpp)) {
+      if (Previous->is(tok::identifier) || Previous->isTypeName(LangOpts)) {
         Previous = Previous->getPreviousNonComment();
         continue;
       }
@@ -4726,7 +4733,7 @@ bool TokenAnnotator::spaceRequiredBetween(const AnnotatedLine &Line,
   if (!Style.isVerilog() &&
       (Left.isOneOf(tok::identifier, tok::greater, tok::r_square,
                     tok::r_paren) ||
-       Left.isTypeName(IsCpp)) &&
+       Left.isTypeName(LangOpts)) &&
       Right.is(tok::l_brace) && Right.getNextNonComment() &&
       Right.isNot(BK_Block)) {
     return false;
