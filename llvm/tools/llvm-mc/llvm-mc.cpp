@@ -575,6 +575,9 @@ int main(int argc, char **argv) {
       Str->initSections(true, *STI);
   }
 
+  // Use Assembler information for parsing.
+  Str->setUseAssemblerInfoForParsing(true);
+
   int Res = 1;
   bool disassemble = false;
   switch (Action) {
