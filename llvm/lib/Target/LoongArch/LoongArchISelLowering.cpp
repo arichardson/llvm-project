@@ -4999,3 +4999,11 @@ ISD::NodeType LoongArchTargetLowering::getExtendForAtomicCmpSwapArg() const {
   // TODO: LAMCAS will use amcas{_DB,}.[bhwd] which does not require extension.
   return ISD::SIGN_EXTEND;
 }
+
+bool LoongArchTargetLowering::shouldSignExtendTypeInLibCall(
+    EVT Type, bool IsSigned) const {
+  if (Subtarget.is64Bit() && Type == MVT::i32)
+    return true;
+
+  return IsSigned;
+}
