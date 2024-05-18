@@ -3309,7 +3309,7 @@ static bool IsInternalDeclFromFileContext(const Decl *D) {
 /// \returns the offset of the DECL_CONTEXT_LEXICAL block within the
 /// bitstream, or 0 if no block was written.
 uint64_t ASTWriter::WriteDeclContextLexicalBlock(ASTContext &Context,
-                                                 DeclContext *DC) {
+                                                 const DeclContext *DC) {
   if (DC->decls_empty())
     return 0;
 
@@ -5703,8 +5703,8 @@ void ASTWriter::WriteDeclUpdatesBlocks(RecordDataImpl &OffsetsRecord) {
         break;
 
       case UPD_CXX_INSTANTIATED_DEFAULT_ARGUMENT:
-        Record.AddStmt(const_cast<Expr *>(
-            cast<ParmVarDecl>(Update.getDecl())->getDefaultArg()));
+        Record.writeStmtRef(
+            cast<ParmVarDecl>(Update.getDecl())->getDefaultArg());
         break;
 
       case UPD_CXX_INSTANTIATED_DEFAULT_MEMBER_INITIALIZER:
@@ -5718,8 +5718,7 @@ void ASTWriter::WriteDeclUpdatesBlocks(RecordDataImpl &OffsetsRecord) {
         Record.push_back(RD->isParamDestroyedInCallee());
         Record.push_back(llvm::to_underlying(RD->getArgPassingRestrictions()));
         Record.AddCXXDefinitionData(RD);
-        Record.AddOffset(WriteDeclContextLexicalBlock(
-            *Context, const_cast<CXXRecordDecl *>(RD)));
+        Record.AddOffset(WriteDeclContextLexicalBlock(*Context, RD));
 
         // This state is sometimes updated by template instantiation, when we
         // switch from the specialization referring to the template declaration
@@ -6362,7 +6361,7 @@ void ASTRecordWriter::AddTemplateParameterList(
     AddDeclRef(P);
   if (const Expr *RequiresClause = TemplateParams->getRequiresClause()) {
     Record->push_back(true);
-    AddStmt(const_cast<Expr*>(RequiresClause));
+    writeStmtRef(RequiresClause);
   } else {
     Record->push_back(false);
   }
@@ -7819,7 +7818,7 @@ void ASTRecordWriter::writeOpenACCClause(const OpenACCClause *C) {
   case OpenACCClauseKind::If: {
     const auto *IC = cast<OpenACCIfClause>(C);
     writeSourceLocation(IC->getLParenLoc());
-    AddStmt(const_cast<Expr *>(IC->getConditionExpr()));
+    writeStmtRef(IC->getConditionExpr());
     return;
   }
   case OpenACCClauseKind::Self: {
@@ -7827,7 +7826,7 @@ void ASTRecordWriter::writeOpenACCClause(const OpenACCClause *C) {
     writeSourceLocation(SC->getLParenLoc());
     writeBool(SC->hasConditionExpr());
     if (SC->hasConditionExpr())
-      AddStmt(const_cast<Expr *>(SC->getConditionExpr()));
+      writeStmtRef(SC->getConditionExpr());
     return;
   }
   case OpenACCClauseKind::NumGangs: {
@@ -7841,13 +7840,13 @@ void ASTRecordWriter::writeOpenACCClause(const OpenACCClause *C) {
   case OpenACCClauseKind::NumWorkers: {
     const auto *NWC = cast<OpenACCNumWorkersClause>(C);
     writeSourceLocation(NWC->getLParenLoc());
-    AddStmt(const_cast<Expr *>(NWC->getIntExpr()));
+    writeStmtRef(NWC->getIntExpr());
     return;
   }
   case OpenACCClauseKind::VectorLength: {
     const auto *NWC = cast<OpenACCVectorLengthClause>(C);
     writeSourceLocation(NWC->getLParenLoc());
-    AddStmt(const_cast<Expr *>(NWC->getIntExpr()));
+    writeStmtRef(NWC->getIntExpr());
     return;
   }
   case OpenACCClauseKind::Private: {
@@ -7926,7 +7925,7 @@ void ASTRecordWriter::writeOpenACCClause(const OpenACCClause *C) {
     writeSourceLocation(AC->getLParenLoc());
     writeBool(AC->hasIntExpr());
     if (AC->hasIntExpr())
-      AddStmt(const_cast<Expr *>(AC->getIntExpr()));
+      writeStmtRef(AC->getIntExpr());
     return;
   }
   case OpenACCClauseKind::Wait: {
@@ -7934,7 +7933,7 @@ void ASTRecordWriter::writeOpenACCClause(const OpenACCClause *C) {
     writeSourceLocation(WC->getLParenLoc());
     writeBool(WC->getDevNumExpr());
     if (const Expr *DNE = WC->getDevNumExpr())
-      AddStmt(const_cast<Expr *>(DNE));
+      writeStmtRef(DNE);
     writeSourceLocation(WC->getQueuesLoc());
 
     writeOpenACCIntExprList(WC->getQueueIdExprs());
