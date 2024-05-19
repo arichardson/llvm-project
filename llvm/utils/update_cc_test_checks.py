@@ -281,7 +281,7 @@ def get_function_body(builder, args, filename, clang_pipeline: 'list[Command]',
     if '-emit-llvm' in clang_pipeline[0].args:
         builder.process_run_line(
             common.OPT_FUNCTION_RE, common.scrub_body, raw_tool_output,
-            prefixes, False
+            prefixes
         )
         builder.processed_prefixes(prefixes)
     else:

@@ -382,7 +382,8 @@ CodeGenModule::CodeGenModule(ASTContext &C,
   // the pointer range and not as an integer with the same width as a pointer
   IntPtrTy = llvm::IntegerType::get(LLVMContext,
     C.getTargetInfo().getMaxPointerRange());
-  Int8PtrTy = getPointerInDefaultAS(Int8Ty);
+  Int8PtrTy = llvm::PointerType::get(LLVMContext,
+                                     C.getTargetAddressSpace(LangAS::Default));
   if (Target.SupportsCapabilities()) {
     Int8CheriCapTy =
         Int8Ty->getPointerTo(getTargetCodeGenInfo().getCHERICapabilityAS());
