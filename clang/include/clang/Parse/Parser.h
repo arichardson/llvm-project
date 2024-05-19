@@ -1647,8 +1647,6 @@ private:
                                bool EnterScope, bool OnDefinition);
   void ParseLexedAttribute(LateParsedAttribute &LA,
                            bool EnterScope, bool OnDefinition);
-  void ParseLexedCAttribute(LateParsedAttribute &LA,
-                            ParsedAttributes *OutAttrs = nullptr);
   void ParseLexedMethodDeclarations(ParsingClass &Class);
   void ParseLexedMethodDeclaration(LateParsedMethodDeclaration &LM);
   void ParseLexedMethodDefs(ParsingClass &Class);
@@ -2535,8 +2533,7 @@ private:
 
   void ParseStructDeclaration(
       ParsingDeclSpec &DS,
-      llvm::function_ref<Decl *(ParsingFieldDeclarator &)> FieldsCallback,
-      LateParsedAttrList *LateFieldAttrs = nullptr);
+      llvm::function_ref<void(ParsingFieldDeclarator &)> FieldsCallback);
 
   DeclGroupPtrTy ParseTopLevelStmtDecl();
 
@@ -3114,8 +3111,6 @@ private:
                                  IdentifierInfo *ScopeName,
                                  SourceLocation ScopeLoc,
                                  ParsedAttr::Form Form);
-
-  void DistributeCLateParsedAttrs(Decl *Dcl, LateParsedAttrList *LateAttrs);
 
   void ParseBoundsAttribute(IdentifierInfo &AttrName,
                             SourceLocation AttrNameLoc, ParsedAttributes &Attrs,
