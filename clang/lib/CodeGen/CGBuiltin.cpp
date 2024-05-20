@@ -5818,7 +5818,7 @@ RValue CodeGenFunction::EmitBuiltinExpr(const GlobalDecl GD, unsigned BuiltinID,
     auto ClsTy = ConvertType(CGM.getContext().getCHERIClassType());
     auto ResultType = llvm::StructType::get(ClsTy, MethNoTy);
     LValue Obj = EmitAggExprToLValue(E->getArg(1));
-    auto Addr = Obj.getAddress(*this);
+    auto Addr = Obj.getAddress();
     auto ClsVal = Addr.withElementType(ClsTy);
     // auto ClsVal = Builder.CreateElementBitCast(Obj.getAddress(*this), ClsTy);
     llvm::Value *Struct = llvm::Constant::getNullValue(ResultType);
@@ -6064,8 +6064,8 @@ RValue CodeGenFunction::EmitBuiltinExpr(const GlobalDecl GD, unsigned BuiltinID,
     llvm::Value *Queue = EmitScalarExpr(E->getArg(0));
     llvm::Value *Flags = EmitScalarExpr(E->getArg(1));
     LValue NDRangeL = EmitAggExprToLValue(E->getArg(2));
-    llvm::Value *Range = NDRangeL.getAddress(*this).emitRawPointer(*this);
-    llvm::Type *RangeTy = NDRangeL.getAddress(*this).getType();
+    llvm::Value *Range = NDRangeL.getAddress().emitRawPointer(*this);
+    llvm::Type *RangeTy = NDRangeL.getAddress().getType();
 
     if (NumArgs == 4) {
       // The most basic form of the call with parameters:
@@ -6084,7 +6084,7 @@ RValue CodeGenFunction::EmitBuiltinExpr(const GlobalDecl GD, unsigned BuiltinID,
           Builder.CreatePointerCast(Info.BlockArg, GenericVoidPtrTy);
 
       AttrBuilder B(Builder.getContext());
-      B.addByValAttr(NDRangeL.getAddress(*this).getElementType());
+      B.addByValAttr(NDRangeL.getAddress().getElementType());
       llvm::AttributeList ByValAttrSet =
           llvm::AttributeList::get(CGM.getModule().getContext(), 3U, B);
 
@@ -6272,7 +6272,7 @@ RValue CodeGenFunction::EmitBuiltinExpr(const GlobalDecl GD, unsigned BuiltinID,
     llvm::Type *GenericVoidPtrTy = Builder.getPtrTy(
         getContext().getTargetAddressSpace(LangAS::opencl_generic));
     LValue NDRangeL = EmitAggExprToLValue(E->getArg(0));
-    llvm::Value *NDRange = NDRangeL.getAddress(*this).emitRawPointer(*this);
+    llvm::Value *NDRange = NDRangeL.getAddress().emitRawPointer(*this);
     auto Info =
         CGM.getOpenCLRuntime().emitOpenCLEnqueuedBlock(*this, E->getArg(1));
     Value *Kernel =
@@ -22075,7 +22075,7 @@ Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
     // Handle aggregate argument, namely RVV tuple types in segment load/store
     if (hasAggregateEvaluationKind(E->getArg(i)->getType())) {
       LValue L = EmitAggExprToLValue(E->getArg(i));
-      llvm::Value *AggValue = Builder.CreateLoad(L.getAddress(*this));
+      llvm::Value *AggValue = Builder.CreateLoad(L.getAddress());
       Ops.push_back(AggValue);
       continue;
     }
