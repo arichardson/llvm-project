@@ -2093,7 +2093,16 @@ SDValue SelectionDAGLegalize::ExpandSPLAT_VECTOR(SDNode *Node) {
 std::pair<SDValue, SDValue> SelectionDAGLegalize::ExpandLibCall(RTLIB::Libcall LC, SDNode *Node,
                                             TargetLowering::ArgListTy &&Args,
                                             bool isSigned) {
-  SDValue Callee = DAG.getExternalFunctionSymbol(TLI.getLibcallName(LC));
+  const auto &DL = DAG.getDataLayout();
+  EVT CodePtrTy = TLI.getPointerTy(DL, DL.getProgramAddressSpace());
+  SDValue Callee;
+  if (const char *LibcallName = TLI.getLibcallName(LC))
+    Callee = DAG.getExternalSymbol(LibcallName, CodePtrTy);
+  else {
+    Callee = DAG.getUNDEF(CodePtrTy);
+    DAG.getContext()->emitError(Twine("no libcall available for ") +
+                                Node->getOperationName(&DAG));
+  }
 
   EVT RetVT = Node->getValueType(0);
   Type *RetTy = RetVT.getTypeForEVT(*DAG.getContext());
