@@ -104,6 +104,9 @@ enum class GnuStackKind { None, Exec, NoExec };
 // For --lto=
 enum LtoKind : uint8_t {UnifiedThin, UnifiedRegular, Default};
 
+// For -z gcs=
+enum class GcsPolicy { Implicit, Never, Always };
+
 struct SymbolVersion {
   llvm::StringRef name;
   bool isExternCpp;
@@ -191,6 +194,7 @@ struct Config {
   StringRef zBtiReport = "none";
   StringRef zCetReport = "none";
   StringRef zPauthReport = "none";
+  StringRef zGcsReport = "none";
   bool ltoBBAddrMap;
   llvm::StringRef ltoBasicBlockSections;
   std::pair<llvm::StringRef, llvm::StringRef> thinLTOObjectSuffixReplace;
@@ -354,6 +358,7 @@ struct Config {
   bool useRelativeElfCheriRelocs;
   CapTableScopePolicy capTableScope;
 
+  GcsPolicy zGcs;
   bool power10Stubs;
   ARMVFPArgKind armVFPArgs = ARMVFPArgKind::Default;
   BuildIdKind buildId = BuildIdKind::None;
