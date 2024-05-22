@@ -1283,7 +1283,7 @@ Constant *llvm::ConstantFoldCompareInstOperands(
   if (!Ops1)
     return nullptr;
 
-  return ConstantExpr::getCompare(Predicate, Ops0, Ops1);
+  return ConstantFoldCompareInstruction(Predicate, Ops0, Ops1);
 }
 
 Constant *llvm::ConstantFoldUnaryOpOperand(unsigned Opcode, Constant *Op,
