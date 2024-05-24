@@ -71,9 +71,6 @@ class ObjCARCContract {
   ARCRuntimeEntryPoints EP;
   BundledRetainClaimRVs *BundledInsts = nullptr;
 
-  /// A flag indicating whether this optimization pass should run.
-  bool Run;
-
   /// The inline asm string to insert between calls and RetainRV calls to make
   /// the optimization work on targets which need it.
   const MDString *RVInstMarker;
@@ -531,10 +528,6 @@ bool ObjCARCContract::tryToPeepholeInstruction(
 //===----------------------------------------------------------------------===//
 
 bool ObjCARCContract::init(Module &M) {
-  Run = ModuleHasARC(M);
-  if (!Run)
-    return false;
-
   EP.init(&M);
 
   // Initialize RVInstMarker.
@@ -545,9 +538,6 @@ bool ObjCARCContract::init(Module &M) {
 
 bool ObjCARCContract::run(Function &F, AAResults *A, DominatorTree *D) {
   if (!EnableARCOpts)
-    return false;
-
-  if (!Run)
     return false;
 
   Changed = CFGChanged = false;
