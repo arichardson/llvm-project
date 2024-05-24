@@ -1939,6 +1939,11 @@ class TemplateDiff {
       return;
     }
 
+    if (E) {
+      PrintExpr(E);
+      return;
+    }
+
     OS << "(no argument)";
   }
 
