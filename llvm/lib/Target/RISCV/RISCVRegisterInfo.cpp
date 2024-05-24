@@ -192,6 +192,7 @@ void RISCVRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator II,
   MachineRegisterInfo &MRI = MF.getRegInfo();
   const RISCVSubtarget &STI = MF.getSubtarget<RISCVSubtarget>();
   const RISCVInstrInfo *TII = STI.getInstrInfo();
+  const TargetRegisterInfo *TRI = MF.getSubtarget().getRegisterInfo();
   DebugLoc DL = MI.getDebugLoc();
 
   int FrameIndex = MI.getOperand(FIOperandNum).getIndex();
@@ -260,6 +261,9 @@ void RISCVRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator II,
       if (!DestReg)
         DestReg = ScratchReg;
     }
+
+    if(isPureCapABI)
+      ScratchReg = TRI->getSubReg(ScratchReg, RISCV::sub_cap_addr);
 
     TII->movImm(MBB, II, DL, ScratchReg, Offset.getFixed());
     BuildMI(MBB, II, DL, TII->get(Opc), isPureCapABI ? DestReg : ScratchReg)
