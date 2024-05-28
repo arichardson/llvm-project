@@ -2804,6 +2804,7 @@ void ASTStmtReader::VisitOpenACCConstructStmt(OpenACCConstructStmt *S) {
   (void)Record.readInt();
   S->Kind = Record.readEnum<OpenACCDirectiveKind>();
   S->Range = Record.readSourceRange();
+  S->DirectiveLoc = Record.readSourceLocation();
   Record.readOpenACCClauseList(S->Clauses);
 }
 
