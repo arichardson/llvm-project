@@ -1929,7 +1929,7 @@ void DevirtModule::rebuildGlobal(VTableBits &B) {
   auto Alias = GlobalAlias::create(
       B.GV->getInitializer()->getType(),
       M.getDataLayout().getDefaultGlobalsAddressSpace(), B.GV->getLinkage(), "",
-      ConstantExpr::getGetElementPtr(
+      ConstantExpr::getInBoundsGetElementPtr(
           NewInit->getType(), NewGV,
           ArrayRef<Constant *>{ConstantInt::get(Int32Ty, 0),
                                ConstantInt::get(Int32Ty, 1)}),

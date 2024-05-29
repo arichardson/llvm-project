@@ -13,7 +13,7 @@
 let Component = "Sema" in {
 let CategoryName = "Semantic Issue" in {
 def warn_calling_non_sensitive_from_sensitive : Warning<
-  "Calling non-sensitive function %0 from sensitive function %1 may result in"
+  "calling non-sensitive function %0 from sensitive function %1 may result in"
   " sensitive data being leaked to the stack">,
   InGroup<DiagGroup<"sensitive-function">>;
 
@@ -1385,14 +1385,14 @@ def warn_cheri_fnptr_proto_noproto_conversion: Warning<
   "may cause incorrect parameters to be passed at run time">,
   DefaultIgnore, InGroup<CHERIPrototypesStrict>;  // This is really noisy (at least for CheriBSD so make it opt-in)
 def note_cheri_func_variadic_explanation : Note<
-  "The calling convention for variadic functions may pass all arguments on the stack. "
+  "the calling convention for variadic functions may pass all arguments on the stack. "
   "This means a non-variadic function called with this calling convention "
-  "may read uninitialized values from the argument registers.">;
+  "may read uninitialized values from the argument registers">;
 def note_cheri_func_noproto_explanation : Note<
-  "Calling functions without prototypes is dangerous because on some architectures (e.g. pure-capability MIPS) "
+  "calling functions without prototypes is dangerous because on some architectures (e.g. pure-capability MIPS) "
   "integer and pointer arguments are passed in different registers. If the call includes a "
   "parameter that does not match the function definition, the function will read uninitialized "
-  "values from the argument registers.">;
+  "values from the argument registers">;
 def note_cheri_func_decl_add_types : Note<
   "candidate function declaration needs parameter types">;
 def err_cheri_capability_qualifier_not_supported : Error<
@@ -7564,12 +7564,12 @@ def warn_uintcap_bitwise_and : Warning<
   "if this is an alignment check use __builtin_{is_aligned,align_up,align_down}(); "
   "if you are operating on integer values only consider using size_t/ptraddr_t; "
   "if you are attempting to store data in the low pointer bits use the "
-  "cheri_low_bits_{get,set,clear}() macros.">,
+  "cheri_low_bits_{get,set,clear}() macros">,
   InGroup<CHERIBitwiseOps>;
 def warn_uintcap_bad_bitwise_op : Warning<
   "using %select{xor|shifts|remainder}0 on a capability type only operates on the offset; "
   "consider using %select{ptraddr_t if this is used for pointer hashing|__builtin_is_aligned() instead}1 "
-  "or explicitly get the offset with __builtin_cheri_offset_get().">,
+  "or explicitly get the offset with __builtin_cheri_offset_get()">,
   InGroup<CHERIBitwiseOps>;
 
 def warn_ambiguous_provenance_capability_binop : Warning<
@@ -7590,7 +7590,7 @@ def warn_packed_capability_in_array : Warning<
   "if structure is used in an array">,
   InGroup<CHERICaps>;
 def note_insert_attribute_aligned : Note<
-  "Add __attribute__((aligned(%0))) to ensure sufficient alignment">;
+  "add __attribute__((aligned(%0))) to ensure sufficient alignment">;
 def warn_capability_no_provenance : Warning<
   "cast from provenance-free integer type to pointer type will give pointer"
   " that can not be dereferenced">,
@@ -7608,7 +7608,7 @@ def warn_cheri_underalign : Warning<
   "alignment (%0) of %1 is less than the required capability alignment (%2)">,
   InGroup<CHERICaps>;
 def note_cheri_underalign_annotate_fixit : Note<
-  "If you are certain that this is correct you can silence the warning by "
+  "if you are certain that this is correct you can silence the warning by "
   "adding __attribute__((annotate(\"underaligned_capability\")))">;
 def warn_capability_pointer_cast : Warning<
   "cast from capability type %0 to non-capability type %1 is most likely an "
