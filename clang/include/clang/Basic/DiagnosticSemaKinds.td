@@ -7242,7 +7242,7 @@ def warn_capability_no_provenance : Warning<
   "cast from provenance-free integer type to pointer type will give pointer"
   " that can not be dereferenced">,
   InGroup<CHERICaps>;
-def err_capability_no_provenance : Error<warn_capability_no_provenance.Text>;
+def err_capability_no_provenance : Error<warn_capability_no_provenance.Summary>;
 def note_capability_no_provenance_fixit : Note<
   "use an explicit capability conversion or insert a cast to "
   "%select{u|}1int%select{cap|ptr}0_t if this is intended">;
@@ -8404,7 +8404,7 @@ def ext_typecheck_convert_incompatible_function_pointer : ExtWarn<
   err_typecheck_convert_incompatible_function_pointer.Summary>,
   InGroup<IncompatibleFunctionPointerTypes>, DefaultError;
 def warn_typecheck_convert_incompatible_function_pointer_strict : Warning<
-  err_typecheck_convert_incompatible_function_pointer.Text>,
+  err_typecheck_convert_incompatible_function_pointer.Summary>,
   InGroup<DiagGroup<"incompatible-function-pointer-types-strict">>, DefaultIgnore;
 def ext_typecheck_convert_discards_qualifiers : ExtWarn<
   "%select{%diff{assigning to $ from $|assigning to different types}0,1"
@@ -8888,7 +8888,7 @@ def warn_bad_function_cast : Warning<
 def warn_cast_function_type : Warning<
   "cast %diff{from $ to $ |}0,1converts to incompatible function type">,
   InGroup<CastFunctionType>, DefaultIgnore;
-def warn_cast_function_type_strict : Warning<warn_cast_function_type.Text>,
+def warn_cast_function_type_strict : Warning<warn_cast_function_type.Summary>,
   InGroup<CastFunctionTypeStrict>, DefaultIgnore;
 def err_cast_pointer_to_non_pointer_int : Error<
   "pointer cannot be cast to type %0">;
