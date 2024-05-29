@@ -6237,9 +6237,6 @@ CodeGenModule::GetAddrOfConstantCFString(const StringLiteral *Literal) {
     return ConstantAddress(
         C, C->getValueType(), CharUnits::fromQuantity(C->getAlignment()));
 
-  llvm::Constant *Zero = llvm::Constant::getNullValue(Int32Ty);
-  llvm::Constant *Zeros[] = { Zero, Zero };
-
   const ASTContext &Context = getContext();
   const llvm::Triple &Triple = getTriple();
 
@@ -6310,8 +6307,7 @@ CodeGenModule::GetAddrOfConstantCFString(const StringLiteral *Literal) {
 
     // Decay array -> ptr
     CFConstantStringClassRef =
-        IsSwiftABI ? llvm::ConstantExpr::getPtrToInt(C, Ty)
-                   : llvm::ConstantExpr::getGetElementPtr(Ty, C, Zeros);
+        IsSwiftABI ? llvm::ConstantExpr::getPtrToInt(C, Ty) : C;
   }
 
   QualType CFTy = Context.getCFConstantStringType();
@@ -6367,10 +6363,7 @@ CodeGenModule::GetAddrOfConstantCFString(const StringLiteral *Literal) {
     GV->setSection(".rodata");
 
   // String.
-  llvm::Constant *Str =
-      llvm::ConstantExpr::getGetElementPtr(GV->getValueType(), GV, Zeros);
-
-  Fields.add(Str);
+  Fields.add(GV);
 
   // String length.
   llvm::IntegerType *LengthTy =
