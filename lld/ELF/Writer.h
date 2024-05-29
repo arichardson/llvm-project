@@ -46,6 +46,7 @@ struct PhdrEntry {
 
 void addReservedSymbols();
 bool includeInSymtab(const Symbol &b);
+unsigned getSectionRank(OutputSection &osec);
 
 bool isCheriAbi(const InputFile *f);
 
