@@ -2593,6 +2593,13 @@ void OpenACCClauseProfiler::VisitWaitClause(const OpenACCWaitClause &Clause) {
 void OpenACCClauseProfiler::VisitDeviceTypeClause(
     const OpenACCDeviceTypeClause &Clause) {}
 
+void OpenACCClauseProfiler::VisitAutoClause(const OpenACCAutoClause &Clause) {}
+
+void OpenACCClauseProfiler::VisitIndependentClause(
+    const OpenACCIndependentClause &Clause) {}
+
+void OpenACCClauseProfiler::VisitSeqClause(const OpenACCSeqClause &Clause) {}
+
 void OpenACCClauseProfiler::VisitReductionClause(
     const OpenACCReductionClause &Clause) {
   for (auto *E : Clause.getVarList())
