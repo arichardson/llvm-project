@@ -27466,6 +27466,12 @@ TEST_F(FormatTest, AlignUTFCommentsAndStringLiterals) {
                Style);
 }
 
+TEST_F(FormatTest, SpaceBetweenKeywordAndLiteral) {
+  verifyFormat("return .5;");
+  verifyFormat("return not '5';");
+  verifyFormat("return sizeof \"5\";");
+}
+
 } // namespace
 } // namespace test
 } // namespace format
