@@ -54,7 +54,7 @@ InstructionSelector *createMipsInstructionSelector(const MipsTargetMachine &,
 
 void initializeMicroMipsSizeReducePass(PassRegistry &);
 void initializeMipsBranchExpansionPass(PassRegistry &);
-void initializeMipsDAGToDAGISelLegacyPass(PassRegistry &);
+void initializeMipsDAGToDAGISelPass(PassRegistry &);
 void initializeMipsDelaySlotFillerPass(PassRegistry &);
 void initializeMipsMulMulBugFixPass(PassRegistry &);
 void initializeMipsOptimizePICCallPass(PassRegistry &);
