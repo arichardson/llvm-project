@@ -29,6 +29,7 @@
 #include "llvm/CodeGen/ISDOpcodes.h"
 #include "llvm/CodeGen/MachineFunction.h"
 #include "llvm/CodeGen/MachineMemOperand.h"
+#include "llvm/CodeGen/MachinePassManager.h"
 #include "llvm/CodeGen/SelectionDAGNodes.h"
 #include "llvm/CodeGen/ValueTypes.h"
 #include "llvm/CodeGenTypes/MachineValueType.h"
@@ -232,6 +233,7 @@ class SelectionDAG {
   const TargetLibraryInfo *LibInfo = nullptr;
   const FunctionVarLocs *FnVarLocs = nullptr;
   MachineFunction *MF;
+  MachineFunctionAnalysisManager *MFAM = nullptr;
   Pass *SDAGISelPass = nullptr;
   LLVMContext *Context;
   CodeGenOptLevel OptLevel;
@@ -461,6 +463,15 @@ public:
             UniformityInfo *UA, ProfileSummaryInfo *PSIin,
             BlockFrequencyInfo *BFIin, FunctionVarLocs const *FnVarLocs);
 
+  void init(MachineFunction &NewMF, OptimizationRemarkEmitter &NewORE,
+            MachineFunctionAnalysisManager &AM,
+            const TargetLibraryInfo *LibraryInfo, UniformityInfo *UA,
+            ProfileSummaryInfo *PSIin, BlockFrequencyInfo *BFIin,
+            FunctionVarLocs const *FnVarLocs) {
+    init(NewMF, NewORE, nullptr, LibraryInfo, UA, PSIin, BFIin, FnVarLocs);
+    MFAM = &AM;
+  }
+
   void setFunctionLoweringInfo(FunctionLoweringInfo * FuncInfo) {
     FLI = FuncInfo;
   }
@@ -471,6 +482,7 @@ public:
 
   MachineFunction &getMachineFunction() const { return *MF; }
   const Pass *getPass() const { return SDAGISelPass; }
+  MachineFunctionAnalysisManager *getMFAM() { return MFAM; }
 
   CodeGenOptLevel getOptLevel() const { return OptLevel; }
   const DataLayout &getDataLayout() const { return MF->getDataLayout(); }
