@@ -121,7 +121,7 @@ body:             |
 # CHECK: liveins:         []
 # CHECK: body:             |
 # CHECK-NEXT:   bb.0:
-# CHECK-NEXT:     liveins: $c10, $c12, $x11, $c13, $c5
+# CHECK-NEXT:     liveins: $c10, $c12, $c13, $x11, $c5
 # CHECK-NEXT: {{  $}}
 # CHECK-NEXT:     renamable $x14 = CLHU renamable $c10, 0
 # CHECK-NEXT:     renamable $x15 = SRLI renamable $x14, 3
