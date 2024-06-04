@@ -4577,6 +4577,7 @@ def HLSLShader : InheritableAttr {
       case HLSLShaderAttr::Mesh:          return llvm::Triple::Mesh;
       case HLSLShaderAttr::Amplification: return llvm::Triple::Amplification;
     }
+    llvm_unreachable("unknown enumeration value");
   }
 }];
 }
