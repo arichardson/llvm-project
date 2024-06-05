@@ -118,10 +118,9 @@ STATISTIC(
 STATISTIC(NumDeleted, "Number of instructions deleted");
 STATISTIC(NumVectorized, "Number of vectorized aggregates");
 
-/// Hidden option to experiment with completely strict handling of inbounds
-/// GEPs.
-static cl::opt<bool> SROAStrictInbounds("sroa-strict-inbounds", cl::init(false),
-                                        cl::Hidden);
+/// Hidden option to print information about strict align slice processing.
+static cl::opt<bool> PrintStrictAlignSlices("sroa-print-strict-align-slices",
+                                            cl::init(false), cl::Hidden);
 /// Disable running mem2reg during SROA in order to test or debug SROA.
 static cl::opt<bool> SROASkipMem2Reg("sroa-skip-mem2reg", cl::init(false),
                                      cl::Hidden);
