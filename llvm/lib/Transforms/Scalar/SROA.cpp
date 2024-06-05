@@ -116,6 +116,9 @@ STATISTIC(NumVectorized, "Number of vectorized aggregates");
 /// GEPs.
 static cl::opt<bool> SROAStrictInbounds("sroa-strict-inbounds", cl::init(false),
                                         cl::Hidden);
+/// Hidden option to print information about strict align slice processing.
+static cl::opt<bool> PrintStrictAlignSlices("sroa-print-strict-align-slices",
+                                            cl::init(false), cl::Hidden);
 namespace {
 
 /// A custom IRBuilder inserter which prefixes all names, but only in
