@@ -5668,7 +5668,6 @@ ExprResult Sema::BuildCXXDefaultInitExpr(SourceLocation Loc, FieldDecl *Field) {
     InitializationContext.emplace(Loc, Field, CurContext);
 
   Expr *Init = nullptr;
-  bool HasRewrittenInit = false;
 
   bool NestedDefaultChecking = isCheckingDefaultArgumentOrInitializer();
   bool InLifetimeExtendingContext = isInLifetimeExtendingContext();
@@ -5718,7 +5717,6 @@ ExprResult Sema::BuildCXXDefaultInitExpr(SourceLocation Loc, FieldDecl *Field) {
       isa_and_present<ExprWithCleanups>(Field->getInClassInitializer());
   if (V.HasImmediateCalls || InLifetimeExtendingContext ||
       ContainsAnyTemporaries) {
-    HasRewrittenInit = true;
     ExprEvalContexts.back().DelayedDefaultInitializationContext = {Loc, Field,
                                                                    CurContext};
     ExprEvalContexts.back().IsCurrentlyCheckingDefaultArgumentOrInitializer =
@@ -5762,7 +5760,7 @@ ExprResult Sema::BuildCXXDefaultInitExpr(SourceLocation Loc, FieldDecl *Field) {
 
     return CXXDefaultInitExpr::Create(Context, InitializationContext->Loc,
                                       Field, InitializationContext->Context,
-                                      HasRewrittenInit ? Init : nullptr);
+                                      Init);
   }
 
   // DR1351:
