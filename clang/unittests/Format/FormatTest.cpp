@@ -24893,7 +24893,7 @@ TEST_F(FormatTest, SkipMacroDefinitionBody) {
                Style);
 
   // With comments.
-  verifyFormat("/* */ #define A  a //  a  a", "/* */  # define A  a  //  a  a",
+  verifyFormat("/* */ #define A  a  //  a  a", "/* */  # define A  a  //  a  a",
                Style);
   verifyNoChange("/* */ #define A  a //  a  a", Style);
 
@@ -24904,6 +24904,15 @@ TEST_F(FormatTest, SkipMacroDefinitionBody) {
                "#define A  // a\n"
                "int aaa; // a",
                Style);
+
+  verifyNoChange(
+      "#define MACRO_WITH_COMMENTS()                                       \\\n"
+      "  public:                                                           \\\n"
+      "    /* Documentation parsed by Doxygen for the following method. */ \\\n"
+      "    static MyType getClassTypeId();                                 \\\n"
+      "    /** Normal comment for the following method. */                 \\\n"
+      "    virtual MyType getTypeId() const;",
+      Style);
 
   // multiline macro definitions
   verifyNoChange("#define A  a\\\n"
