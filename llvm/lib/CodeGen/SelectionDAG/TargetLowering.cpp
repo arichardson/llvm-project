@@ -8462,10 +8462,6 @@ SDValue TargetLowering::expandFMINIMUM_FMAXIMUM(SDNode *N,
   bool IsMax = Opc == ISD::FMAXIMUM;
   SDNodeFlags Flags = N->getFlags();
 
-  if (VT.isVector() &&
-      isOperationLegalOrCustomOrPromote(Opc, VT.getScalarType()))
-    return SDValue();
-
   // First, implement comparison not propagating NaN. If no native fmin or fmax
   // available, use plain select with setcc instead.
   SDValue MinMax;
@@ -8482,6 +8478,9 @@ SDValue TargetLowering::expandFMINIMUM_FMAXIMUM(SDNode *N,
   } else if (isOperationLegalOrCustom(CompOpc, VT)) {
     MinMax = DAG.getNode(CompOpc, DL, VT, LHS, RHS, Flags);
   } else {
+    if (VT.isVector() && !isOperationLegalOrCustom(ISD::VSELECT, VT))
+      return DAG.UnrollVectorOp(N);
+
     // NaN (if exists) will be propagated later, so orderness doesn't matter.
     SDValue Compare =
         DAG.getSetCC(DL, CCVT, LHS, RHS, IsMax ? ISD::SETGT : ISD::SETLT);
