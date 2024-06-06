@@ -3641,13 +3641,10 @@ QualType ASTContext::getMemberPointerType(QualType T, const Type *Cls) const {
 
 /// getConstantArrayType - Return the unique reference to the type for an
 /// array of the specified element type.
-QualType ASTContext::getConstantArrayType(QualType EltTy,
-                                          const llvm::APInt &ArySizeIn,
-                                          const Expr *SizeExpr,
-                                          ArrayType::ArraySizeModifier ASM,
-                                          unsigned IndexTypeQuals,
-                                          llvm::Optional<PointerInterpretationKind>
-                                          PIK) const {
+QualType ASTContext::getConstantArrayType(
+    QualType EltTy, const llvm::APInt &ArySizeIn, const Expr *SizeExpr,
+    ArrayType::ArraySizeModifier ASM, unsigned IndexTypeQuals,
+    std::optional<PointerInterpretationKind> PIK) const {
   assert((EltTy->isDependentType() ||
           EltTy->isIncompleteType() || EltTy->isConstantSizeType()) &&
          "Constant array of VLAs is illegal!");
@@ -3842,13 +3839,10 @@ QualType ASTContext::getVariableArrayDecayedType(QualType type) const {
 
 /// getVariableArrayType - Returns a non-unique reference to the type for a
 /// variable array of the specified element type.
-QualType ASTContext::getVariableArrayType(QualType EltTy,
-                                          Expr *NumElts,
-                                          ArrayType::ArraySizeModifier ASM,
-                                          unsigned IndexTypeQuals,
-                                          SourceRange Brackets,
-                                          llvm::Optional<PointerInterpretationKind>
-                                          PIK) const {
+QualType ASTContext::getVariableArrayType(
+    QualType EltTy, Expr *NumElts, ArrayType::ArraySizeModifier ASM,
+    unsigned IndexTypeQuals, SourceRange Brackets,
+    std::optional<PointerInterpretationKind> PIK) const {
   // Since we don't unique expressions, it isn't possible to unique VLA's
   // that have an expression provided for their size.
   QualType Canon;
@@ -3874,13 +3868,10 @@ QualType ASTContext::getVariableArrayType(QualType EltTy,
 /// getDependentSizedArrayType - Returns a non-unique reference to
 /// the type for a dependently-sized array of the specified element
 /// type.
-QualType ASTContext::getDependentSizedArrayType(QualType elementType,
-                                                Expr *numElements,
-                                                ArrayType::ArraySizeModifier ASM,
-                                                unsigned elementTypeQuals,
-                                                SourceRange brackets,
-                                                llvm::Optional<PointerInterpretationKind>
-                                                PIK) const {
+QualType ASTContext::getDependentSizedArrayType(
+    QualType elementType, Expr *numElements, ArrayType::ArraySizeModifier ASM,
+    unsigned elementTypeQuals, SourceRange brackets,
+    std::optional<PointerInterpretationKind> PIK) const {
   assert((!numElements || numElements->isTypeDependent() ||
           numElements->isValueDependent()) &&
          "Size must be type- or value-dependent!");
@@ -3944,11 +3935,10 @@ QualType ASTContext::getDependentSizedArrayType(QualType elementType,
   return QualType(sugaredType, 0);
 }
 
-QualType ASTContext::getIncompleteArrayType(QualType elementType,
-                                            ArrayType::ArraySizeModifier ASM,
-                                            unsigned elementTypeQuals,
-                                            llvm::Optional<PointerInterpretationKind>
-                                            PIK) const {
+QualType ASTContext::getIncompleteArrayType(
+    QualType elementType, ArrayType::ArraySizeModifier ASM,
+    unsigned elementTypeQuals,
+    std::optional<PointerInterpretationKind> PIK) const {
   llvm::FoldingSetNodeID ID;
   IncompleteArrayType::Profile(ID, elementType, ASM, elementTypeQuals, PIK);
 
@@ -7087,7 +7077,7 @@ QualType ASTContext::getExceptionObjectType(QualType T) const {
 ///
 /// See C99 6.7.5.3p7 and C99 6.3.2.1p3.
 QualType ASTContext::getArrayDecayedType(
-    QualType Ty, llvm::Optional<PointerInterpretationKind> PIKFromBase) const {
+    QualType Ty, std::optional<PointerInterpretationKind> PIKFromBase) const {
   // Get the element type with 'getAsArrayType' so that we don't lose any
   // typedefs in the element type of the array.  This also handles propagation
   // of type qualifiers from the array type into the element type if present
@@ -7095,7 +7085,7 @@ QualType ASTContext::getArrayDecayedType(
   const ArrayType *PrettyArrayType = getAsArrayType(Ty);
   assert(PrettyArrayType && "Not an array type!");
 
-  llvm::Optional<PointerInterpretationKind> PIKFromType =
+  std::optional<PointerInterpretationKind> PIKFromType =
       PrettyArrayType->getPointerInterpretation();
 
   assert((!PIKFromType.has_value() || !PIKFromBase.has_value()) &&
