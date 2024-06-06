@@ -31,7 +31,6 @@
 using namespace clang;
 using namespace clang::extractapi;
 using namespace llvm;
-using namespace llvm::json;
 
 namespace {
 
