@@ -1419,6 +1419,8 @@ static void readConfigs(opt::InputArgList &args) {
   config->rpath = getRpath(args);
   config->relocatable = args.hasArg(OPT_relocatable);
   assert(config->searchPaths.empty() && "Should not be set yet!");
+  config->resolveGroups =
+      !args.hasArg(OPT_relocatable) || args.hasArg(OPT_force_group_allocation);
 
   if (args.hasArg(OPT_save_temps)) {
     // --save-temps implies saving all temps.
