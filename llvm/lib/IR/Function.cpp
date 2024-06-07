@@ -398,6 +398,9 @@ Function *Function::createWithDefaultAttr(FunctionType *Ty,
   case FramePointerKind::None:
     // 0 ("none") is the default.
     break;
+  case FramePointerKind::Reserved:
+    B.addAttribute("frame-pointer", "reserved");
+    break;
   case FramePointerKind::NonLeaf:
     B.addAttribute("frame-pointer", "non-leaf");
     break;
