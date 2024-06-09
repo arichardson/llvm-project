@@ -863,13 +863,6 @@ static bool UpgradeIntrinsicFunction1(Function *F, Function *&NewFn) {
     }
     break;
   }
-  case 'f':
-    if (Name == "frameaddress") {
-      NewFn = Intrinsic::getDeclaration(F->getParent(), Intrinsic::frameaddress,
-                                        F->getReturnType());
-      return true;
-    }
-    break;
   case 'e': {
     if (Name.startswith("experimental.vector.extract.")) {
       rename(F);
@@ -935,6 +928,10 @@ static bool UpgradeIntrinsicFunction1(Function *F, Function *&NewFn) {
     if (Name.startswith("flt.rounds")) {
       rename(F);
       NewFn = Intrinsic::getDeclaration(F->getParent(), Intrinsic::get_rounding);
+      return true;
+    } else if (Name == "frameaddress") {
+      NewFn = Intrinsic::getDeclaration(F->getParent(), Intrinsic::frameaddress,
+                                        F->getReturnType());
       return true;
     }
     break;
