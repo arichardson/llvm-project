@@ -11963,6 +11963,10 @@ bool llvm::isNullConstant(SDValue V) {
   return Const != nullptr && Const->isZero();
 }
 
+bool llvm::isNullConstantOrUndef(SDValue V) {
+  return V.isUndef() || isNullConstant(V);
+}
+
 bool llvm::isNullFPConstant(SDValue V) {
   ConstantFPSDNode *Const = dyn_cast<ConstantFPSDNode>(V);
   return Const != nullptr && Const->isZero() && !Const->isNegative();
