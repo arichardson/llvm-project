@@ -40,8 +40,8 @@ struct CheriAddressingModeFolder : public MachineFunctionPass {
   void getAnalysisUsage(AnalysisUsage &AU) const override {
     AU.setPreservesCFG();
     AU.addRequired<MachineLoopInfo>();
-    AU.addRequired<MachineDominatorTree>();
-    AU.addRequired<MachinePostDominatorTree>();
+    AU.addRequired<MachineDominatorTreeWrapperPass>();
+    AU.addRequired<MachinePostDominatorTreeWrapperPass>();
     AU.addPreserved<MachineLoopInfo>();
     MachineFunctionPass::getAnalysisUsage(AU);
   }
@@ -161,7 +161,8 @@ struct CheriAddressingModeFolder : public MachineFunctionPass {
     llvm::SmallVector<std::pair<MachineInstr *, MachineInstr *>, 8> DDCOps;
     std::set<MachineInstr *> GetPCCs;
     bool modified = false;
-    auto& MPDT = getAnalysis<MachinePostDominatorTree>();
+    auto &MPDT =
+        getAnalysis<MachinePostDominatorTreeWrapperPass>().getPostDomTree();
 
     for (auto &MBB : MF) {
       // Iterate backwards to update the last use of the CIncOffsets first
@@ -509,7 +510,7 @@ struct CheriAddressingModeFolder : public MachineFunctionPass {
     InstrInfo = MF.getSubtarget<MipsSubtarget>().getInstrInfo();
     bool modified = false;
     MachineLoopInfo &MLI = getAnalysis<MachineLoopInfo>();
-    MachineDominatorTree &MDT = getAnalysis<MachineDominatorTree>();
+    MachineDominatorTree &MDT = getAnalysis<MachineDominatorTreeWrapperPass>().getDomTree();
     // Try iterating as long as we are making changs but add a cut-off at 1000
     // to find inifite loops
     unsigned NumIterations = 0;
@@ -531,8 +532,8 @@ char CheriAddressingModeFolder::ID = 0;
 INITIALIZE_PASS_BEGIN(CheriAddressingModeFolder, DEBUG_TYPE,
                     "CHERI addressing mode folder", false, false)
 INITIALIZE_PASS_DEPENDENCY(MachineLoopInfo)
-INITIALIZE_PASS_DEPENDENCY(MachineDominatorTree)
-INITIALIZE_PASS_DEPENDENCY(MachinePostDominatorTree)
+INITIALIZE_PASS_DEPENDENCY(MachineDominatorTreeWrapperPass)
+INITIALIZE_PASS_DEPENDENCY(MachinePostDominatorTreeWrapperPass)
 INITIALIZE_PASS_END(CheriAddressingModeFolder, DEBUG_TYPE,
                     "CHERI addressing mode folder", false, false)
 
