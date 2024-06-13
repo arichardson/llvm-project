@@ -1149,7 +1149,7 @@ public:
       llvm_unreachable("global sampler variables are not generated");
 
     case CK_IntegralCast: {
-      if (DestType->isIntCapType())
+      if (destType->isIntCapType())
         return nullptr;
       QualType FromType = subExpr->getType();
       // See also HandleIntToIntCast in ExprConstant.cpp
