@@ -334,7 +334,7 @@ void LinkerDriver::addFile(StringRef path, bool withLOption) {
     return;
   }
   case file_magic::elf_shared_object: {
-    if (config->isStatic || config->relocatable) {
+    if (config->isStatic) {
       error("attempted static link of dynamic object " + path);
       return;
     }
@@ -1935,6 +1935,9 @@ void LinkerDriver::createFiles(opt::InputArgList &args) {
   // For --{push,pop}-state.
   std::vector<std::tuple<bool, bool, bool>> stack;
 
+  // -r implies -Bstatic and has precedence over -Bdynamic.
+  config->isStatic = config->relocatable;
+
   // Iterate over argv to process input files and positional arguments.
   std::optional<MemoryBufferRef> defaultScript;
   InputFile::isInGroup = false;
@@ -1989,7 +1992,8 @@ void LinkerDriver::createFiles(opt::InputArgList &args) {
       config->isStatic = true;
       break;
     case OPT_Bdynamic:
-      config->isStatic = false;
+      if (!config->relocatable)
+        config->isStatic = false;
       break;
     case OPT_whole_archive:
       inWholeArchive = true;
