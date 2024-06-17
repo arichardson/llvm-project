@@ -2983,10 +2983,10 @@ Instruction *InstCombinerImpl::visitGetElementPtrInst(GetElementPtrInst &GEP) {
           !cheri::isKnownUntaggedCapability(GEP.getPointerOperand(), &DL))
         return nullptr;
       auto *NewPtr =
-          Builder.CreateGEP(GEP.getResultElementType(), GEP.getPointerOperand(),
+          Builder.CreateGEP(GEP.getSourceElementType(), GEP.getPointerOperand(),
                             Idx1, "", IsInBounds);
       return replaceInstUsesWith(
-          GEP, Builder.CreateGEP(GEP.getResultElementType(), NewPtr, Idx2, "",
+          GEP, Builder.CreateGEP(GEP.getSourceElementType(), NewPtr, Idx2, "",
                                  IsInBounds));
     }
     ConstantInt *C;
@@ -3006,12 +3006,12 @@ Instruction *InstCombinerImpl::visitGetElementPtrInst(GetElementPtrInst &GEP) {
           !cheri::isKnownUntaggedCapability(GEP.getPointerOperand(), &DL))
         return nullptr;
       auto *NewPtr = Builder.CreateGEP(
-          GEP.getResultElementType(), GEP.getPointerOperand(),
+          GEP.getSourceElementType(), GEP.getPointerOperand(),
           Builder.CreateSExt(Idx1, GEP.getOperand(1)->getType()), "",
           IsInBounds);
       return replaceInstUsesWith(
           GEP,
-          Builder.CreateGEP(GEP.getResultElementType(), NewPtr,
+          Builder.CreateGEP(GEP.getSourceElementType(), NewPtr,
                             Builder.CreateSExt(C, GEP.getOperand(1)->getType()),
                             "", IsInBounds));
     }
