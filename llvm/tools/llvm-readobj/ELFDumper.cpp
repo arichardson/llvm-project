@@ -3143,6 +3143,7 @@ static int getMipsRegisterSize(uint8_t Flag) {
   }
 }
 
+[[maybe_unused]]
 static const EnumEntry<uint64_t> CapRelocsPermsFlags[] = {
     {"Function", 0x8000000000000000ULL}};
 

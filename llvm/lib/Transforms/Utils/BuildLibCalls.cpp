@@ -1436,6 +1436,7 @@ static IntegerType *getIntTy(IRBuilderBase &B, const TargetLibraryInfo *TLI) {
   return B.getIntNTy(TLI->getIntSize());
 }
 
+[[maybe_unused]]
 static IntegerType *getSizeTTy(IRBuilderBase &B, const TargetLibraryInfo *TLI) {
   const Module *M = B.GetInsertBlock()->getModule();
   return B.getIntNTy(TLI->getSizeTSize(*M));

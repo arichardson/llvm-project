@@ -285,7 +285,7 @@ bool TargetLowering::findOptimalMemOpLowering(
       // If the new VT cannot cover all of the remaining bits, then consider
       // issuing a (or a pair of) unaligned and overlapping load / store.
       unsigned Fast;
-      if (NumMemOps && Op.allowOverlap() && NewVTSize < Size &&
+      if (NumMemOps && AllowOverlap && NewVTSize < Size &&
           allowsMisalignedMemoryAccesses(
               VT, DstAS, Op.isFixedDstAlign() ? Op.getDstAlign() : Align(1),
               MachineMemOperand::MONone, &Fast) &&
@@ -8490,7 +8490,7 @@ SDValue TargetLowering::CTTZTableLookup(SDNode *Node, SelectionDAG &DAG,
       DAG.getConstant(ShiftAmt, DL, VT));
   Lookup = DAG.getSExtOrTrunc(
       Lookup, DL,
-      getPointerTy(TD, DAG.getDataLayout().getGlobalsAddressSpace()));
+      getPointerRangeTy(TD, DAG.getDataLayout().getGlobalsAddressSpace()));
 
   SmallVector<uint8_t> Table(BitWidth, 0);
   for (unsigned i = 0; i < BitWidth; i++) {

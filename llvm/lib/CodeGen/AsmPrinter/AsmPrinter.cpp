@@ -1571,10 +1571,8 @@ void AsmPrinter::emitPCSections(const MachineFunction &MF) {
 }
 
 /// Returns true if function begin and end labels should be emitted.
-static bool needFuncLabels(const MachineFunction &MF) {
-  MachineModuleInfo &MMI = MF.getMMI();
+static bool needFuncLabelsForEH(const MachineFunction &MF) {
   if (!MF.getLandingPads().empty() || MF.hasEHFunclets() ||
-      MMI.hasDebugInfo() ||
       MF.getFunction().hasMetadata(LLVMContext::MD_pcsections))
     return true;
 
@@ -1584,6 +1582,10 @@ static bool needFuncLabels(const MachineFunction &MF) {
     return false;
   return !isNoOpWithoutInvoke(
       classifyEHPersonality(MF.getFunction().getPersonalityFn()));
+}
+
+static bool needFuncLabels(const MachineFunction &MF){
+  return MF.getMMI().hasDebugInfo() || needFuncLabelsForEH(MF);
 }
 
 /// EmitFunctionBody - This method emits the body and trailer for a
@@ -2443,8 +2445,7 @@ void AsmPrinter::SetupMachineFunction(MachineFunction &MF) {
     // symbol is non-preemptible by creating a local alias for the function.
     // See https://github.com/CTSRD-CHERI/llvm-project/issues/512.
     // TODO: could probably omit this for !F.isInterposable()?
-    if (MAI->isCheriPurecapABI() && needFuncLabels(MF) &&
-        !MF.getMMI().hasDebugInfo())
+    if (MAI->isCheriPurecapABI() && needFuncLabelsForEH(MF))
       CurrentFnBeginForEH = getSymbolWithGlobalValueBase(&F, "$eh_alias");
   }
 
