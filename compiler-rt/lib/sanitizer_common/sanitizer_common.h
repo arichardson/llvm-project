@@ -60,14 +60,10 @@ inline int Verbosity() {
   return atomic_load(&current_verbosity, memory_order_relaxed);
 }
 
-#if SANITIZER_ANDROID
-inline usize GetPageSize() {
-// Android post-M sysconf(_SC_PAGESIZE) crashes if called from .preinit_array.
-  return 4096;
-}
-inline usize GetPageSizeCached() {
-  return 4096;
-}
+#if SANITIZER_ANDROID && !defined(__aarch64__)
+// 32-bit Android only has 4k pages.
+inline usize GetPageSize() { return 4096; }
+inline usize GetPageSizeCached() { return 4096; }
 #else
 usize GetPageSize();
 extern usize PageSizeCached;
@@ -77,6 +73,7 @@ inline usize GetPageSizeCached() {
   return PageSizeCached;
 }
 #endif
+
 usize GetMmapGranularity();
 vaddr GetMaxVirtualAddress();
 vaddr GetMaxUserVirtualAddress();
@@ -91,6 +88,7 @@ void GetThreadStackAndTls(bool main, uptr *stk_addr, usize *stk_size,
 
 // Memory management
 void *MmapOrDie(usize size, const char *mem_type, bool raw_report = false);
+
 inline void *MmapOrDieQuietly(usize size, const char *mem_type) {
   return MmapOrDie(size, mem_type, /*raw_report*/ true);
 }
@@ -139,7 +137,8 @@ void UnmapFromTo(uptr from, uptr to);
 // shadow_size_bytes bytes on the right, which on linux is mapped no access.
 // The high_mem_end may be updated if the original shadow size doesn't fit.
 uptr MapDynamicShadow(uptr shadow_size_bytes, uptr shadow_scale,
-                      uptr min_shadow_base_alignment, uptr &high_mem_end);
+                      uptr min_shadow_base_alignment, uptr &high_mem_end,
+                      uptr granularity);
 
 // Let S = max(shadow_size, num_aliases * alias_size, ring_buffer_size).
 // Reserves 2*S bytes of address space to the right of the returned address and

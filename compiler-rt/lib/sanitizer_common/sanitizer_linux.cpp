@@ -1136,7 +1136,7 @@ vaddr GetMaxUserVirtualAddress() {
   return addr;
 }
 
-#  if !SANITIZER_ANDROID
+#  if !SANITIZER_ANDROID || defined(__aarch64__)
 usize GetPageSize() {
 #    if SANITIZER_LINUX && (defined(__x86_64__) || defined(__i386__)) && \
         defined(EXEC_PAGESIZE)
@@ -1155,7 +1155,7 @@ usize GetPageSize() {
   return sysconf(_SC_PAGESIZE);  // EXEC_PAGESIZE may not be trustworthy.
 #    endif
 }
-#  endif  // !SANITIZER_ANDROID
+#  endif
 
 uptr ReadBinaryName(/*out*/ char *buf, uptr buf_len) {
 #  if SANITIZER_SOLARIS
