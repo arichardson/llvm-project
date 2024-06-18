@@ -457,6 +457,8 @@ enum NodeType : unsigned {
   // SME
   RDSVL,
   REVD_MERGE_PASSTHRU,
+  ALLOCATE_ZA_BUFFER,
+  INIT_TPIDR2OBJ,
 
   // Asserts that a function argument (i32) is zero-extended to i8 by
   // the caller
@@ -663,6 +665,10 @@ public:
   MachineBasicBlock *EmitZTInstr(MachineInstr &MI, MachineBasicBlock *BB,
                                  unsigned Opcode, bool Op0IsDef) const;
   MachineBasicBlock *EmitZero(MachineInstr &MI, MachineBasicBlock *BB) const;
+  MachineBasicBlock *EmitInitTPIDR2Object(MachineInstr &MI,
+                                          MachineBasicBlock *BB) const;
+  MachineBasicBlock *EmitAllocateZABuffer(MachineInstr &MI,
+                                          MachineBasicBlock *BB) const;
 
   MachineBasicBlock *
   EmitInstrWithCustomInserter(MachineInstr &MI,
@@ -1041,9 +1047,6 @@ private:
   void addQRType(MVT VT);
 
   bool shouldExpandBuildVectorWithShuffles(EVT, unsigned) const override;
-
-  unsigned allocateLazySaveBuffer(SDValue &Chain, const SDLoc &DL,
-                                  SelectionDAG &DAG) const;
 
   SDValue LowerFormalArguments(SDValue Chain, CallingConv::ID CallConv,
                                bool isVarArg,
