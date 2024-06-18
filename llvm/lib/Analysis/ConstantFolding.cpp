@@ -1799,6 +1799,7 @@ Constant *ConstantFoldFP(double (*NativeFP)(double), const APFloat &V,
 }
 
 #if defined(HAS_IEE754_FLOAT128)
+LLVM_ATTRIBUTE_UNUSED
 Constant *ConstantFoldFP128(long double (*NativeFP)(long double),
                             const APFloat &V, Type *Ty) {
   llvm_fenv_clearexcept();
