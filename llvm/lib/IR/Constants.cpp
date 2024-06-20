@@ -2310,12 +2310,6 @@ Constant *ConstantExpr::get(unsigned Opcode, Constant *C1, Constant *C2,
     assert(C1->getType()->isIntOrIntVectorTy() &&
            "Tried to create a logical operation on a non-integral type!");
     break;
-  case Instruction::Shl:
-  case Instruction::LShr:
-  case Instruction::AShr:
-    assert(C1->getType()->isIntOrIntVectorTy() &&
-           "Tried to create a shift operation on a non-integer type!");
-    break;
   default:
     break;
   }
@@ -2376,11 +2370,11 @@ bool ConstantExpr::isSupportedBinOp(unsigned Opcode) {
   case Instruction::Or:
   case Instruction::LShr:
   case Instruction::AShr:
+  case Instruction::Shl:
     return false;
   case Instruction::Add:
   case Instruction::Sub:
   case Instruction::Mul:
-  case Instruction::Shl:
   case Instruction::Xor:
     return true;
   default:
@@ -2612,13 +2606,6 @@ Constant *ConstantExpr::getMul(Constant *C1, Constant *C2,
 
 Constant *ConstantExpr::getXor(Constant *C1, Constant *C2) {
   return get(Instruction::Xor, C1, C2);
-}
-
-Constant *ConstantExpr::getShl(Constant *C1, Constant *C2,
-                               bool HasNUW, bool HasNSW) {
-  unsigned Flags = (HasNUW ? OverflowingBinaryOperator::NoUnsignedWrap : 0) |
-                   (HasNSW ? OverflowingBinaryOperator::NoSignedWrap   : 0);
-  return get(Instruction::Shl, C1, C2, Flags);
 }
 
 Constant *ConstantExpr::getExactLogBase2(Constant *C) {
