@@ -27021,6 +27021,9 @@ TEST_F(FormatTest, RemoveSemicolon) {
                "; int bar;",
                Style);
 #endif
+
+  Style.TypenameMacros.push_back("STRUCT");
+  verifyFormat("STRUCT(T, B) { int i; };", Style);
 }
 
 TEST_F(FormatTest, BreakAfterAttributes) {
