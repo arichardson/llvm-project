@@ -132,7 +132,7 @@ exit:
 ; CHECK-NEXT: .byte    255
 ; CHECK-NEXT: .byte    255
 ; CHECK-NEXT: .byte    7
-; CHECK-NEXT: .LCPI1_2, 16
+; CHECK-NEXT: .size .LCPI1_2, 16
 ; CHECK-NEXT: .LCPI1_3:
 ; CHECK-NEXT: .byte    255
 ; CHECK-NEXT: .byte    255
