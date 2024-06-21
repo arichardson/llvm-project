@@ -12,6 +12,7 @@
 
 #include "RISCVRegisterInfo.h"
 #include "MCTargetDesc/RISCVBaseInfo.h"
+#include "MCTargetDesc/RISCVMCTargetDesc.h"
 #include "RISCV.h"
 #include "RISCVMachineFunctionInfo.h"
 #include "RISCVSubtarget.h"
@@ -22,6 +23,7 @@
 #include "llvm/CodeGen/RegisterScavenging.h"
 #include "llvm/CodeGen/TargetFrameLowering.h"
 #include "llvm/CodeGen/TargetInstrInfo.h"
+#include "llvm/CodeGen/TargetRegisterInfo.h"
 #include "llvm/IR/DebugInfoMetadata.h"
 #include "llvm/Support/ErrorHandling.h"
 
@@ -568,6 +570,8 @@ bool RISCVRegisterInfo::needsFrameBaseReg(MachineInstr *MI,
   const MachineFrameInfo &MFI = MF.getFrameInfo();
   const RISCVFrameLowering *TFI = getFrameLowering(MF);
   const MachineRegisterInfo &MRI = MF.getRegInfo();
+
+
   unsigned CalleeSavedSize = 0;
   Offset += getFrameIndexInstrOffset(MI, FIOperandNum);
 
@@ -581,7 +585,7 @@ bool RISCVRegisterInfo::needsFrameBaseReg(MachineInstr *MI,
 
   int64_t MaxFPOffset = Offset - CalleeSavedSize;
   if (TFI->hasFP(MF) && !shouldRealignStack(MF))
-    return !isFrameOffsetLegal(MI, RISCV::X8, MaxFPOffset);
+    return !isFrameOffsetLegal(MI, TFI->getFPReg(), MaxFPOffset);
 
   // Assume 128 bytes spill slots size to estimate the maximum possible
   // offset relative to the stack pointer.
@@ -589,7 +593,7 @@ bool RISCVRegisterInfo::needsFrameBaseReg(MachineInstr *MI,
   // real one for RISC-V.
   int64_t MaxSPOffset = Offset + 128;
   MaxSPOffset += MFI.getLocalFrameSize();
-  return !isFrameOffsetLegal(MI, RISCV::X2, MaxSPOffset);
+  return !isFrameOffsetLegal(MI, TFI->getSPReg(), MaxSPOffset);
 }
 
 // Determine whether a given base register plus offset immediate is
@@ -620,10 +624,19 @@ Register RISCVRegisterInfo::materializeFrameBaseRegister(MachineBasicBlock *MBB,
     DL = MBBI->getDebugLoc();
   MachineFunction *MF = MBB->getParent();
   MachineRegisterInfo &MFI = MF->getRegInfo();
-  const TargetInstrInfo *TII = MF->getSubtarget().getInstrInfo();
+  const RISCVSubtarget &ST = MF->getSubtarget<RISCVSubtarget>();
+  const TargetInstrInfo *TII = ST.getInstrInfo();
 
-  Register BaseReg = MFI.createVirtualRegister(&RISCV::GPRRegClass);
-  BuildMI(*MBB, MBBI, DL, TII->get(RISCV::ADDI), BaseReg)
+  unsigned Opc;
+  Register BaseReg;
+  if (RISCVABI::isCheriPureCapABI(ST.getTargetABI())) {
+    Opc = RISCV::CIncOffsetImm;
+    BaseReg = MFI.createVirtualRegister(&RISCV::GPCRRegClass);
+  } else {
+    Opc = RISCV::ADDI;
+    BaseReg = MFI.createVirtualRegister(&RISCV::GPRRegClass);
+  }
+  BuildMI(*MBB, MBBI, DL, TII->get(Opc), BaseReg)
       .addFrameIndex(FrameIdx)
       .addImm(Offset);
   return BaseReg;
