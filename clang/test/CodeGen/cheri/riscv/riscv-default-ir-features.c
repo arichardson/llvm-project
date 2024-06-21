@@ -1,7 +1,7 @@
 // RUN: %clang --target=riscv32 -S -emit-llvm %s -o - \
-// RUN:   | FileCheck %s --check-prefixes=CHECK,RV32-NOCHERI '-DFEATURES=+32bit,+a,+c,+m,+relax'
+// RUN:   | FileCheck %s --check-prefixes=CHECK,RV32-NOCHERI '-DFEATURES=+32bit,+a,+c,+m,+relax,+zmmul'
 // RUN: %clang --target=riscv64 -S -emit-llvm %s -o - \
-// RUN:   | FileCheck %s --check-prefixes=CHECK,RV64-NOCHERI '-DFEATURES=+64bit,+a,+c,+m,+relax'
+// RUN:   | FileCheck %s --check-prefixes=CHECK,RV64-NOCHERI '-DFEATURES=+64bit,+a,+c,+m,+relax,+zmmul'
 
 // RUN: %clang --target=riscv32 -march=rv32ixcheri -S -emit-llvm %s -o - \
 // RUN:   | FileCheck %s --check-prefixes=CHECK,RV32-XCHERI '-DFEATURES=+32bit,+xcheri'
@@ -32,13 +32,13 @@
 
 /// Enabling -mxcheri-norvc with a non-CHERI triple shouldn't enable the CHERI datalayout
 // RUN: %clang --target=riscv32 -mxcheri-norvc -S -emit-llvm %s -o - \
-// RUN:   | FileCheck %s --check-prefixes=CHECK,RV32-NOCHERI '-DFEATURES=+32bit,+a,+c,+m,+relax,+xcheri-norvc'
+// RUN:   | FileCheck %s --check-prefixes=CHECK,RV32-NOCHERI '-DFEATURES=+32bit,+a,+c,+m,+relax,+xcheri-norvc,+zmmul'
 // RUN: %clang --target=riscv64 -mxcheri-norvc -S -emit-llvm %s -o - \
-// RUN:   | FileCheck %s --check-prefixes=CHECK,RV64-NOCHERI '-DFEATURES=+64bit,+a,+c,+m,+relax,+xcheri-norvc'
+// RUN:   | FileCheck %s --check-prefixes=CHECK,RV64-NOCHERI '-DFEATURES=+64bit,+a,+c,+m,+relax,+xcheri-norvc,+zmmul'
 // RUN: %clang --target=riscv32 -mno-xcheri-norvc -S -emit-llvm %s -o - \
-// RUN:   | FileCheck %s --check-prefixes=CHECK,RV32-NOCHERI,XCHERI-RVC '-DFEATURES=+32bit,+a,+c,+m,+relax'
+// RUN:   | FileCheck %s --check-prefixes=CHECK,RV32-NOCHERI,XCHERI-RVC '-DFEATURES=+32bit,+a,+c,+m,+relax,+zmmul'
 // RUN: %clang --target=riscv64 -mno-xcheri-norvc -S -emit-llvm %s -o - \
-// RUN:   | FileCheck %s --check-prefixes=CHECK,RV64-NOCHERI,XCHERI-RVC '-DFEATURES=+64bit,+a,+c,+m,+relax'
+// RUN:   | FileCheck %s --check-prefixes=CHECK,RV64-NOCHERI,XCHERI-RVC '-DFEATURES=+64bit,+a,+c,+m,+relax,+zmmul'
 
 // RV32-NOCHERI: target datalayout = "e-m:e-p:32:32-i64:64-n32-S128"
 // RV64-NOCHERI: target datalayout = "e-m:e-p:64:64-i64:64-i128:128-n32:64-S128"
