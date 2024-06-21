@@ -12,10 +12,10 @@ thread_local n h;
 
 // CHECK: @f = thread_local addrspace(200) global %struct.m zeroinitializer, align 1
 // CHECK: @h = thread_local addrspace(200) global %struct.n zeroinitializer, align 1
-// CHECK: @__tls_guard = internal thread_local unnamed_addr addrspace(200) global i1 false, align 1
+// CHECK: @__tls_guard = internal thread_local addrspace(200) global i8 0, align 4
 
 void r() {
   // CHECK-LABEL: define dso_local void @_Z1rv()
-  // CHECK: load i1, ptr addrspace(200) @__tls_guard, align 1
+  // CHECK: load i8, ptr addrspace(200) @__tls_guard, align 4  
   (void)f;
 }
