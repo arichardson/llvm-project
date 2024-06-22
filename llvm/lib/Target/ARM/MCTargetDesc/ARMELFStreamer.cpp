@@ -511,7 +511,7 @@ public:
       LastEMSInfo = std::move(LastMappingSymbol->second);
       return;
     }
-    LastEMSInfo.reset(new ElfMappingSymbolInfo(SMLoc(), nullptr, 0));
+    LastEMSInfo.reset(new ElfMappingSymbolInfo);
   }
 
   /// This function is the one used to emit instruction data into the ELF
@@ -579,7 +579,7 @@ public:
     if (!LastEMSInfo->hasInfo())
       return;
     ElfMappingSymbolInfo *EMS = LastEMSInfo.get();
-    EmitMappingSymbol("$d", EMS->Loc, EMS->F, EMS->Offset);
+    EmitMappingSymbol("$d", SMLoc(), EMS->F, EMS->Offset);
     EMS->resetInfo();
   }
 
@@ -632,17 +632,14 @@ private:
   };
 
   struct ElfMappingSymbolInfo {
-    explicit ElfMappingSymbolInfo(SMLoc Loc, MCFragment *F, uint64_t O)
-        : Loc(Loc), F(F), Offset(O), State(EMS_None) {}
     void resetInfo() {
       F = nullptr;
       Offset = 0;
     }
     bool hasInfo() { return F != nullptr; }
-    SMLoc Loc;
-    MCFragment *F;
-    uint64_t Offset;
-    ElfMappingSymbol State;
+    MCFragment *F = nullptr;
+    uint64_t Offset = 0;
+    ElfMappingSymbol State = EMS_None;
   };
 
   void emitDataMappingSymbol() {
@@ -655,7 +652,6 @@ private:
       auto *DF = dyn_cast_or_null<MCDataFragment>(getCurrentFragment());
       if (!DF)
         return;
-      EMS->Loc = SMLoc();
       EMS->F = getCurrentFragment();
       EMS->Offset = DF->getContents().size();
       LastEMSInfo->State = EMS_Data;
