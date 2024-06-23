@@ -36,7 +36,8 @@ public:
       : MCELFStreamer(C, std::move(MAB), std::move(MOW), std::move(MCE)) {}
   void emitCheriIntcap(const MCExpr *Expr, unsigned CapSize,
                        SMLoc Loc) override;
-  void changeSection(MCSection *Section, const MCExpr *Subsection) override;
+
+  void changeSection(MCSection *Section, uint32_t Subsection) override;
   void emitInstruction(const MCInst &Inst, const MCSubtargetInfo &STI) override;
   void emitBytes(StringRef Data) override;
   void emitFill(const MCExpr &NumBytes, uint64_t FillValue, SMLoc Loc) override;
