@@ -914,14 +914,15 @@ void MipsTargetELFStreamer::emitLabel(MCSymbol *S) {
 void MipsTargetELFStreamer::finish() {
   MCAssembler &MCA = getStreamer().getAssembler();
   const MCObjectFileInfo &OFI = *MCA.getContext().getObjectFileInfo();
+  MCELFStreamer &S = getStreamer();
 
   // .bss, .text and .data are always at least 16-byte aligned.
   MCSection &TextSection = *OFI.getTextSection();
-  MCA.registerSection(TextSection);
+  S.changeSection(&TextSection);
   MCSection &DataSection = *OFI.getDataSection();
-  MCA.registerSection(DataSection);
+  S.changeSection(&DataSection);
   MCSection &BSSSection = *OFI.getBSSSection();
-  MCA.registerSection(BSSSection);
+  S.changeSection(&BSSSection);
 
   TextSection.ensureMinAlignment(Align(16));
   DataSection.ensureMinAlignment(Align(16));
@@ -932,16 +933,15 @@ void MipsTargetELFStreamer::finish() {
     // verifying the output of IAS against the output of other assemblers but
     // it's not necessary to produce a correct object and increases section
     // size.
-    MCStreamer &OS = getStreamer();
-    for (MCSection &S : MCA) {
-      MCSectionELF &Section = static_cast<MCSectionELF &>(S);
+    for (MCSection &Sec : MCA) {
+      MCSectionELF &Section = static_cast<MCSectionELF &>(Sec);
 
       Align Alignment = Section.getAlign();
-      OS.switchSection(&Section);
+      S.switchSection(&Section);
       if (Section.useCodeAlign())
-        OS.emitCodeAlignment(Alignment, &STI, Alignment.value());
+        S.emitCodeAlignment(Alignment, &STI, Alignment.value());
       else
-        OS.emitValueToAlignment(Alignment, 0, 1, Alignment.value());
+        S.emitValueToAlignment(Alignment, 0, 1, Alignment.value());
     }
   }
 
@@ -1042,18 +1042,14 @@ void MipsTargetELFStreamer::emitDirectiveEnd(StringRef Name) {
   MCContext &Context = MCA.getContext();
   MCStreamer &OS = getStreamer();
 
+  OS.pushSection();
   MCSectionELF *Sec = Context.getELFSection(".pdr", ELF::SHT_PROGBITS, 0);
+  OS.switchSection(Sec);
+  Sec->setAlignment(Align(4));
 
   MCSymbol *Sym = Context.getOrCreateSymbol(Name);
   const MCSymbolRefExpr *ExprRef =
       MCSymbolRefExpr::create(Sym, MCSymbolRefExpr::VK_None, Context);
-
-  MCA.registerSection(*Sec);
-  Sec->setAlignment(Align(4));
-
-  OS.pushSection();
-
-  OS.switchSection(Sec);
 
   OS.emitValueImpl(ExprRef, 4);
 
@@ -1333,9 +1329,8 @@ void MipsTargetELFStreamer::emitMipsAbiFlags() {
   MCStreamer &OS = getStreamer();
   MCSectionELF *Sec = Context.getELFSection(
       ".MIPS.abiflags", ELF::SHT_MIPS_ABIFLAGS, ELF::SHF_ALLOC, 24);
-  MCA.registerSection(*Sec);
-  Sec->setAlignment(Align(8));
   OS.switchSection(Sec);
+  Sec->setAlignment(Align(8));
 
   OS << ABIFlagsSection;
 }
