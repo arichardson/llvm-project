@@ -450,6 +450,8 @@ private:
   // Reset state between object emissions
   void reset() override;
 
+  void finish() override;
+
 public:
   ARMTargetELFStreamer(MCStreamer &S)
     : ARMTargetStreamer(S), CurrentVendor("aeabi") {}
@@ -482,8 +484,6 @@ public:
   }
 
   ~ARMELFStreamer() override = default;
-
-  void finishImpl() override;
 
   // ARM exception handling directives
   void emitFnStart();
@@ -1124,12 +1124,9 @@ void ARMTargetELFStreamer::emitInst(uint32_t Inst, char Suffix) {
 
 void ARMTargetELFStreamer::reset() { AttributeSection = nullptr; }
 
-void ARMELFStreamer::finishImpl() {
-  MCTargetStreamer &TS = *getTargetStreamer();
-  ARMTargetStreamer &ATS = static_cast<ARMTargetStreamer &>(TS);
-  ATS.finishAttributeSection();
-
-  MCELFStreamer::finishImpl();
+void ARMTargetELFStreamer::finish() {
+  ARMTargetStreamer::finish();
+  finishAttributeSection();
 }
 
 void ARMELFStreamer::reset() {
