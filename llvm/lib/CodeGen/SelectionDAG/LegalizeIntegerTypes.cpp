@@ -4193,7 +4193,7 @@ void DAGTypeLegalizer::ExpandIntRes_ShiftThroughStack(SDNode *N, SDValue &Lo,
   Align StackSlotAlignment(1);
   SDValue StackPtr = DAG.CreateStackTemporary(
       TypeSize::getFixed(StackSlotByteWidth), StackSlotAlignment);
-  EVT PtrTy = StackPtr.getValueType();
+  EVT PtrTy = TLI.getPointerRangeTy(DAG.getDataLayout());
   SDValue Ch = DAG.getEntryNode();
 
   MachinePointerInfo StackPtrInfo = MachinePointerInfo::getFixedStack(
