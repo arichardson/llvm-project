@@ -1199,7 +1199,7 @@ static Align computeAllocaDefaultAlign(Type *Ty, InsertPosition Pos) {
   BasicBlock *BB = Pos.getBasicBlock();
   assert(BB->getParent() &&
          "BB must be in a Function when alignment not provided!");
-  const DataLayout &DL = BB->getModule()->getDataLayout();
+  const DataLayout &DL = BB->getDataLayout();
   return DL.getPrefTypeAlign(Ty);
 }
 
@@ -1257,7 +1257,7 @@ static Align computeLoadStoreDefaultAlign(Type *Ty, InsertPosition Pos) {
   BasicBlock *BB = Pos.getBasicBlock();
   assert(BB->getParent() &&
          "BB must be in a Function when alignment not provided!");
-  const DataLayout &DL = BB->getModule()->getDataLayout();
+  const DataLayout &DL = BB->getDataLayout();
   return DL.getABITypeAlign(Ty);
 }
 
