@@ -613,8 +613,8 @@ void MCELFStreamer::finishImpl() {
   }
 
   // Ensure the last section gets aligned if necessary.
-  MCSection *CurSection = getCurrentSectionOnly();
-  setSectionAlignmentForBundling(getAssembler(), CurSection);
+  if (MCFragment *F = getCurrentFragment())
+    setSectionAlignmentForBundling(getAssembler(), F->getParent());
 
   finalizeCGProfile();
   emitFrames(nullptr);
