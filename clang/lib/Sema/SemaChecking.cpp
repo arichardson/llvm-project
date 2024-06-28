@@ -11511,8 +11511,8 @@ void Sema::CheckImplicitConversion(Expr *E, QualType T, SourceLocation CC,
   // TODO: do we need a S.SourceMgr.isInSystemMacro(CC) check?
   // TODO: should probably add a Expr::canCarryProvenance() function.
   if (Source->isIntCapType() && !Target->isIntCapType() &&
-      E->getType()->canCarryProvenance(S.Context)) {
-    return DiagnoseImpCast(S, E, T, CC, diag::warn_impcast_capability_integer,
+      E->getType()->canCarryProvenance(Context)) {
+    return DiagnoseImpCast(*this, E, T, CC, diag::warn_impcast_capability_integer,
                            /* pruneControlFlow */ true);
   }
 
