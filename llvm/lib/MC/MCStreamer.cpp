@@ -121,12 +121,6 @@ ArrayRef<MCDwarfFrameInfo> MCStreamer::getDwarfFrameInfos() const {
   return DwarfFrameInfos;
 }
 
-MCFragment *MCStreamer::getCurrentFragment() const {
-  assert(!getCurrentSection().first ||
-         CurFrag->getParent() == getCurrentSection().first);
-  return CurFrag;
-}
-
 void MCStreamer::emitRawComment(const Twine &T, bool TabPrefix) {}
 
 void MCStreamer::addExplicitComment(const Twine &T) {}
