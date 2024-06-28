@@ -85,7 +85,7 @@ void MCELFStreamer::emitLabelAtPos(MCSymbol *S, SMLoc Loc, MCDataFragment &F,
 // needs to be aligned to at least the bundle size.
 static void setSectionAlignmentForBundling(const MCAssembler &Assembler,
                                            MCSection *Section) {
-  if (Section && Assembler.isBundlingEnabled() && Section->hasInstructions())
+  if (Assembler.isBundlingEnabled() && Section->hasInstructions())
     Section->ensureMinAlignment(Align(Assembler.getBundleAlignSize()));
 }
 
