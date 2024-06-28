@@ -12,6 +12,7 @@
 #include "llvm/Transforms/Utils.h"
 #include "llvm/Transforms/Utils/CheriSetBounds.h"
 #include "llvm/Transforms/Utils/Local.h"
+#include "llvm/IR/DataLayout.h"
 
 using namespace llvm;
 
@@ -45,7 +46,7 @@ public:
            "Should not have been created otherwise");
     // errs() << "Logging bounds for " << F.getName() << "\n";
     // For MIPS we can guess the size here by multiplying by 4:
-    const DataLayout &DL = F.getParent()->getDataLayout();
+    const DataLayout &DL = F.getDataLayout();
     for (auto &BB : F) {
       for (Instruction &I : BB) {
         const CallBase *CB = dyn_cast<CallBase>(&I);
