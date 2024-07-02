@@ -1,6 +1,6 @@
 ;; Check that we can correctly generate code for ptrtoint and perform simple folds
-; RUN: llc @PURECAP_HARDFLOAT_ARGS@ -riscv-disable-regalloc-hints < %s | FileCheck %s
-; RUN: llc @HYBRID_HARDFLOAT_ARGS@ -riscv-disable-regalloc-hints < %s | FileCheck %s --check-prefix=HYBRID
+; RUN: llc @PURECAP_HARDFLOAT_ARGS@ < %s | FileCheck %s
+; RUN: llc @HYBRID_HARDFLOAT_ARGS@ < %s | FileCheck %s --check-prefix=HYBRID
 
 define internal iCAPRANGE @ptrtoint(i8 addrspace(200)* %cap) addrspace(200) nounwind {
   %ret = ptrtoint i8 addrspace(200)* %cap to iCAPRANGE
