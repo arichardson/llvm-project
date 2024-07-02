@@ -936,7 +936,7 @@ inline bool LocalAddressSpace::findUnwindSections(pc_t targetAddr,
   }
   // Try to find the unwind info using `dl_find_object`
   dl_find_object findResult;
-  if (dlFindObject && dlFindObject((void *)targetAddr, &findResult) == 0) {
+  if (dlFindObject && dlFindObject(targetAddr.get(), &findResult) == 0) {
     if (findResult.dlfo_eh_frame == nullptr) {
       // Found an entry for `targetAddr`, but there is no unwind info.
       return false;
@@ -946,20 +946,20 @@ inline bool LocalAddressSpace::findUnwindSections(pc_t targetAddr,
         (char *)findResult.dlfo_map_end - (char *)findResult.dlfo_map_start);
 
     // Record the start of PT_GNU_EH_FRAME.
-    info.dwarf_index_section =
-        reinterpret_cast<uintptr_t>(findResult.dlfo_eh_frame);
+    info.set_dwarf_index_section(
+        reinterpret_cast<uintptr_t>(findResult.dlfo_eh_frame));
     // `_dl_find_object` does not give us the size of PT_GNU_EH_FRAME.
     // Setting length to `SIZE_MAX` effectively disables all range checks.
     info.dwarf_index_section_length = SIZE_MAX;
     EHHeaderParser<LocalAddressSpace>::EHHeaderInfo hdrInfo;
     if (!EHHeaderParser<LocalAddressSpace>::decodeEHHdr(
-            *this, info.dwarf_index_section, info.dwarf_index_section_length,
+            *this, info.dwarf_index_section(), info.dwarf_index_section_length,
             hdrInfo)) {
       return false;
     }
     // Record the start of the FDE and use SIZE_MAX to indicate that we do
     // not know the end address.
-    info.dwarf_section = hdrInfo.eh_frame_ptr;
+    info.set_dwarf_section(hdrInfo.eh_frame_ptr);
     info.dwarf_section_length = SIZE_MAX;
     return true;
   }
