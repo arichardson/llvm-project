@@ -441,7 +441,8 @@ Value *LibCallSimplifier::optimizeStrChr(CallInst *CI, IRBuilderBase &B) {
     if (!FT->getParamType(1)->isIntegerTy(IntBits)) // memchr needs 'int'.
       return nullptr;
 
-    Type *SizeTTy = DL.getIntPtrType(CI->getContext(), SrcStr->getType()->getPointerAddressSpace());
+    unsigned SizeTBits = TLI->getSizeTSize(*CI->getModule());
+    Type *SizeTTy = IntegerType::get(CI->getContext(), SizeTBits);
     return copyFlags(*CI,
                      emitMemChr(SrcStr, CharVal, // include nul.
                                 ConstantInt::get(SizeTTy, Len), B,
@@ -492,8 +493,8 @@ Value *LibCallSimplifier::optimizeStrRChr(CallInst *CI, IRBuilderBase &B) {
     return nullptr;
   }
 
-  // unsigned SizeTBits = TLI->getSizeTSize(*CI->getModule());
-  Type *SizeTTy = DL.getIntPtrType(SrcStr->getType());
+  unsigned SizeTBits = TLI->getSizeTSize(*CI->getModule());
+  Type *SizeTTy = IntegerType::get(CI->getContext(), SizeTBits);
 
   // Try to expand strrchr to the memrchr nonstandard extension if it's
   // available, or simply fail otherwise.
@@ -3225,8 +3226,8 @@ Value *LibCallSimplifier::optimizeFPrintFString(CallInst *CI,
     if (FormatStr.contains('%'))
       return nullptr; // We found a format specifier.
 
-    // unsigned SizeTBits = TLI->getSizeTSize(*CI->getModule());
-    Type *SizeTTy = DL.getIntPtrType(CI->getContext(), CI->getArgOperand(1)->getType()->getPointerAddressSpace());
+    unsigned SizeTBits = TLI->getSizeTSize(*CI->getModule());
+    Type *SizeTTy = IntegerType::get(CI->getContext(), SizeTBits);
     return copyFlags(
         *CI, emitFWrite(CI->getArgOperand(1),
                         ConstantInt::get(SizeTTy, FormatStr.size()),
@@ -3344,8 +3345,8 @@ Value *LibCallSimplifier::optimizeFPuts(CallInst *CI, IRBuilderBase &B) {
     return nullptr;
 
   // Known to have no uses (see above).
-  // unsigned SizeTBits = TLI->getSizeTSize(*CI->getModule());
-  Type *SizeTTy = DL.getIntPtrType(CI->getContext(), CI->getArgOperand(0)->getType()->getPointerAddressSpace());
+  unsigned SizeTBits = TLI->getSizeTSize(*CI->getModule());
+  Type *SizeTTy = IntegerType::get(CI->getContext(), SizeTBits);
   return copyFlags(
       *CI,
       emitFWrite(CI->getArgOperand(0),
