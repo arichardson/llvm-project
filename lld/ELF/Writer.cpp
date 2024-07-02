@@ -153,7 +153,6 @@ static Defined *addOptionalRegular(StringRef name, SectionBase *sec,
   s->resolve(Defined{ctx.internalFile, StringRef(), STB_GLOBAL, stOther,
                      STT_NOTYPE, val,
                      /*size=*/0, sec});
-  s->isUsedInRegularObj = true;
   // If Val == 0 assume this symbol references the start of a section.
   // When targetting CHERI we set the size of that symbol since otherwise
   // an expression like foo = &_DYNAMIC will create a zero-length capability
@@ -165,6 +164,7 @@ static Defined *addOptionalRegular(StringRef name, SectionBase *sec,
     s->isSectionStartSymbol = true;
   }
 
+  s->isUsedInRegularObj = true;
   return cast<Defined>(s);
 }
 
@@ -2174,38 +2174,22 @@ template <class ELFT> void Writer<ELFT>::checkExecuteOnly() {
 // The linker is expected to define SECNAME_start and SECNAME_end
 // symbols for a few sections. This function defines them.
 template <class ELFT> void Writer<ELFT>::addStartEndSymbols() {
-  // If a section does not exist, there's ambiguity as to how we
-  // define _start and _end symbols for an init/fini section. Since
-  // the loader assume that the symbols are always defined, we need to
-  // always define them. But what value? The loader iterates over all
-  // pointers between _start and _end to run global ctors/dtors, so if
-  // the section is empty, their symbol values don't actually matter
-  // as long as _start and _end point to the same location.
-  //
-  // That said, we don't want to set the symbols to 0 (which is
-  // probably the simplest value) because that could cause some
-  // program to fail to link due to relocation overflow, if their
-  // program text is above 2 GiB. We use the address of the .text
-  // section instead to prevent that failure.
-  //
-  // In rare situations, the .text section may not exist. If that's the
-  // case, use the image base address as a last resort.
-  OutputSection *Default = findSection(".text");
-  if (!Default)
-    Default = Out::elfHeader;
-
+  // If the associated output section does not exist, there is ambiguity as to
+  // how we define _start and _end symbols for an init/fini section. Users
+  // expect no "undefined symbol" linker errors and loaders expect equal
+  // st_value but do not particularly care whether the symbols are defined or
+  // not. We retain the output section so that the section indexes will be
+  // correct.
   auto define = [=](StringRef start, StringRef end, OutputSection *os) {
-    if (os && !script->isDiscarded(os)) {
-      addOptionalRegular(start, os, 0);
-      addOptionalRegular(end, os, -1);
+    if (os) {
+      Defined *startSym = addOptionalRegular(start, os, 0);
+      Defined *stopSym = addOptionalRegular(end, os, -1);
+      if (startSym || stopSym)
+        os->usedInExpression = true;
     } else {
-      // Since this is an empty section we don't want to set canBeSectionStart
-      // Iterating over this should terminate immediately so setting the size
-      // to zero is fine
-      addOptionalRegular(start, Default, 0, STV_HIDDEN,
+      addOptionalRegular(start, Out::elfHeader, 0, STV_HIDDEN,
                          /*canBeSectionStart=*/false);
-      // End is not a section start symbol even though it has value 0:
-      addOptionalRegular(end, Default, 0, STV_HIDDEN,
+      addOptionalRegular(end, Out::elfHeader, 0, STV_HIDDEN,
                          /*canBeSectionStart=*/false);
     }
   };
@@ -2219,6 +2203,8 @@ template <class ELFT> void Writer<ELFT>::addStartEndSymbols() {
     define("__cap_table_start", "__cap_table_end",
            in.mipsCheriCapTable->getOutputSection());
 
+  // As a special case, don't unnecessarily retain .ARM.exidx, which would
+  // create an empty PT_ARM_EXIDX.
   if (OutputSection *sec = findSection(".ARM.exidx"))
     define("__exidx_start", "__exidx_end", sec);
 }
@@ -2233,10 +2219,14 @@ void Writer<ELFT>::addStartStopSymbols(OutputSection &osec) {
   StringRef s = osec.name;
   if (!isValidCIdentifier(s))
     return;
-  addOptionalRegular(saver().save("__start_" + s), &osec, 0,
-                     config->zStartStopVisibility, /*canBeSectionStart=*/true);
-  addOptionalRegular(saver().save("__stop_" + s), &osec, -1,
-                     config->zStartStopVisibility, /*canBeSectionStart=*/false);
+  Defined *startSym = addOptionalRegular(saver().save("__start_" + s), &osec, 0,
+                                         config->zStartStopVisibility,
+                                         /*canBeSectionStart=*/true);
+  Defined *stopSym = addOptionalRegular(saver().save("__stop_" + s), &osec, -1,
+                                        config->zStartStopVisibility,
+                                        /*canBeSectionStart=*/false);
+  if (startSym || stopSym)
+    osec.usedInExpression = true;
 }
 
 static bool needsPtLoad(OutputSection *sec) {
