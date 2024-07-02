@@ -24,7 +24,6 @@ class MCFragment;
 class MCLEBFragment;
 class MCRelaxableFragment;
 class MCSymbol;
-class MCAsmLayout;
 class MCAssembler;
 class MCContext;
 struct MCDwarfFrameInfo;
@@ -219,8 +218,7 @@ public:
                             const MCSubtargetInfo *STI) const = 0;
 
   /// Give backend an opportunity to finish layout after relaxation
-  virtual void finishLayout(MCAssembler const &Asm,
-                            MCAsmLayout &Layout) const {}
+  virtual void finishLayout(MCAssembler const &Asm) const {}
 
   /// Generate the compact unwind encoding for the CFI instructions.
   virtual uint32_t generateCompactUnwindEncoding(const MCDwarfFrameInfo *FI,
