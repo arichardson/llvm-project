@@ -15,6 +15,7 @@
 #include "MCTargetDesc/RISCVAsmBackend.h"
 #include "RISCVFixupKinds.h"
 #include "llvm/BinaryFormat/ELF.h"
+#include "llvm/MC/MCAsmLayout.h"
 #include "llvm/MC/MCAssembler.h"
 #include "llvm/MC/MCContext.h"
 #include "llvm/MC/MCObjectWriter.h"
@@ -99,19 +100,18 @@ bool RISCVMCExpr::evaluateAsRelocatableImpl(MCValue &Res,
   // However, for fixups that need provenance (where VK_RISCV_CODE for a
   // capability is the only case currently that uses a RISCVMCExpr), we do need
   // this, and don't support paired relocations.
-  MCAssembler *Asm = Layout ? &Layout->getAssembler() : nullptr;
   bool NeedsProvenance =
       Fixup && Asm && Asm->getWriter().fixupNeedsProvenance(*Asm, Fixup);
-  const MCAsmLayout *SubLayout;
+  const MCAssembler *SubAsm;
   const MCFixup *SubFixup;
   if (NeedsProvenance) {
-    SubLayout = Layout;
+    SubAsm = Asm;
     SubFixup = Fixup;
   } else {
-    SubLayout = nullptr;
+    SubAsm = nullptr;
     SubFixup = nullptr;
   }
-  if (!getSubExpr()->evaluateAsRelocatable(Res, SubLayout, SubFixup))
+  if (!getSubExpr()->evaluateAsRelocatable(Res, SubAsm, SubFixup))
     return false;
 
   Res =
