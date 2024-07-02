@@ -638,7 +638,7 @@ static void AttemptToFoldSymbolOffsetDifference(
   // separated by a linker-relaxable instruction. If the section contains
   // instructions and InSet is false (not expressions in directive like
   // .size/.fill), disable the fast path.
-  bool Layout = Asm->hasLayout();
+  const MCAsmLayout *Layout = Asm->getLayout();
   if (Layout && (InSet || !SecA.hasInstructions() || IgnoreRISCV ||
                  !(Asm->getContext().getTargetTriple().isRISCV() ||
                    Asm->getContext().getTargetTriple().isLoongArch()))) {
@@ -843,6 +843,7 @@ bool MCExpr::evaluateAsRelocatableImpl(MCValue &Res, const MCAssembler *Asm,
                                        const SectionAddrMap *Addrs,
                                        bool InSet) const {
   ++stats::MCExprEvaluate;
+  MCAsmLayout *Layout = Asm ? Asm->getLayout() : nullptr;
   switch (getKind()) {
   case Target:
     return cast<MCTargetExpr>(this)->evaluateAsRelocatableImpl(Res, Asm, Fixup);
@@ -855,7 +856,6 @@ bool MCExpr::evaluateAsRelocatableImpl(MCValue &Res, const MCAssembler *Asm,
     const MCSymbolRefExpr *SRE = cast<MCSymbolRefExpr>(this);
     const MCSymbol &Sym = SRE->getSymbol();
     const auto Kind = SRE->getKind();
-    bool Layout = Asm && Asm->hasLayout();
 
     // Evaluate recursively if this is a variable.
     if (Sym.isVariable() && (Kind == MCSymbolRefExpr::VK_None || Layout) &&
