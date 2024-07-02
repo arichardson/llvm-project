@@ -526,9 +526,6 @@ void RISCVPassConfig::addPreSched2() {
 }
 
 void RISCVPassConfig::addPreEmitPass() {
-  addPass(&BranchRelaxationPassID);
-  addPass(createRISCVMakeCompressibleOptPass());
-
   // TODO: It would potentially be better to schedule copy propagation after
   // expanding pseudos (in addPreEmitPass2). However, performing copy
   // propagation after the machine outliner (which runs after addPreEmitPass)
@@ -537,6 +534,8 @@ void RISCVPassConfig::addPreEmitPass() {
   if (TM->getOptLevel() >= CodeGenOptLevel::Default &&
       EnableRISCVCopyPropagation)
     addPass(createMachineCopyPropagationPass(true));
+  addPass(&BranchRelaxationPassID);
+  addPass(createRISCVMakeCompressibleOptPass());
 }
 
 void RISCVPassConfig::addPreEmitPass2() {
