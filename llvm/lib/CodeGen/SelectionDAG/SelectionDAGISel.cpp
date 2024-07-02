@@ -1782,7 +1782,7 @@ void SelectionDAGISel::SelectAllBasicBlocks(const Function &Fn) {
             raw_string_ostream InstStr(InstStrStorage);
             InstStr << *Inst;
 
-            R << ": " << InstStr.str();
+            R << ": " << InstStrStorage;
           }
 
           reportFastISelFailure(*MF, *ORE, R, EnableFastISelAbort > 2);
@@ -1831,7 +1831,7 @@ void SelectionDAGISel::SelectAllBasicBlocks(const Function &Fn) {
           std::string InstStrStorage;
           raw_string_ostream InstStr(InstStrStorage);
           InstStr << *Inst;
-          R << ": " << InstStr.str();
+          R << ": " << InstStrStorage;
         }
 
         reportFastISelFailure(*MF, *ORE, R, ShouldAbort);
@@ -4402,5 +4402,5 @@ void SelectionDAGISel::CannotYetSelect(SDNode *N) {
     else
       Msg << "unknown intrinsic #" << iid;
   }
-  report_fatal_error(Twine(Msg.str()));
+  report_fatal_error(Twine(msg));
 }
