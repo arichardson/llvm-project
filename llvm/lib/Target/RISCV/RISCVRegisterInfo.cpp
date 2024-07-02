@@ -757,7 +757,11 @@ bool RISCVRegisterInfo::getRegAllocationHints(
     Register Reg = MO.getReg();
     Register PhysReg = Reg.isPhysical() ? Reg : Register(VRM->getPhys(Reg));
     if (PhysReg && (!NeedGPRC || RISCV::GPRCRegClass.contains(PhysReg))) {
-      assert(!MO.getSubReg() && !VRRegMO.getSubReg() && "Unexpected subreg!");
+      assert((MO.getSubReg() == 0 || MO.getSubReg() == RISCV::sub_cap_addr) &&
+             "Unexpected subreg!");
+      assert((VRRegMO.getSubReg() == 0 ||
+              VRRegMO.getSubReg() == RISCV::sub_cap_addr) &&
+             "Unexpected subreg!");
       if (!MRI->isReserved(PhysReg) && !is_contained(Hints, PhysReg))
         TwoAddrHints.insert(PhysReg);
     }
