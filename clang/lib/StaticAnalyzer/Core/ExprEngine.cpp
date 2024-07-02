@@ -3901,7 +3901,7 @@ struct DOTGraphTraits<ExplodedGraph*> : public DefaultDOTGraphTraits {
     State->printDOT(Out, N->getLocationContext(), Space);
 
     Out << "\\l}\\l";
-    return Out.str();
+    return Buf;
   }
 };
 
