@@ -179,22 +179,6 @@ if (CMAKE_POSITION_INDEPENDENT_CODE OR NOT DEFINED CMAKE_POSITION_INDEPENDENT_CO
   set_target_properties(unwind_shared_objects PROPERTIES POSITION_INDEPENDENT_CODE ON) # must set manually because it's an object library
 endif()
 
-add_library(unwind_shared SHARED $<$<NOT:$<BOOL:LIBUNWIND_ENABLE_SHARED>>:EXCLUDE_FROM_ALL>)
-target_link_libraries(unwind_shared PUBLIC unwind_shared_objects)
-set_target_properties(unwind_shared
-  PROPERTIES
-    LINK_FLAGS "${LIBUNWIND_LINK_FLAGS}"
-    LINKER_LANGUAGE C
-    OUTPUT_NAME "${LIBUNWIND_SHARED_OUTPUT_NAME}"
-    VERSION "1.0"
-    SOVERSION "1"
-)
-
-  # To allow testing exceptions with a shared libcxxrt.so
-if (LIBUNWIND_USE_VERSION_SCRIPT)
-  target_link_libraries(unwind_shared PRIVATE "-Wl,--version-script=${LIBUNWIND_USE_VERSION_SCRIPT}")
-endif()
-
 if (LIBUNWIND_ENABLE_SHARED)
   add_library(unwind_shared SHARED)
   target_link_libraries(unwind_shared PUBLIC unwind_shared_objects)
@@ -211,6 +195,11 @@ if (LIBUNWIND_ENABLE_SHARED)
   if (LIBUNWIND_INSTALL_SHARED_LIBRARY)
     list(APPEND LIBUNWIND_INSTALL_TARGETS "unwind_shared")
   endif()
+endif()
+
+# To allow testing exceptions with a shared libcxxrt.so
+if (LIBUNWIND_USE_VERSION_SCRIPT AND TARGET unwind_shared)
+  target_link_libraries(unwind_shared PRIVATE "-Wl,--version-script=${LIBUNWIND_USE_VERSION_SCRIPT}")
 endif()
 
 # Build the static library.
