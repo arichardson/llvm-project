@@ -3259,8 +3259,7 @@ static QualType GetDeclSpecTypeForDeclarator(TypeProcessingState &state,
       break;
     }
     case DeclaratorContext::Member: {
-      if (D.getDeclSpec().getStorageClassSpec() == DeclSpec::SCS_static ||
-          D.isFunctionDeclarator())
+      if (D.isStaticMember() || D.isFunctionDeclarator())
         break;
       bool Cxx = SemaRef.getLangOpts().CPlusPlus;
       if (isa<ObjCContainerDecl>(SemaRef.CurContext)) {
