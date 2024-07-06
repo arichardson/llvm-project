@@ -5104,7 +5104,7 @@ static SDValue lowerVECTOR_SHUFFLE(SDValue Op, SelectionDAG &DAG,
                           Ld->getOriginalAlign(),
                           Ld->getMemOperand()->getFlags());
         else
-          V = DAG.getExtLoad(ISD::SEXTLOAD, DL, XLenVT, Ld->getChain(), NewAddr,
+          V = DAG.getExtLoad(ISD::EXTLOAD, DL, XLenVT, Ld->getChain(), NewAddr,
                              Ld->getPointerInfo().getWithOffset(Offset), SVT,
                              Ld->getOriginalAlign(),
                              Ld->getMemOperand()->getFlags());
