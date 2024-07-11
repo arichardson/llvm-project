@@ -2585,6 +2585,7 @@ public:
   /// be converted to capabilities.
   bool canCarryProvenance(const ASTContext &C) const;
 
+  bool isSignableType() const;
   bool isAnyPointerType() const;   // Any C pointer or ObjC object pointer
   bool isCountAttributedType() const;
   bool isBlockPointerType() const;
@@ -8200,6 +8201,8 @@ inline bool Type::isPointerType() const {
 inline bool Type::isAnyPointerType() const {
   return isPointerType() || isObjCObjectPointerType();
 }
+
+inline bool Type::isSignableType() const { return isPointerType(); }
 
 inline bool Type::isBlockPointerType() const {
   return isa<BlockPointerType>(CanonicalType);
