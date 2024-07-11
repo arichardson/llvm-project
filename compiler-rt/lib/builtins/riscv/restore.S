@@ -100,7 +100,7 @@ __riscv_restore_0:
 
 # else // __CHERI_PURE_CAPABILITY__
 
-#ifndef __riscv_32e
+#ifndef __riscv_abi_rve
 
   .globl  __riscv_restore_12
   .type   __riscv_restore_12,@function
@@ -283,7 +283,7 @@ __riscv_restore_0:
 
 # else // __CHERI_PURE_CAPABILITY__
 
-#ifndef __riscv_64e
+#ifndef __riscv_abi_rve
 
   .globl  __riscv_restore_12
   .type   __riscv_restore_12,@function
