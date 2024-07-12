@@ -4387,7 +4387,6 @@ Error BitcodeReader::parseGlobalIndirectSymbolRecord(
       return error("Malformed partition, too large.");
     NewGA->setPartition(
         StringRef(Strtab.data() + Record[OpNum], Record[OpNum + 1]));
-    OpNum += 2;
   }
 
   ValueList.push_back(NewGA, getVirtualTypeID(NewGA->getType(), TypeID));
