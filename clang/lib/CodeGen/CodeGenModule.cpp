@@ -6039,7 +6039,8 @@ static void ReplaceUsesOfNonProtoTypeWithRealFunction(llvm::GlobalValue *Old,
 
 void CodeGenModule::HandleCXXStaticMemberVarInstantiation(VarDecl *VD) {
   auto DK = VD->isThisDeclarationADefinition();
-  if (DK == VarDecl::Definition && VD->hasAttr<DLLImportAttr>())
+  if ((DK == VarDecl::Definition && VD->hasAttr<DLLImportAttr>()) ||
+      (LangOpts.CUDA && !shouldEmitCUDAGlobalVar(VD)))
     return;
 
   TemplateSpecializationKind TSK = VD->getTemplateSpecializationKind();
