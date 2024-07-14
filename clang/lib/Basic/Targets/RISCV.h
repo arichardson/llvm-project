@@ -67,7 +67,7 @@ protected:
   }
 
 private:
-  bool FastUnalignedAccess;
+  bool FastScalarUnalignedAccess;
   bool HasExperimental = false;
 
 public:
