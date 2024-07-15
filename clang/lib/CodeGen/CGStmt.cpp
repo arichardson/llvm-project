@@ -1535,44 +1535,47 @@ void CodeGenFunction::EmitReturnStmt(const ReturnStmt &S) {
     // rather than the value.
     RValue Result = EmitReferenceBindingToExpr(RV);
     Builder.CreateStore(Result.getScalarVal(), ReturnValue);
-  } else if (TEK_Scalar == getEvaluationKind(RV->getType())) {
-    llvm::Value *RetV = EmitScalarExpr(RV);
-    QualType Ty = RV->getType();
-    if (Ty->isPointerType()) {
-      if (const TypedefType *TT = dyn_cast<TypedefType>(Ty)) {
-        // TT->getDecl() could be a TypedefDecl or a TypedefNameDecl
-        const TypedefDecl* TD = dyn_cast<TypedefDecl>(TT->getDecl());
-        VarDecl *Key = TD ? TD->getOpaqueKey() : nullptr;
-        if (Key) {
-          llvm::Type *RetTy = RetV->getType();
-          llvm::Value *KeyV = CGM.GetAddrOfGlobalVar(Key);
-          CharUnits Alignment = getContext().getDeclAlign(Key);
-          Address Addr(KeyV, ConvertTypeForMem(Key->getType()), Alignment);
-          KeyV = Builder.CreateLoad(Addr);
-          // If this is CHERI, enforce this in hardware
-          if (Ty->isCHERICapabilityType(getContext())) {
-            unsigned CapAS = CGM.getTargetCodeGenInfo().getCHERICapabilityAS();
-            auto *F = CGM.getIntrinsic(llvm::Intrinsic::cheri_cap_seal);
-            llvm::Type *CapPtrTy = llvm::PointerType::get(Int8Ty, CapAS);
-            RetV = Builder.CreateCall(F,
-               {Builder.CreateBitCast(RetV, CapPtrTy),
-                Builder.CreateBitCast(KeyV, CapPtrTy)});
-            RetV = Builder.CreateBitCast(RetV, RetTy);
-          } else {
-            KeyV = Builder.CreatePtrToInt(KeyV, IntPtrTy);
-            RetV = Builder.CreatePtrToInt(RetV, IntPtrTy);
-            RetV = Builder.CreateXor(RetV, KeyV);
-            RetV = Builder.CreateIntToPtr(RetV, RetTy);
+  } else {
+    switch (getEvaluationKind(RV->getType())) {
+    case TEK_Scalar: {
+      llvm::Value *Ret = EmitScalarExpr(RV);
+      QualType Ty = RV->getType();
+      if (Ty->isPointerType()) {
+        if (const TypedefType *TT = dyn_cast<TypedefType>(Ty)) {
+          // TT->getDecl() could be a TypedefDecl or a TypedefNameDecl
+          const TypedefDecl* TD = dyn_cast<TypedefDecl>(TT->getDecl());
+          VarDecl *Key = TD ? TD->getOpaqueKey() : nullptr;
+          if (Key) {
+            llvm::Type *RetTy = Ret->getType();
+            llvm::Value *KeyV = CGM.GetAddrOfGlobalVar(Key);
+            CharUnits Alignment = getContext().getDeclAlign(Key);
+            Address Addr(KeyV, ConvertTypeForMem(Key->getType()), Alignment);
+            KeyV = Builder.CreateLoad(Addr);
+            // If this is CHERI, enforce this in hardware
+            if (Ty->isCHERICapabilityType(getContext())) {
+              unsigned CapAS = CGM.getTargetCodeGenInfo().getCHERICapabilityAS();
+              auto *F = CGM.getIntrinsic(llvm::Intrinsic::cheri_cap_seal);
+              llvm::Type *CapPtrTy = llvm::PointerType::get(Int8Ty, CapAS);
+              Ret = Builder.CreateCall(F,
+                 {Builder.CreateBitCast(Ret, CapPtrTy),
+                  Builder.CreateBitCast(KeyV, CapPtrTy)});
+              Ret = Builder.CreateBitCast(Ret, RetTy);
+            } else {
+              KeyV = Builder.CreatePtrToInt(KeyV, IntPtrTy);
+              Ret = Builder.CreatePtrToInt(Ret, IntPtrTy);
+              Ret = Builder.CreateXor(Ret, KeyV);
+              Ret = Builder.CreateIntToPtr(Ret, RetTy);
+            }
           }
         }
       }
-    }
-    Builder.CreateStore(RetV, ReturnValue);
-  } else {
-    switch (getEvaluationKind(RV->getType())) {
-    case TEK_Scalar:
-      Builder.CreateStore(EmitScalarExpr(RV), ReturnValue);
+      if (CurFnInfo->getReturnInfo().getKind() == ABIArgInfo::Indirect)
+        EmitStoreOfScalar(Ret, MakeAddrLValue(ReturnValue, RV->getType()),
+                          /*isInit*/ true);
+      else
+        Builder.CreateStore(Ret, ReturnValue);
       break;
+    }
     case TEK_Complex:
       EmitComplexExprIntoLValue(RV, MakeAddrLValue(ReturnValue, RV->getType()),
                                 /*isInit*/ true);
