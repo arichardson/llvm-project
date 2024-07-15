@@ -745,6 +745,11 @@ void CodeGenModule::checkAliases() {
           cast<llvm::GlobalAlias>(Alias)->setAliasee(Aliasee);
       }
     }
+    // ifunc resolvers are usually implemented to run before sanitizer
+    // initialization. Disable instrumentation to prevent the ordering issue.
+    if (IsIFunc)
+      cast<llvm::Function>(Aliasee)->addFnAttr(
+          llvm::Attribute::DisableSanitizerInstrumentation);
   }
   if (!Error)
     return;
@@ -6212,14 +6217,18 @@ void CodeGenModule::emitIFuncDefinition(GlobalDecl GD) {
 
   Aliases.push_back(GD);
 
-  llvm::Type *DeclTy = getTypes().ConvertTypeForMem(D->getType());
-  llvm::Type *ResolverTy = llvm::GlobalIFunc::getResolverFunctionType(DeclTy);
+  // The resolver might not be visited yet. Specify a dummy non-function type to
+  // indicate IsIncompleteFunction. Either the type is ignored (if the resolver
+  // was emitted) or the whole function will be replaced (if the resolver has
+  // not been emitted).
   llvm::Constant *Resolver =
-      GetOrCreateLLVMFunction(IFA->getResolver(), ResolverTy, {},
+      GetOrCreateLLVMFunction(IFA->getResolver(), VoidTy, {},
                               /*ForVTable=*/false);
   unsigned AS = getTypes().getTargetAddressSpace(D->getType());
-  llvm::GlobalIFunc *GIF = llvm::GlobalIFunc::create(
-      DeclTy, AS, llvm::Function::ExternalLinkage, "", Resolver, &getModule());
+  llvm::Type *DeclTy = getTypes().ConvertTypeForMem(D->getType());
+  llvm::GlobalIFunc *GIF =
+      llvm::GlobalIFunc::create(DeclTy, AS, llvm::Function::ExternalLinkage,
+                                "", Resolver, &getModule());
   if (Entry) {
     if (GIF->getResolver() == Entry) {
       Diags.Report(IFA->getLocation(), diag::err_cyclic_alias) << 1;
@@ -6240,9 +6249,6 @@ void CodeGenModule::emitIFuncDefinition(GlobalDecl GD) {
     Entry->eraseFromParent();
   } else
     GIF->setName(MangledName);
-  if (auto *F = dyn_cast<llvm::Function>(Resolver)) {
-    F->addFnAttr(llvm::Attribute::DisableSanitizerInstrumentation);
-  }
   SetCommonAttributes(GD, GIF);
 }
 
