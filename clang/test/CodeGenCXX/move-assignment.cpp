@@ -21,11 +21,11 @@ void test1() {
 
 // X86-LABEL: define {{.*}} @_ZN1BaSEOS_
 // CHERI: define linkonce_odr noundef nonnull align 8 dereferenceable(32) ptr addrspace(200) @_ZN1BaSEOS_(ptr addrspace(200) noundef nonnull align 8 dereferenceable(32) %this, ptr addrspace(200) noundef nonnull align 8 dereferenceable(32) %0) addrspace(200)
-// X86:   call noundef nonnull align 1 dereferenceable(1) ptr @_ZN1AaSEOS_(ptr noundef nonnull align 1 dereferenceable(1) %a, ptr noundef nonnull align 1 dereferenceable(1) %a2)
-// CHERI: call noundef nonnull align 1 dereferenceable(1) ptr addrspace(200) @_ZN1AaSEOS_(ptr addrspace(200) noundef nonnull align 1 dereferenceable(1) %a, ptr addrspace(200) noundef nonnull align 1 dereferenceable(1) %a2)
+// X86:   call noundef nonnull align 1 dereferenceable(1) ptr @_ZN1AaSEOS_(ptr noundef nonnull align 1 dereferenceable(1) %this1, ptr noundef nonnull align 1 dereferenceable(1) %1)
+// CHERI: call noundef nonnull align 1 dereferenceable(1) ptr addrspace(200) @_ZN1AaSEOS_(ptr addrspace(200) noundef nonnull align 1 dereferenceable(1) %this1, ptr addrspace(200) noundef nonnull align 1 dereferenceable(1) %1)
 // BOTH-NOT: store
 // X86:   call void @llvm.memcpy.p0.p0.i64(ptr align 4 {{.+}}, ptr align 4 {{.+}}, i64 24, i1 false)
-// CHERI: call void @llvm.memcpy.p200.p200.i64(ptr addrspace(200) align 4 %i, ptr addrspace(200) align 4 %i3, i64 24, i1 false)
+// CHERI: call void @llvm.memcpy.p200.p200.i64(ptr addrspace(200) align 4 %i, ptr addrspace(200) align 4 %i2, i64 24, i1 false)
 // BOTH-NOT: store
 // X86:   ret ptr %this1
 // CHERI: ret ptr addrspace(200) %this1
