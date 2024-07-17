@@ -1659,6 +1659,11 @@ public:
     return *getTrailingObjects<FPOptionsOverride>();
   }
 
+  /// Get the store FPOptionsOverride or default if not stored.
+  FPOptionsOverride getStoredFPFeaturesOrDefault() const {
+    return hasStoredFPFeatures() ? getStoredFPFeatures() : FPOptionsOverride();
+  }
+
   using body_iterator = Stmt **;
   using body_range = llvm::iterator_range<body_iterator>;
 
