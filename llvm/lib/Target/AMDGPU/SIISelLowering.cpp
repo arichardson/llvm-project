@@ -3822,7 +3822,7 @@ SDValue SITargetLowering::LowerCall(CallLoweringInfo &CLI,
             Chain, DL, DstAddr, Arg, SizeNode,
             Outs[i].Flags.getNonZeroByValAlign(),
             /*isVol = */ false, /*AlwaysInline = */ true,
-            /*isTailCall = */ false, llvm::PreserveCheriTags::Unnecessary,
+            /*CI=*/nullptr, std::nullopt, llvm::PreserveCheriTags::Unnecessary,
             DstInfo, MachinePointerInfo(AMDGPUAS::PRIVATE_ADDRESS));
 
         MemOpChains.push_back(Cpy);

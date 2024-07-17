@@ -178,7 +178,7 @@ static SDValue CreateCopyOfByValArgument(SDValue Src, SDValue Dst,
   return DAG.getMemcpy(
       Chain, dl, Dst, Src, SizeNode, Flags.getNonZeroByValAlign(),
       /*isVolatile=*/false, /*AlwaysInline=*/false,
-      /*isTailCall=*/false, llvm::PreserveCheriTags::Unnecessary,
+      /*CI=*/nullptr, std::nullopt, llvm::PreserveCheriTags::Unnecessary,
       MachinePointerInfo(), MachinePointerInfo());
 }
 
@@ -1041,7 +1041,8 @@ HexagonTargetLowering::LowerVACOPY(SDValue Op, SelectionDAG &DAG) const {
   // we need to memcopy 12 bytes from va_list to another similar list.
   return DAG.getMemcpy(
       Chain, DL, DestPtr, SrcPtr, DAG.getIntPtrConstant(12, DL), Align(4),
-      /*isVolatile*/ false, false, false, llvm::PreserveCheriTags::Unnecessary,
+      /*isVolatile*/ false, false, /*CI=*/nullptr, std::nullopt,
+      llvm::PreserveCheriTags::Unnecessary,
       MachinePointerInfo(DestSV), MachinePointerInfo(SrcSV));
 }
 

@@ -4240,8 +4240,8 @@ LoongArchTargetLowering::LowerCall(CallLoweringInfo &CLI,
 
     Chain = DAG.getMemcpy(Chain, DL, FIPtr, Arg, SizeNode, Alignment,
                           /*IsVolatile=*/false,
-                          /*AlwaysInline=*/false, /*isTailCall=*/IsTailCall,
-                          /*PreserveTags*/ PreserveCheriTags::Unknown,
+                          /*AlwaysInline=*/false, /*CI=*/nullptr, std::nullopt,
+                          /*PreserveTags*/ PreserveCheriTags::TODO,
                           MachinePointerInfo(), MachinePointerInfo());
     ByValArgs.push_back(FIPtr);
   }

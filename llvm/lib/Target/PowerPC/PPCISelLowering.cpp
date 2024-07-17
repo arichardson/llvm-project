@@ -3904,7 +3904,8 @@ SDValue PPCTargetLowering::LowerVACOPY(SDValue Op, SelectionDAG &DAG) const {
   // 2*sizeof(char) + 2 Byte alignment + 2*sizeof(char*) = 12 Byte
   return DAG.getMemcpy(Op.getOperand(0), Op, Op.getOperand(1), Op.getOperand(2),
                        DAG.getConstant(12, SDLoc(Op), MVT::i32), Align(8),
-                       false, true, false, PreserveCheriTags::TODO,
+                       false, true, /*CI=*/nullptr, std::nullopt,
+                       PreserveCheriTags::TODO,
                        MachinePointerInfo(), MachinePointerInfo());
 }
 
@@ -5275,10 +5276,10 @@ static SDValue CreateCopyOfByValArgument(SDValue Src, SDValue Dst,
                                          SDValue Chain, ISD::ArgFlagsTy Flags,
                                          SelectionDAG &DAG, const SDLoc &dl) {
   SDValue SizeNode = DAG.getConstant(Flags.getByValSize(), dl, MVT::i32);
-  return DAG.getMemcpy(Chain, dl, Dst, Src, SizeNode,
-                       Flags.getNonZeroByValAlign(), false, false, false,
-                       PreserveCheriTags::TODO, MachinePointerInfo(),
-                       MachinePointerInfo());
+  return DAG.getMemcpy(
+      Chain, dl, Dst, Src, SizeNode, Flags.getNonZeroByValAlign(), false, false,
+      /*CI=*/nullptr, std::nullopt, PreserveCheriTags::TODO, MachinePointerInfo(),
+      MachinePointerInfo());
 }
 
 /// LowerMemOpCallTo - Store the argument to the stack or remember it in case of
@@ -6501,7 +6502,7 @@ SDValue PPCTargetLowering::LowerCall_64SVR4(
         ArgOffset += PtrByteSize;
         continue;
       }
-      // Copy the object to parameter save area if it can not be entirely passed 
+      // Copy the object to parameter save area if it can not be entirely passed
       // by registers.
       // FIXME: we only need to copy the parts which need to be passed in
       // parameter save area. For the parts passed by registers, we don't need
@@ -7148,7 +7149,7 @@ static unsigned mapArgRegToOffsetAIX(unsigned Reg, const PPCFrameLowering *FL) {
 //
 //   Low Memory +--------------------------------------------+
 //   SP   +---> | Back chain                                 | ---+
-//        |     +--------------------------------------------+    |   
+//        |     +--------------------------------------------+    |
 //        |     | Saved Condition Register                   |    |
 //        |     +--------------------------------------------+    |
 //        |     | Saved Linkage Register                     |    |
@@ -8108,7 +8109,7 @@ SDValue PPCTargetLowering::LowerTRUNCATEVector(SDValue Op,
     return SDValue();
 
   SDValue N1 = Op.getOperand(0);
-  EVT SrcVT = N1.getValueType();  
+  EVT SrcVT = N1.getValueType();
   unsigned SrcSize = SrcVT.getSizeInBits();
   if (SrcSize > 256 || !isPowerOf2_32(SrcVT.getVectorNumElements()) ||
       !llvm::has_single_bit<uint32_t>(

@@ -3952,7 +3952,7 @@ SDValue SystemZTargetLowering::lowerVACOPY(SDValue Op,
       Subtarget.isTargetXPLINK64() ? getTargetMachine().getPointerSize(0) : 32;
   return DAG.getMemcpy(Chain, DL, DstPtr, SrcPtr, DAG.getIntPtrConstant(Sz, DL),
                        Align(8), /*isVolatile*/ false, /*AlwaysInline*/ false,
-                       /*isTailCall*/ false,
+                       /*CI=*/nullptr, std::nullopt,
                        llvm::PreserveCheriTags::Unnecessary,
                        MachinePointerInfo(DstSV), MachinePointerInfo(SrcSV));
 }

@@ -21472,7 +21472,7 @@ static SDValue convertUnalignedStoreOfLoadToMemmove(SDNode *N,
       }
       return DAG.getMemmove(
           Chain, dl, Dest, Src, DAG.getConstant(StoreBytes, dl, MVT::i32),
-          Align(Alignment), false, isTail, PreserveTags, ST->getPointerInfo(),
+          Align(Alignment), false, nullptr, isTail, PreserveTags, ST->getPointerInfo(),
           LD->getPointerInfo(), AAMDNodes(), AA, "!!<CHERI-NODIAG>!!");
     }
   }

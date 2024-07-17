@@ -25147,8 +25147,8 @@ static SDValue LowerVACOPY(SDValue Op, const X86Subtarget &Subtarget,
       Chain, DL, DstPtr, SrcPtr,
       DAG.getIntPtrConstant(Subtarget.isTarget64BitLP64() ? 24 : 16, DL),
       Align(Subtarget.isTarget64BitLP64() ? 8 : 4), /*isVolatile*/ false, false,
-      false, llvm::PreserveCheriTags::Unnecessary, MachinePointerInfo(DstSV),
-      MachinePointerInfo(SrcSV));
+      /*CI=*/nullptr, std::nullopt, llvm::PreserveCheriTags::Unnecessary,
+      MachinePointerInfo(DstSV), MachinePointerInfo(SrcSV));
 }
 
 // Helper to get immediate/variable SSE shift opcode from other shift opcodes.

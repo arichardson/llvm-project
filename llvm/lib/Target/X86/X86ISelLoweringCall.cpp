@@ -1238,12 +1238,12 @@ static SDValue CreateCopyOfByValArgument(SDValue Src, SDValue Dst,
                                          SelectionDAG &DAG, const SDLoc &dl) {
   SDValue SizeNode = DAG.getIntPtrConstant(Flags.getByValSize(), dl);
 
-  return DAG.getMemcpy(Chain, dl, Dst, Src, SizeNode,
-                       Flags.getNonZeroByValAlign(),
-                       /*isVolatile*/ false, /*AlwaysInline=*/
-                       true,
-                       /*isTailCall*/ false, PreserveCheriTags::Unnecessary,
-                       MachinePointerInfo(), MachinePointerInfo());
+  return DAG.getMemcpy(
+      Chain, dl, Dst, Src, SizeNode, Flags.getNonZeroByValAlign(),
+      /*isVolatile*/ false, /*AlwaysInline=*/true,
+      /*CI=*/nullptr, std::nullopt,
+      PreserveCheriTags::Unnecessary,
+      MachinePointerInfo(), MachinePointerInfo());
 }
 
 /// Return true if the calling convention is one that we can guarantee TCO for.

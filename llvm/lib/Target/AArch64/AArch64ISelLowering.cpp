@@ -1176,7 +1176,7 @@ AArch64TargetLowering::AArch64TargetLowering(const TargetMachine &TM,
           ISD::FNEG,              ISD::FABS,           ISD::FCEIL,
           ISD::FSQRT,             ISD::FFLOOR,         ISD::FNEARBYINT,
           ISD::FSIN,              ISD::FCOS,           ISD::FTAN,
-          ISD::FPOW,              ISD::FLOG,           ISD::FLOG2,          
+          ISD::FPOW,              ISD::FLOG,           ISD::FLOG2,
           ISD::FLOG10,            ISD::FEXP,           ISD::FEXP2,
           ISD::FEXP10,            ISD::FRINT,          ISD::FROUND,
           ISD::FROUNDEVEN,        ISD::FTRUNC,         ISD::FMINNUM,
@@ -1184,7 +1184,7 @@ AArch64TargetLowering::AArch64TargetLowering(const TargetMachine &TM,
           ISD::STRICT_FADD,       ISD::STRICT_FSUB,    ISD::STRICT_FMUL,
           ISD::STRICT_FDIV,       ISD::STRICT_FMA,     ISD::STRICT_FCEIL,
           ISD::STRICT_FFLOOR,     ISD::STRICT_FSQRT,   ISD::STRICT_FRINT,
-          ISD::STRICT_FNEARBYINT, ISD::STRICT_FROUND,  ISD::STRICT_FTRUNC,  
+          ISD::STRICT_FNEARBYINT, ISD::STRICT_FROUND,  ISD::STRICT_FTRUNC,
           ISD::STRICT_FROUNDEVEN, ISD::STRICT_FMINNUM, ISD::STRICT_FMAXNUM,
           ISD::STRICT_FMINIMUM,   ISD::STRICT_FMAXIMUM})
       setOperationAction(Op, MVT::v1f64, Expand);
@@ -8577,7 +8577,7 @@ AArch64TargetLowering::LowerCall(CallLoweringInfo &CLI,
             Chain, DL, DstAddr, Arg, SizeNode,
             Outs[i].Flags.getNonZeroByValAlign(),
             /*isVol = */ false, /*AlwaysInline = */ false,
-            /*isTailCall = */ false, llvm::PreserveCheriTags::Unnecessary,
+            /*CI=*/nullptr, std::nullopt, llvm::PreserveCheriTags::Unnecessary,
             DstInfo, MachinePointerInfo());
 
         MemOpChains.push_back(Cpy);
@@ -10878,8 +10878,9 @@ SDValue AArch64TargetLowering::LowerVACOPY(SDValue Op,
 
   return DAG.getMemcpy(Op.getOperand(0), DL, Op.getOperand(1), Op.getOperand(2),
                        DAG.getConstant(VaListSize, DL, MVT::i32),
-                       Align(PtrSize), false, false, false,
-                       PreserveCheriTags::TODO, MachinePointerInfo(DestSV),
+                       Align(PtrSize), false, false, /*CI=*/nullptr,
+                       std::nullopt, PreserveCheriTags::TODO,
+                       MachinePointerInfo(DestSV),
                        MachinePointerInfo(SrcSV));
 }
 
