@@ -1372,8 +1372,16 @@ void ItaniumCXXABI::emitThrow(CodeGenFunction &CGF, const CXXThrowExpr *E) {
   if (const RecordType *RecordTy = ThrowType->getAs<RecordType>()) {
     CXXRecordDecl *Record = cast<CXXRecordDecl>(RecordTy->getDecl());
     if (!Record->hasTrivialDestructor()) {
+      // __cxa_throw is declared to take its destructor as void (*)(void *). We
+      // must match that if function pointers can be authenticated with a
+      // discriminator based on their type.
+      const ASTContext &Ctx = getContext();
+      QualType DtorTy = Ctx.getFunctionType(Ctx.VoidTy, {Ctx.VoidPtrTy},
+                                            FunctionProtoType::ExtProtoInfo());
+
       CXXDestructorDecl *DtorD = Record->getDestructor();
       Dtor = CGM.getAddrOfCXXStructor(GlobalDecl(DtorD, Dtor_Complete));
+      Dtor = CGM.getFunctionPointer(Dtor, DtorTy);
     }
   }
   if (!Dtor) Dtor = llvm::Constant::getNullValue(CGM.Int8PtrTy);
@@ -2765,6 +2773,14 @@ static void emitGlobalDtorWithCXAAtExit(CodeGenFunction &CGF,
   if (llvm::Function *fn = dyn_cast<llvm::Function>(atexit.getCallee()))
     fn->setDoesNotThrow();
 
+  const auto &Context = CGF.CGM.getContext();
+  FunctionProtoType::ExtProtoInfo EPI(Context.getDefaultCallingConvention(
+      /*IsVariadic=*/false, /*IsCXXMethod=*/false));
+  QualType fnType =
+      Context.getFunctionType(Context.VoidTy, {Context.VoidPtrTy}, EPI);
+  llvm::Constant *dtorCallee = cast<llvm::Constant>(dtor.getCallee());
+  dtorCallee = CGF.CGM.getFunctionPointer(dtorCallee, fnType);
+
   // Convert the destructor pointer to a capability before passing it
   llvm::Value *dtorV = dtor.getCallee();
   auto &TI = CGF.getContext().getTargetInfo();
@@ -2782,7 +2798,7 @@ static void emitGlobalDtorWithCXAAtExit(CodeGenFunction &CGF,
     addr = llvm::Constant::getNullValue(CGF.Int8PtrTy);
 
   // FIXME-cheri-c++: should handle be a capability in the pure ABI?
-  llvm::Value *args[] = {dtorV, addr, handle};
+  llvm::Value *args[] = {dtorCallee, addr, handle};
   CGF.EmitNounwindRuntimeCall(atexit, args);
 }
 
@@ -4992,7 +5008,8 @@ void XLCXXABI::registerGlobalDtor(CodeGenFunction &CGF, const VarDecl &D,
   }
 
   // Create __dtor function for the var decl.
-  llvm::Function *DtorStub = CGF.createAtExitStub(D, Dtor, Addr);
+  llvm::Function *DtorStub =
+      cast<llvm::Function>(CGF.createAtExitStub(D, Dtor, Addr));
 
   // Register above __dtor with atexit().
   CGF.registerGlobalDtorWithAtExit(DtorStub);
