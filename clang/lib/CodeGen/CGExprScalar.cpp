@@ -2672,10 +2672,12 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
     }
 
     // Handle CHERI pointers casts (e.g. __cheri_{input,output} qualifiers, etc)
-    if (E->getType()->isPointerType() && DestTy->isPointerType())
+    if (E->getType()->isCHERICapabilityType(CGF.getContext()) &&
+        DestTy->isCHERICapabilityType(CGF.getContext()))
       return CGF.EmitPointerCast(Src, E->getType(), DestTy);
 
-    return Builder.CreateBitCast(Src, DstTy);
+    llvm::Value *Result = Builder.CreateBitCast(Src, DstTy);
+    return CGF.authPointerToPointerCast(Result, E->getType(), DestTy);
   }
   case CK_AddressSpaceConversion:
   // FIXME: these two should probably be moved
@@ -2938,6 +2940,8 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
       if (DestTy.mayBeDynamicClass())
         IntToPtr = Builder.CreateLaunderInvariantGroup(IntToPtr);
     }
+
+    IntToPtr = CGF.authPointerToPointerCast(IntToPtr, E->getType(), DestTy);
     return IntToPtr;
   }
   case CK_PointerToIntegral: {
@@ -2993,7 +2997,8 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
       warnAboutImplicitCToPtr(CGF.CGM, CE);
       return createCToPtr(CGF, PtrExpr, ResultType);
     }
-    return Builder.CreatePtrToInt(PtrExpr, ResultType);
+    PtrExpr = CGF.authPointerToPointerCast(PtrExpr, E->getType(), DestTy);
+    return Builder.CreatePtrToInt(PtrExpr, ConvertType(DestTy));
   }
   case CK_ToVoid: {
     CGF.EmitIgnoredExpr(E);

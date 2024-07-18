@@ -2243,7 +2243,8 @@ static Address EmitPointerWithAlignment(const Expr *E, LValueBaseInfo *BaseInfo,
         if (CE->getCastKind() == CK_AddressSpaceConversion)
           Addr = CGF.Builder.CreateAddrSpaceCast(
               Addr, CGF.ConvertType(E->getType()), ElemTy);
-        return Addr;
+        return CGF.authPointerToPointerCast(Addr, CE->getSubExpr()->getType(),
+                                            CE->getType());
       }
       break;
 
