@@ -19181,7 +19181,11 @@ Value *CodeGenFunction::EmitAMDGPUBuiltinExpr(unsigned BuiltinID,
   case AMDGPU::BI__builtin_amdgcn_global_load_tr_b64_i32:
   case AMDGPU::BI__builtin_amdgcn_global_load_tr_b64_v2i32:
   case AMDGPU::BI__builtin_amdgcn_global_load_tr_b128_v4i16:
-  case AMDGPU::BI__builtin_amdgcn_global_load_tr_b128_v8i16: {
+  case AMDGPU::BI__builtin_amdgcn_global_load_tr_b128_v4f16:
+  case AMDGPU::BI__builtin_amdgcn_global_load_tr_b128_v4bf16:
+  case AMDGPU::BI__builtin_amdgcn_global_load_tr_b128_v8i16:
+  case AMDGPU::BI__builtin_amdgcn_global_load_tr_b128_v8f16:
+  case AMDGPU::BI__builtin_amdgcn_global_load_tr_b128_v8bf16: {
 
     Intrinsic::ID IID;
     switch (BuiltinID) {
@@ -19190,7 +19194,11 @@ Value *CodeGenFunction::EmitAMDGPUBuiltinExpr(unsigned BuiltinID,
       IID = Intrinsic::amdgcn_global_load_tr_b64;
       break;
     case AMDGPU::BI__builtin_amdgcn_global_load_tr_b128_v4i16:
+    case AMDGPU::BI__builtin_amdgcn_global_load_tr_b128_v4f16:
+    case AMDGPU::BI__builtin_amdgcn_global_load_tr_b128_v4bf16:
     case AMDGPU::BI__builtin_amdgcn_global_load_tr_b128_v8i16:
+    case AMDGPU::BI__builtin_amdgcn_global_load_tr_b128_v8f16:
+    case AMDGPU::BI__builtin_amdgcn_global_load_tr_b128_v8bf16:
       IID = Intrinsic::amdgcn_global_load_tr_b128;
       break;
     }
