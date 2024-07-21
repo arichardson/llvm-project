@@ -118,15 +118,14 @@ class ARMTargetAsmStreamer : public ARMTargetStreamer {
 
 public:
   ARMTargetAsmStreamer(MCStreamer &S, formatted_raw_ostream &OS,
-                       MCInstPrinter &InstPrinter, bool VerboseAsm);
+                       MCInstPrinter &InstPrinter);
 };
 
 ARMTargetAsmStreamer::ARMTargetAsmStreamer(MCStreamer &S,
                                            formatted_raw_ostream &OS,
-                                           MCInstPrinter &InstPrinter,
-                                           bool VerboseAsm)
+                                           MCInstPrinter &InstPrinter)
     : ARMTargetStreamer(S), OS(OS), InstPrinter(InstPrinter),
-      IsVerboseAsm(VerboseAsm) {}
+      IsVerboseAsm(S.isVerboseAsm()) {}
 
 void ARMTargetAsmStreamer::emitFnStart() { OS << "\t.fnstart\n"; }
 void ARMTargetAsmStreamer::emitFnEnd() { OS << "\t.fnend\n"; }
@@ -1475,7 +1474,7 @@ MCTargetStreamer *createARMTargetAsmStreamer(MCStreamer &S,
                                              formatted_raw_ostream &OS,
                                              MCInstPrinter *InstPrint,
                                              bool isVerboseAsm) {
-  return new ARMTargetAsmStreamer(S, OS, *InstPrint, isVerboseAsm);
+  return new ARMTargetAsmStreamer(S, OS, *InstPrint);
 }
 
 MCTargetStreamer *createARMNullTargetStreamer(MCStreamer &S) {
