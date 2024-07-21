@@ -208,7 +208,7 @@ public:
   using NullTargetStreamerCtorTy = MCTargetStreamer *(*)(MCStreamer &S);
   using AsmTargetStreamerCtorTy =
       MCTargetStreamer *(*)(MCStreamer &S, formatted_raw_ostream &OS,
-                            MCInstPrinter *InstPrint, bool IsVerboseAsm);
+                            MCInstPrinter *InstPrint);
   using ObjectTargetStreamerCtorTy = MCTargetStreamer *(*)(
       MCStreamer &S, const MCSubtargetInfo &STI);
   using MCRelocationInfoCtorTy = MCRelocationInfo *(*)(const Triple &TT,
@@ -557,7 +557,7 @@ public:
                                             MCInstPrinter *InstPrint,
                                             bool IsVerboseAsm) const {
     if (AsmTargetStreamerCtorFn)
-      return AsmTargetStreamerCtorFn(S, OS, InstPrint, IsVerboseAsm);
+      return AsmTargetStreamerCtorFn(S, OS, InstPrint);
     return nullptr;
   }
 

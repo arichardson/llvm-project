@@ -94,7 +94,7 @@ static MCInstPrinter *createAMDGPUMCInstPrinter(const Triple &T,
 
 static MCTargetStreamer *
 createAMDGPUAsmTargetStreamer(MCStreamer &S, formatted_raw_ostream &OS,
-                              MCInstPrinter *InstPrint, bool isVerboseAsm) {
+                              MCInstPrinter *InstPrint) {
   return new AMDGPUTargetAsmStreamer(S, OS);
 }
 
