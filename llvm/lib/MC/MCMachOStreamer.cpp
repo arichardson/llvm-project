@@ -216,7 +216,7 @@ void MCMachOStreamer::emitSubsectionsViaSymbols() {
 }
 
 void MCMachOStreamer::emitLinkerOptions(ArrayRef<std::string> Options) {
-  getAssembler().getLinkerOptions().push_back(Options);
+  getWriter().getLinkerOptions().push_back(Options);
 }
 
 void MCMachOStreamer::emitDataRegion(MCDataRegionType Kind) {
