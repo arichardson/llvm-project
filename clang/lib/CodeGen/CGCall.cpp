@@ -5095,7 +5095,8 @@ RValue CodeGenFunction::EmitCall(const CGFunctionInfo &CallInfo,
                                  ReturnValueSlot ReturnValue,
                                  const CallArgList &CallArgs,
                                  llvm::CallBase **callOrInvoke, bool IsMustTail,
-                                 SourceLocation Loc) {
+                                 SourceLocation Loc,
+                                 bool IsVirtualFunctionPointerThunk) {
   // FIXME: We no longer need the types from CallArgs; lift up and simplify.
 
   assert(Callee.isOrdinary() || Callee.isVirtual());
@@ -5159,7 +5160,11 @@ RValue CodeGenFunction::EmitCall(const CGFunctionInfo &CallInfo,
   RawAddress SRetAlloca = RawAddress::invalid();
   llvm::Value *UnusedReturnSizePtr = nullptr;
   if (RetAI.isIndirect() || RetAI.isInAlloca() || RetAI.isCoerceAndExpand()) {
-    if (!ReturnValue.isNull()) {
+    if (IsVirtualFunctionPointerThunk && RetAI.isIndirect()) {
+      SRetPtr = makeNaturalAddressForPointer(CurFn->arg_begin() +
+                                                 IRFunctionArgs.getSRetArgNo(),
+                                             RetTy, CharUnits::fromQuantity(1));
+    } else if (!ReturnValue.isNull()) {
       SRetPtr = ReturnValue.getAddress();
     } else {
       SRetPtr = CreateMemTemp(RetTy, "tmp", &SRetAlloca);
@@ -5938,159 +5943,175 @@ RValue CodeGenFunction::EmitCall(const CGFunctionInfo &CallInfo,
   CallArgs.freeArgumentMemory(*this);
 
   // Extract the return value.
-  RValue Ret = [&] {
-    switch (RetAI.getKind()) {
-    case ABIArgInfo::CoerceAndExpand: {
-      auto coercionType = RetAI.getCoerceAndExpandType();
+  RValue Ret;
 
-      Address addr = SRetPtr.withElementType(coercionType);
+  // If the current function is a virtual function pointer thunk, avoid copying
+  // the return value of the musttail call to a temporary.
+  if (IsVirtualFunctionPointerThunk) {
+    Ret = RValue::get(CI);
+  } else {
+    Ret = [&] {
+      switch (RetAI.getKind()) {
+      case ABIArgInfo::CoerceAndExpand: {
+        auto coercionType = RetAI.getCoerceAndExpandType();
 
-      assert(CI->getType() == RetAI.getUnpaddedCoerceAndExpandType());
-      bool requiresExtract = isa<llvm::StructType>(CI->getType());
+        Address addr = SRetPtr.withElementType(coercionType);
 
-      unsigned unpaddedIndex = 0;
-      for (unsigned i = 0, e = coercionType->getNumElements(); i != e; ++i) {
-        llvm::Type *eltType = coercionType->getElementType(i);
-        if (ABIArgInfo::isPaddingForCoerceAndExpand(eltType)) continue;
-        Address eltAddr = Builder.CreateStructGEP(addr, i);
-        llvm::Value *elt = CI;
-        if (requiresExtract)
-          elt = Builder.CreateExtractValue(elt, unpaddedIndex++);
-        else
-          assert(unpaddedIndex == 0);
-        Builder.CreateStore(elt, eltAddr);
+        assert(CI->getType() == RetAI.getUnpaddedCoerceAndExpandType());
+        bool requiresExtract = isa<llvm::StructType>(CI->getType());
+
+        unsigned unpaddedIndex = 0;
+        for (unsigned i = 0, e = coercionType->getNumElements(); i != e; ++i) {
+          llvm::Type *eltType = coercionType->getElementType(i);
+          if (ABIArgInfo::isPaddingForCoerceAndExpand(eltType))
+            continue;
+          Address eltAddr = Builder.CreateStructGEP(addr, i);
+          llvm::Value *elt = CI;
+          if (requiresExtract)
+            elt = Builder.CreateExtractValue(elt, unpaddedIndex++);
+          else
+            assert(unpaddedIndex == 0);
+          Builder.CreateStore(elt, eltAddr);
+        }
+        [[fallthrough]];
       }
-      [[fallthrough]];
-    }
 
-    case ABIArgInfo::InAlloca:
-    case ABIArgInfo::Indirect: {
-      RValue ret = convertTempToRValue(SRetPtr, RetTy, SourceLocation());
-      if (UnusedReturnSizePtr)
-        PopCleanupBlock();
-      return ret;
-    }
+      case ABIArgInfo::InAlloca:
+      case ABIArgInfo::Indirect: {
+        RValue ret = convertTempToRValue(SRetPtr, RetTy, SourceLocation());
+        if (UnusedReturnSizePtr)
+          PopCleanupBlock();
+        return ret;
+      }
 
-    case ABIArgInfo::Ignore:
-      // If we are ignoring an argument that had a result, make sure to
-      // construct the appropriate return value for our caller.
-      return GetUndefRValue(RetTy);
+      case ABIArgInfo::Ignore:
+        // If we are ignoring an argument that had a result, make sure to
+        // construct the appropriate return value for our caller.
+        return GetUndefRValue(RetTy);
 
-    case ABIArgInfo::Extend:
-    case ABIArgInfo::Direct: {
-      llvm::Type *RetIRTy = ConvertType(RetTy);
-      if (RetAI.getCoerceToType() == RetIRTy && RetAI.getDirectOffset() == 0) {
-        switch (getEvaluationKind(RetTy)) {
-        case TEK_Complex: {
-          llvm::Value *Real = Builder.CreateExtractValue(CI, 0);
-          llvm::Value *Imag = Builder.CreateExtractValue(CI, 1);
-          return RValue::getComplex(std::make_pair(Real, Imag));
-        }
-        case TEK_Aggregate: {
-          Address DestPtr = ReturnValue.getAddress();
-          bool DestIsVolatile = ReturnValue.isVolatile();
-
-          if (!DestPtr.isValid()) {
-            DestPtr = CreateMemTemp(RetTy, "agg.tmp");
-            DestIsVolatile = false;
+      case ABIArgInfo::Extend:
+      case ABIArgInfo::Direct: {
+        llvm::Type *RetIRTy = ConvertType(RetTy);
+        if (RetAI.getCoerceToType() == RetIRTy &&
+            RetAI.getDirectOffset() == 0) {
+          switch (getEvaluationKind(RetTy)) {
+          case TEK_Complex: {
+            llvm::Value *Real = Builder.CreateExtractValue(CI, 0);
+            llvm::Value *Imag = Builder.CreateExtractValue(CI, 1);
+            return RValue::getComplex(std::make_pair(Real, Imag));
           }
-          EmitAggregateStore(CI, DestPtr, DestIsVolatile);
-          return RValue::getAggregate(DestPtr);
-        }
-        case TEK_Scalar: {
-          // If the argument doesn't match, perform a bitcast to coerce it.  This
-          // can happen due to trivial type mismatches.
-          llvm::Value *V = CI;
-          if (V->getType() != RetIRTy)
-            V = Builder.CreateBitCast(V, RetIRTy);
-          if (TargetDecl && RetTy->isPointerType()) {
-            // By the time this is called, we've got the canonical form of the
-            // function type, stripping typedefs.  We need to rediscover them to
-            // create the opaque form.
-            QualType Ty = cast<ValueDecl>(TargetDecl)->getType();
-            if (const FunctionType *FT = dyn_cast<FunctionType>(Ty)) {
-              if (const TypedefType *TT = dyn_cast<TypedefType>(FT->getReturnType())) {
-                // If this is a #pragma opaque return type, and we can see the
-                // key, then we should decode it so that we can use it.  DCE
-                // should later strip away the decoding if we don't use the
-                // result.
+          case TEK_Aggregate: {
+            Address DestPtr = ReturnValue.getAddress();
+            bool DestIsVolatile = ReturnValue.isVolatile();
 
-                // TT->getDecl() could be a TypedefDecl or a TypedefNameDecl
-                const TypedefDecl* TD = dyn_cast<TypedefDecl>(TT->getDecl());
-                VarDecl *Key = TD ? TD->getOpaqueKey() : nullptr;
-                if (Key) {
-                  llvm::Value *KeyV = CGM.GetAddrOfGlobalVar(Key);
-                  CharUnits Alignment = getContext().getDeclAlign(Key);
-                  Address Addr(V, ConvertTypeForMem(Key->getType()), Alignment);
-                  KeyV = Builder.CreateLoad(Addr);
-                  // If this is CHERI, enforce this in hardware
-                  if (RetTy->isCHERICapabilityType(CGM.getContext())) {
-                    unsigned CapAS = CGM.getTargetCodeGenInfo().getCHERICapabilityAS();
-                    llvm::Function *F =
-                        CGM.getIntrinsic(llvm::Intrinsic::cheri_cap_unseal);
-                    llvm::Type *CapPtrTy = llvm::PointerType::get(Int8Ty, CapAS);
-                    V = Builder.CreateCall(F,
-                          {Builder.CreateBitCast(V, CapPtrTy),
-                           Builder.CreateBitCast(KeyV, CapPtrTy)});
-                    V = Builder.CreateBitCast(V, RetIRTy);
-                  } else {
-                    KeyV = Builder.CreatePtrToInt(KeyV, IntPtrTy);
-                    V = Builder.CreatePtrToInt(V, IntPtrTy);
-                    V = Builder.CreateXor(V, KeyV);
-                    V = Builder.CreateIntToPtr(V, RetIRTy);
+            if (!DestPtr.isValid()) {
+              DestPtr = CreateMemTemp(RetTy, "agg.tmp");
+              DestIsVolatile = false;
+            }
+            EmitAggregateStore(CI, DestPtr, DestIsVolatile);
+            return RValue::getAggregate(DestPtr);
+          }
+          case TEK_Scalar: {
+            // If the argument doesn't match, perform a bitcast to coerce it.
+            // This can happen due to trivial type mismatches.
+            llvm::Value *V = CI;
+            if (V->getType() != RetIRTy)
+              V = Builder.CreateBitCast(V, RetIRTy);
+            if (TargetDecl && RetTy->isPointerType()) {
+              // By the time this is called, we've got the canonical form of the
+              // function type, stripping typedefs.  We need to rediscover them
+              // to create the opaque form.
+              QualType Ty = cast<ValueDecl>(TargetDecl)->getType();
+              if (const FunctionType *FT = dyn_cast<FunctionType>(Ty)) {
+                if (const TypedefType *TT =
+                        dyn_cast<TypedefType>(FT->getReturnType())) {
+                  // If this is a #pragma opaque return type, and we can see the
+                  // key, then we should decode it so that we can use it.  DCE
+                  // should later strip away the decoding if we don't use the
+                  // result.
+
+                  // TT->getDecl() could be a TypedefDecl or a TypedefNameDecl
+                  const TypedefDecl *TD = dyn_cast<TypedefDecl>(TT->getDecl());
+                  VarDecl *Key = TD ? TD->getOpaqueKey() : nullptr;
+                  if (Key) {
+                    llvm::Value *KeyV = CGM.GetAddrOfGlobalVar(Key);
+                    CharUnits Alignment = getContext().getDeclAlign(Key);
+                    Address Addr(V, ConvertTypeForMem(Key->getType()),
+                                 Alignment);
+                    KeyV = Builder.CreateLoad(Addr);
+                    // If this is CHERI, enforce this in hardware
+                    if (RetTy->isCHERICapabilityType(CGM.getContext())) {
+                      unsigned CapAS =
+                          CGM.getTargetCodeGenInfo().getCHERICapabilityAS();
+                      llvm::Function *F =
+                          CGM.getIntrinsic(llvm::Intrinsic::cheri_cap_unseal);
+                      llvm::Type *CapPtrTy =
+                          llvm::PointerType::get(Int8Ty, CapAS);
+                      V = Builder.CreateCall(
+                          F, {Builder.CreateBitCast(V, CapPtrTy),
+                              Builder.CreateBitCast(KeyV, CapPtrTy)});
+                      V = Builder.CreateBitCast(V, RetIRTy);
+                    } else {
+                      KeyV = Builder.CreatePtrToInt(KeyV, IntPtrTy);
+                      V = Builder.CreatePtrToInt(V, IntPtrTy);
+                      V = Builder.CreateXor(V, KeyV);
+                      V = Builder.CreateIntToPtr(V, RetIRTy);
+                    }
                   }
                 }
               }
             }
-          }
-          return RValue::get(V);
-        }
-        }
-        llvm_unreachable("bad evaluation kind");
-      }
-
-      // If coercing a fixed vector from a scalable vector for ABI
-      // compatibility, and the types match, use the llvm.vector.extract
-      // intrinsic to perform the conversion.
-      if (auto *FixedDstTy = dyn_cast<llvm::FixedVectorType>(RetIRTy)) {
-        llvm::Value *V = CI;
-        if (auto *ScalableSrcTy =
-                dyn_cast<llvm::ScalableVectorType>(V->getType())) {
-          if (FixedDstTy->getElementType() == ScalableSrcTy->getElementType()) {
-            llvm::Value *Zero = llvm::Constant::getNullValue(CGM.Int64Ty);
-            V = Builder.CreateExtractVector(FixedDstTy, V, Zero, "cast.fixed");
             return RValue::get(V);
           }
+          }
+          llvm_unreachable("bad evaluation kind");
         }
+
+        // If coercing a fixed vector from a scalable vector for ABI
+        // compatibility, and the types match, use the llvm.vector.extract
+        // intrinsic to perform the conversion.
+        if (auto *FixedDstTy = dyn_cast<llvm::FixedVectorType>(RetIRTy)) {
+          llvm::Value *V = CI;
+          if (auto *ScalableSrcTy =
+                  dyn_cast<llvm::ScalableVectorType>(V->getType())) {
+            if (FixedDstTy->getElementType() ==
+                ScalableSrcTy->getElementType()) {
+              llvm::Value *Zero = llvm::Constant::getNullValue(CGM.Int64Ty);
+              V = Builder.CreateExtractVector(FixedDstTy, V, Zero,
+                                              "cast.fixed");
+              return RValue::get(V);
+            }
+          }
+        }
+
+        Address DestPtr = ReturnValue.getValue();
+        bool DestIsVolatile = ReturnValue.isVolatile();
+
+        if (!DestPtr.isValid()) {
+          DestPtr = CreateMemTemp(RetTy, "coerce");
+          DestIsVolatile = false;
+        }
+
+        // An empty record can overlap other data (if declared with
+        // no_unique_address); omit the store for such types - as there is no
+        // actual data to store.
+        if (!isEmptyRecord(getContext(), RetTy, true)) {
+          // If the value is offset in memory, apply the offset now.
+          Address StorePtr = emitAddressAtOffset(*this, DestPtr, RetAI);
+          CreateCoercedStore(CI, StorePtr, DestIsVolatile, *this);
+        }
+
+        return convertTempToRValue(DestPtr, RetTy, SourceLocation());
       }
 
-      Address DestPtr = ReturnValue.getValue();
-      bool DestIsVolatile = ReturnValue.isVolatile();
-
-      if (!DestPtr.isValid()) {
-        DestPtr = CreateMemTemp(RetTy, "coerce");
-        DestIsVolatile = false;
+      case ABIArgInfo::Expand:
+      case ABIArgInfo::IndirectAliased:
+        llvm_unreachable("Invalid ABI kind for return argument");
       }
 
-      // An empty record can overlap other data (if declared with
-      // no_unique_address); omit the store for such types - as there is no
-      // actual data to store.
-      if (!isEmptyRecord(getContext(), RetTy, true)) {
-        // If the value is offset in memory, apply the offset now.
-        Address StorePtr = emitAddressAtOffset(*this, DestPtr, RetAI);
-        CreateCoercedStore(CI, StorePtr, DestIsVolatile, *this);
-      }
-
-      return convertTempToRValue(DestPtr, RetTy, SourceLocation());
-    }
-
-    case ABIArgInfo::Expand:
-    case ABIArgInfo::IndirectAliased:
-      llvm_unreachable("Invalid ABI kind for return argument");
-    }
-
-    llvm_unreachable("Unhandled ABIArgInfo::Kind");
-  } ();
+      llvm_unreachable("Unhandled ABIArgInfo::Kind");
+    }();
+  }
 
   // Emit the assume_aligned check on the return value.
   if (Ret.isScalar() && TargetDecl) {
