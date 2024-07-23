@@ -21,6 +21,8 @@ using namespace llvm;
 
 MCObjectWriter::~MCObjectWriter() = default;
 
+void MCObjectWriter::reset() { FileNames.clear(); }
+
 bool MCObjectWriter::isSymbolRefDifferenceFullyResolved(
     const MCAssembler &Asm, const MCSymbolRefExpr *A, const MCSymbolRefExpr *B,
     bool InSet) const {
@@ -54,4 +56,8 @@ bool MCObjectWriter::fixupNeedsProvenance(const MCAssembler &Asm,
       Asm.getBackend().getFixupKindInfo(Fixup->getKind());
 
   return FKI.Flags & MCFixupKindInfo::FKF_Provenance;
+}
+
+void MCObjectWriter::addFileName(MCAssembler &Asm, StringRef FileName) {
+  FileNames.emplace_back(std::string(FileName), Asm.Symbols.size());
 }
