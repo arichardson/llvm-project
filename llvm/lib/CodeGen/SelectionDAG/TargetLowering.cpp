@@ -8490,7 +8490,7 @@ SDValue TargetLowering::CTTZTableLookup(SDNode *Node, SelectionDAG &DAG,
       DAG.getConstant(ShiftAmt, DL, VT));
   Lookup = DAG.getSExtOrTrunc(
       Lookup, DL,
-      getPointerTy(TD, DAG.getDataLayout().getGlobalsAddressSpace()));
+      getPointerRangeTy(TD, DAG.getDataLayout().getGlobalsAddressSpace()));
 
   SmallVector<uint8_t> Table(BitWidth, 0);
   for (unsigned i = 0; i < BitWidth; i++) {
