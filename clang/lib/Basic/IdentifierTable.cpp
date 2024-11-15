@@ -223,7 +223,7 @@ static KeywordStatus getKeywordStatus(const LangOptions &LangOpts,
     return KS_Disabled;
   // Explicitly check for coroutines as they are disabled for CHERI until
   // https://github.com/CTSRD-CHERI/llvm-project/issues/717 has been fixed.
-  if (!LangOpts.Coroutines && (Flags & KEYCOROUTINES))
+  if (!LangOpts.Coroutines && Flags ==  (KEYCXX20 | KEYCOROUTINES))
     return LangOpts.CPlusPlus ? KS_Future : KS_Disabled;
 
   KeywordStatus CurStatus = KS_Unknown;
