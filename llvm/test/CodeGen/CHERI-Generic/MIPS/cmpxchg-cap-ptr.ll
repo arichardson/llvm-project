@@ -3,8 +3,8 @@
 ; Check that we can generate sensible code for atomic operations using capability pointers on capabilities
 ; in both hybrid and purecap mode.
 ; See https://github.com/CTSRD-CHERI/llvm-project/issues/470
-; RUN: llc -opaque-pointers=0 -mtriple=mips64 -mcpu=cheri128 -mattr=+cheri128 --relocation-model=pic -target-abi purecap < %s | FileCheck %s --check-prefix=PURECAP
-; RUN: llc -opaque-pointers=0 -mtriple=mips64 -mcpu=cheri128 -mattr=+cheri128 --relocation-model=pic -target-abi n64 < %s | FileCheck %s --check-prefix=HYBRID
+; RUN: llc -mtriple=mips64 -mcpu=cheri128 -mattr=+cheri128 --relocation-model=pic -target-abi purecap < %s | FileCheck %s --check-prefix=PURECAP
+; RUN: llc -mtriple=mips64 -mcpu=cheri128 -mattr=+cheri128 --relocation-model=pic -target-abi n64 < %s | FileCheck %s --check-prefix=HYBRID
 
 define { i8, i1 } @test_cmpxchg_strong_i8(i8 addrspace(200)* %ptr, i8 %exp, i8 %new) nounwind {
 ; PURECAP-LABEL: test_cmpxchg_strong_i8:

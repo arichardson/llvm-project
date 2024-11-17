@@ -5,8 +5,8 @@
 ; CHERI-GENERIC-UTC: llc
 ; Note: unlike other tests we do want to test attributes in this one.
 ; CHERI-GENERIC-UTC: opt --function-signature
-; RUN: opt -opaque-pointers=0 < %s -passes=instcombine -S | FileCheck %s --check-prefix=CHECK-IR
-; RUN: opt -opaque-pointers=0 < %s -passes=instcombine -S | llc -mtriple=riscv32 --relocation-model=pic -target-abi il32pc64f -mattr=+xcheri,+cap-mode,+f - -o - | FileCheck %s --check-prefix=CHECK-ASM
+; RUN: opt < %s -passes=instcombine -S | FileCheck %s --check-prefix=CHECK-IR
+; RUN: opt < %s -passes=instcombine -S | llc -mtriple=riscv32 --relocation-model=pic -target-abi il32pc64f -mattr=+xcheri,+cap-mode,+f - -o - | FileCheck %s --check-prefix=CHECK-ASM
 target datalayout = "e-m:e-pf200:64:64:64:32-p:32:32-i64:64-n32-S128-A200-P200-G200"
 
 @str = private unnamed_addr addrspace(200) constant [17 x i8] c"exactly 16 chars\00", align 4
@@ -35,9 +35,9 @@ define void @test_strcpy_to_memcpy(i8 addrspace(200)* align 4 %dst) addrspace(20
 ; CHECK-ASM-NEXT:    csw a1, 0(ca0)
 ; CHECK-ASM-NEXT:    cret
 ; CHECK-IR-LABEL: define {{[^@]+}}@test_strcpy_to_memcpy
-; CHECK-IR-SAME: (i8 addrspace(200)* align 4 [[DST:%.*]]) addrspace(200) #[[ATTR1:[0-9]+]] {
+; CHECK-IR-SAME: (ptr addrspace(200) align 4 [[DST:%.*]]) addrspace(200) #[[ATTR1:[0-9]+]] {
 ; CHECK-IR-NEXT:  entry:
-; CHECK-IR-NEXT:    call void @llvm.memcpy.p200i8.p200i8.i32(i8 addrspace(200)* noundef nonnull align 4 dereferenceable(17) [[DST]], i8 addrspace(200)* noundef nonnull align 4 dereferenceable(17) getelementptr inbounds ([17 x i8], [17 x i8] addrspace(200)* @str, i32 0, i32 0), i32 17, i1 false) #[[ATTR4:[0-9]+]]
+; CHECK-IR-NEXT:    call void @llvm.memcpy.p200.p200.i32(ptr addrspace(200) noundef nonnull align 4 dereferenceable(17) [[DST]], ptr addrspace(200) noundef nonnull align 4 dereferenceable(17) @str, i32 17, i1 false) #[[ATTR4:[0-9]+]]
 ; CHECK-IR-NEXT:    ret void
 ;
 entry:
@@ -63,9 +63,9 @@ define void @test_stpcpy_to_memcpy(i8 addrspace(200)* align 4 %dst) addrspace(20
 ; CHECK-ASM-NEXT:    csw a1, 0(ca0)
 ; CHECK-ASM-NEXT:    cret
 ; CHECK-IR-LABEL: define {{[^@]+}}@test_stpcpy_to_memcpy
-; CHECK-IR-SAME: (i8 addrspace(200)* align 4 [[DST:%.*]]) addrspace(200) #[[ATTR1]] {
+; CHECK-IR-SAME: (ptr addrspace(200) align 4 [[DST:%.*]]) addrspace(200) #[[ATTR1]] {
 ; CHECK-IR-NEXT:  entry:
-; CHECK-IR-NEXT:    call void @llvm.memcpy.p200i8.p200i8.i32(i8 addrspace(200)* noundef nonnull align 4 dereferenceable(17) [[DST]], i8 addrspace(200)* noundef nonnull align 4 dereferenceable(17) getelementptr inbounds ([17 x i8], [17 x i8] addrspace(200)* @str, i32 0, i32 0), i32 17, i1 false) #[[ATTR5:[0-9]+]]
+; CHECK-IR-NEXT:    call void @llvm.memcpy.p200.p200.i32(ptr addrspace(200) noundef nonnull align 4 dereferenceable(17) [[DST]], ptr addrspace(200) noundef nonnull align 4 dereferenceable(17) @str, i32 17, i1 false) #[[ATTR5:[0-9]+]]
 ; CHECK-IR-NEXT:    ret void
 ;
 entry:
@@ -93,11 +93,11 @@ define void @test_strcat_to_memcpy(i8 addrspace(200)* align 4 %dst) addrspace(20
 ; CHECK-ASM-NEXT:    cincoffset csp, csp, 16
 ; CHECK-ASM-NEXT:    cret
 ; CHECK-IR-LABEL: define {{[^@]+}}@test_strcat_to_memcpy
-; CHECK-IR-SAME: (i8 addrspace(200)* align 4 [[DST:%.*]]) addrspace(200) #[[ATTR1]] {
+; CHECK-IR-SAME: (ptr addrspace(200) align 4 [[DST:%.*]]) addrspace(200) #[[ATTR1]] {
 ; CHECK-IR-NEXT:  entry:
-; CHECK-IR-NEXT:    [[STRLEN:%.*]] = call i32 @strlen(i8 addrspace(200)* noundef nonnull dereferenceable(1) [[DST]])
-; CHECK-IR-NEXT:    [[ENDPTR:%.*]] = getelementptr inbounds i8, i8 addrspace(200)* [[DST]], i32 [[STRLEN]]
-; CHECK-IR-NEXT:    call void @llvm.memcpy.p200i8.p200i8.i32(i8 addrspace(200)* noundef nonnull align 1 dereferenceable(17) [[ENDPTR]], i8 addrspace(200)* noundef nonnull align 4 dereferenceable(17) getelementptr inbounds ([17 x i8], [17 x i8] addrspace(200)* @str, i32 0, i32 0), i32 17, i1 false) #[[ATTR5]]
+; CHECK-IR-NEXT:    [[STRLEN:%.*]] = call i32 @strlen(ptr addrspace(200) noundef nonnull dereferenceable(1) [[DST]])
+; CHECK-IR-NEXT:    [[ENDPTR:%.*]] = getelementptr inbounds i8, ptr addrspace(200) [[DST]], i32 [[STRLEN]]
+; CHECK-IR-NEXT:    call void @llvm.memcpy.p200.p200.i32(ptr addrspace(200) noundef nonnull align 1 dereferenceable(17) [[ENDPTR]], ptr addrspace(200) noundef nonnull align 4 dereferenceable(17) @str, i32 17, i1 false) #[[ATTR5]]
 ; CHECK-IR-NEXT:    ret void
 ;
 entry:
@@ -122,9 +122,9 @@ define void @test_strncpy_to_memcpy(i8 addrspace(200)* align 4 %dst) addrspace(2
 ; CHECK-ASM-NEXT:    cincoffset csp, csp, 16
 ; CHECK-ASM-NEXT:    cret
 ; CHECK-IR-LABEL: define {{[^@]+}}@test_strncpy_to_memcpy
-; CHECK-IR-SAME: (i8 addrspace(200)* align 4 [[DST:%.*]]) addrspace(200) #[[ATTR1]] {
+; CHECK-IR-SAME: (ptr addrspace(200) align 4 [[DST:%.*]]) addrspace(200) #[[ATTR1]] {
 ; CHECK-IR-NEXT:  entry:
-; CHECK-IR-NEXT:    [[CALL:%.*]] = call i8 addrspace(200)* @strncpy(i8 addrspace(200)* [[DST]], i8 addrspace(200)* nonnull getelementptr inbounds ([17 x i8], [17 x i8] addrspace(200)* @str, i32 0, i32 0), i64 17) #[[ATTR1]]
+; CHECK-IR-NEXT:    [[CALL:%.*]] = call ptr addrspace(200) @strncpy(ptr addrspace(200) [[DST]], ptr addrspace(200) nonnull @str, i64 17) #[[ATTR1]]
 ; CHECK-IR-NEXT:    ret void
 ;
 entry:
@@ -149,9 +149,9 @@ define void @test_stpncpy_to_memcpy(i8 addrspace(200)* align 4 %dst) addrspace(2
 ; CHECK-ASM-NEXT:    cincoffset csp, csp, 16
 ; CHECK-ASM-NEXT:    cret
 ; CHECK-IR-LABEL: define {{[^@]+}}@test_stpncpy_to_memcpy
-; CHECK-IR-SAME: (i8 addrspace(200)* align 4 [[DST:%.*]]) addrspace(200) #[[ATTR1]] {
+; CHECK-IR-SAME: (ptr addrspace(200) align 4 [[DST:%.*]]) addrspace(200) #[[ATTR1]] {
 ; CHECK-IR-NEXT:  entry:
-; CHECK-IR-NEXT:    [[CALL:%.*]] = call i8 addrspace(200)* @stpncpy(i8 addrspace(200)* [[DST]], i8 addrspace(200)* nonnull getelementptr inbounds ([17 x i8], [17 x i8] addrspace(200)* @str, i32 0, i32 0), i64 17) #[[ATTR1]]
+; CHECK-IR-NEXT:    [[CALL:%.*]] = call ptr addrspace(200) @stpncpy(ptr addrspace(200) [[DST]], ptr addrspace(200) nonnull @str, i64 17) #[[ATTR1]]
 ; CHECK-IR-NEXT:    ret void
 ;
 entry:

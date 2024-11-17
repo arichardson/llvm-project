@@ -3,8 +3,8 @@
 ; This used to create a broken function.
 ; FIXME: the getoffset+add sequence should be folded to an increment
 ; REQUIRES: mips-registered-target
-; RUN: opt -opaque-pointers=0 -mtriple=riscv32 --relocation-model=pic -target-abi il32pc64f -mattr=+xcheri,+cap-mode,+f -S -passes=instcombine %s -o - | FileCheck %s
-; RUN: opt -opaque-pointers=0 -mtriple=riscv32 --relocation-model=pic -target-abi il32pc64f -mattr=+xcheri,+cap-mode,+f -S '-passes=default<O3>' %s | llc -opaque-pointers=0 -mtriple=riscv32 --relocation-model=pic -target-abi il32pc64f -mattr=+xcheri,+cap-mode,+f -O3 -o - | FileCheck %s --check-prefix ASM
+; RUN: opt -mtriple=riscv32 --relocation-model=pic -target-abi il32pc64f -mattr=+xcheri,+cap-mode,+f -S -passes=instcombine %s -o - | FileCheck %s
+; RUN: opt -mtriple=riscv32 --relocation-model=pic -target-abi il32pc64f -mattr=+xcheri,+cap-mode,+f -S '-passes=default<O3>' %s | llc -mtriple=riscv32 --relocation-model=pic -target-abi il32pc64f -mattr=+xcheri,+cap-mode,+f -O3 -o - | FileCheck %s --check-prefix ASM
 target datalayout = "e-m:e-pf200:64:64:64:32-p:32:32-i64:64-n32-S128-A200-P200-G200"
 
 @d = common addrspace(200) global i32 0, align 4
@@ -24,6 +24,7 @@ define void @g(i32 %x, i32 %y) addrspace(200) nounwind {
 ; ASM-NEXT:    auipcc ca2, %captab_pcrel_hi(d)
 ; ASM-NEXT:    clc ca2, %pcrel_lo(.LBB0_1)(ca2)
 ; ASM-NEXT:    cgetoffset a3, ca2
+; ASM-NEXT:    cincoffset ca2, ca2, a0
 ; ASM-NEXT:  .LBB0_2: # Label of block must be emitted
 ; ASM-NEXT:    auipcc ca4, %captab_pcrel_hi(e)
 ; ASM-NEXT:    clc ca4, %pcrel_lo(.LBB0_2)(ca4)
@@ -34,11 +35,9 @@ define void @g(i32 %x, i32 %y) addrspace(200) nounwind {
 ; ASM-NEXT:    cret
 ; CHECK-LABEL: define {{[^@]+}}@g
 ; CHECK-SAME: (i32 [[X:%.*]], i32 [[Y:%.*]]) addrspace(200) #[[ATTR0:[0-9]+]] {
-; CHECK-NEXT:    [[TMP3:%.*]] = call i32 @llvm.cheri.cap.offset.get.i32(i8 addrspace(200)* nonnull bitcast (i32 addrspace(200)* @d to i8 addrspace(200)*))
-; CHECK-NEXT:    [[ADD:%.*]] = add i32 [[TMP3]], [[X]]
-; CHECK-NEXT:    [[ADD1:%.*]] = add i32 [[ADD]], [[Y]]
-; CHECK-NEXT:    [[TMP11:%.*]] = call i8 addrspace(200)* @llvm.cheri.cap.offset.set.i32(i8 addrspace(200)* nonnull bitcast (i32 addrspace(200)* @d to i8 addrspace(200)*), i32 [[ADD1]])
-; CHECK-NEXT:    store i8 addrspace(200)* [[TMP11]], i8 addrspace(200)* addrspace(200)* @e, align 32
+; CHECK-NEXT:    [[TMP5:%.*]] = getelementptr i8, ptr addrspace(200) @d, i32 [[X]]
+; CHECK-NEXT:    [[TMP11:%.*]] = getelementptr i8, ptr addrspace(200) [[TMP5]], i32 [[Y]]
+; CHECK-NEXT:    store ptr addrspace(200) [[TMP11]], ptr addrspace(200) @e, align 32
 ; CHECK-NEXT:    ret void
 ;
   %x.addr = alloca i32, align 4, addrspace(200)

@@ -11,8 +11,8 @@
 ;   %2 = trunc i64 %1 to i32 ; truncate to drop the high bits
 ; It assumed it could get bits 32-63 by doing a ptrtoint, but on CHERI-MIPS ptrtoint returns bits 65-127
 
-; RUN: opt -opaque-pointers=0 -mtriple=mips64 -mcpu=cheri128 -mattr=+cheri128 --relocation-model=pic -target-abi purecap -S -aa-pipeline=basic-aa -passes=gvn -o - %s | FileCheck %s
-; RUN: opt -opaque-pointers=0 -mtriple=mips64 -mcpu=cheri128 -mattr=+cheri128 --relocation-model=pic -target-abi purecap -S -aa-pipeline=basic-aa -passes=gvn -o - %s | llc -mtriple=mips64 -mcpu=cheri128 -mattr=+cheri128 --relocation-model=pic -target-abi purecap -O0 -o - | FileCheck %s --check-prefix=ASM
+; RUN: opt -mtriple=mips64 -mcpu=cheri128 -mattr=+cheri128 --relocation-model=pic -target-abi purecap -S -aa-pipeline=basic-aa -passes=gvn -o - %s | FileCheck %s
+; RUN: opt -mtriple=mips64 -mcpu=cheri128 -mattr=+cheri128 --relocation-model=pic -target-abi purecap -S -aa-pipeline=basic-aa -passes=gvn -o - %s | llc -mtriple=mips64 -mcpu=cheri128 -mattr=+cheri128 --relocation-model=pic -target-abi purecap -O0 -o - | FileCheck %s --check-prefix=ASM
 
 ; Check in the baseline (broken test now) to show the diff in the fixed commit
 
@@ -32,12 +32,10 @@ define i32 @first_i32_store_to_load_fwd(i8 addrspace(200)* %arg) local_unnamed_a
 ; ASM-NEXT:    cjr $c17
 ; ASM-NEXT:    nop
 ; CHECK-LABEL: define {{[^@]+}}@first_i32_store_to_load_fwd
-; CHECK-SAME: (i8 addrspace(200)* [[ARG:%.*]]) local_unnamed_addr addrspace(200) #[[ATTR0:[0-9]+]] {
+; CHECK-SAME: (ptr addrspace(200) [[ARG:%.*]]) local_unnamed_addr addrspace(200) #[[ATTR0:[0-9]+]] {
 ; CHECK-NEXT:    [[STACKVAL:%.*]] = alloca [[STRUCT_ADDRINFO:%.*]], align 16, addrspace(200)
-; CHECK-NEXT:    [[FIELD:%.*]] = getelementptr inbounds [[STRUCT_ADDRINFO]], [[STRUCT_ADDRINFO]] addrspace(200)* [[STACKVAL]], i64 0, i32 0
-; CHECK-NEXT:    [[AS_CAP:%.*]] = bitcast [[STRUCT_ADDRINFO]] addrspace(200)* [[STACKVAL]] to i8 addrspace(200)* addrspace(200)*
-; CHECK-NEXT:    store i8 addrspace(200)* [[ARG]], i8 addrspace(200)* addrspace(200)* [[AS_CAP]], align 16
-; CHECK-NEXT:    [[RESULT:%.*]] = load i32, i32 addrspace(200)* [[FIELD]], align 4
+; CHECK-NEXT:    store ptr addrspace(200) [[ARG]], ptr addrspace(200) [[STACKVAL]], align 16
+; CHECK-NEXT:    [[RESULT:%.*]] = load i32, ptr addrspace(200) [[STACKVAL]], align 4
 ; CHECK-NEXT:    ret i32 [[RESULT]]
 ;
   %stackval = alloca %struct.addrinfo, align 16, addrspace(200)
@@ -58,12 +56,11 @@ define i32 @second_i32_store_to_load_fwd(i8 addrspace(200)* %arg) local_unnamed_
 ; ASM-NEXT:    cjr $c17
 ; ASM-NEXT:    nop
 ; CHECK-LABEL: define {{[^@]+}}@second_i32_store_to_load_fwd
-; CHECK-SAME: (i8 addrspace(200)* [[ARG:%.*]]) local_unnamed_addr addrspace(200) #[[ATTR0]] {
+; CHECK-SAME: (ptr addrspace(200) [[ARG:%.*]]) local_unnamed_addr addrspace(200) #[[ATTR0]] {
 ; CHECK-NEXT:    [[STACKVAL:%.*]] = alloca [[STRUCT_ADDRINFO:%.*]], align 16, addrspace(200)
-; CHECK-NEXT:    [[FIELD:%.*]] = getelementptr inbounds [[STRUCT_ADDRINFO]], [[STRUCT_ADDRINFO]] addrspace(200)* [[STACKVAL]], i64 0, i32 1
-; CHECK-NEXT:    [[AS_CAP:%.*]] = bitcast [[STRUCT_ADDRINFO]] addrspace(200)* [[STACKVAL]] to i8 addrspace(200)* addrspace(200)*
-; CHECK-NEXT:    store i8 addrspace(200)* [[ARG]], i8 addrspace(200)* addrspace(200)* [[AS_CAP]], align 16
-; CHECK-NEXT:    [[RESULT:%.*]] = load i32, i32 addrspace(200)* [[FIELD]], align 4
+; CHECK-NEXT:    [[FIELD:%.*]] = getelementptr inbounds [[STRUCT_ADDRINFO]], ptr addrspace(200) [[STACKVAL]], i64 0, i32 1
+; CHECK-NEXT:    store ptr addrspace(200) [[ARG]], ptr addrspace(200) [[STACKVAL]], align 16
+; CHECK-NEXT:    [[RESULT:%.*]] = load i32, ptr addrspace(200) [[FIELD]], align 4
 ; CHECK-NEXT:    ret i32 [[RESULT]]
 ;
   %stackval = alloca %struct.addrinfo, align 16, addrspace(200)
@@ -84,12 +81,11 @@ define i32 @third_i32_store_to_load_fwd(i8 addrspace(200)* %arg) local_unnamed_a
 ; ASM-NEXT:    cjr $c17
 ; ASM-NEXT:    nop
 ; CHECK-LABEL: define {{[^@]+}}@third_i32_store_to_load_fwd
-; CHECK-SAME: (i8 addrspace(200)* [[ARG:%.*]]) local_unnamed_addr addrspace(200) #[[ATTR0]] {
+; CHECK-SAME: (ptr addrspace(200) [[ARG:%.*]]) local_unnamed_addr addrspace(200) #[[ATTR0]] {
 ; CHECK-NEXT:    [[STACKVAL:%.*]] = alloca [[STRUCT_ADDRINFO:%.*]], align 16, addrspace(200)
-; CHECK-NEXT:    [[FIELD:%.*]] = getelementptr inbounds [[STRUCT_ADDRINFO]], [[STRUCT_ADDRINFO]] addrspace(200)* [[STACKVAL]], i64 0, i32 2
-; CHECK-NEXT:    [[AS_CAP:%.*]] = bitcast [[STRUCT_ADDRINFO]] addrspace(200)* [[STACKVAL]] to i8 addrspace(200)* addrspace(200)*
-; CHECK-NEXT:    store i8 addrspace(200)* [[ARG]], i8 addrspace(200)* addrspace(200)* [[AS_CAP]], align 16
-; CHECK-NEXT:    [[RESULT:%.*]] = load i32, i32 addrspace(200)* [[FIELD]], align 4
+; CHECK-NEXT:    [[FIELD:%.*]] = getelementptr inbounds [[STRUCT_ADDRINFO]], ptr addrspace(200) [[STACKVAL]], i64 0, i32 2
+; CHECK-NEXT:    store ptr addrspace(200) [[ARG]], ptr addrspace(200) [[STACKVAL]], align 16
+; CHECK-NEXT:    [[RESULT:%.*]] = load i32, ptr addrspace(200) [[FIELD]], align 4
 ; CHECK-NEXT:    ret i32 [[RESULT]]
 ;
   %stackval = alloca %struct.addrinfo, align 16, addrspace(200)
@@ -110,12 +106,11 @@ define i32 @fourth_i32_store_to_load_fwd(i8 addrspace(200)* %arg) local_unnamed_
 ; ASM-NEXT:    cjr $c17
 ; ASM-NEXT:    nop
 ; CHECK-LABEL: define {{[^@]+}}@fourth_i32_store_to_load_fwd
-; CHECK-SAME: (i8 addrspace(200)* [[ARG:%.*]]) local_unnamed_addr addrspace(200) #[[ATTR0]] {
+; CHECK-SAME: (ptr addrspace(200) [[ARG:%.*]]) local_unnamed_addr addrspace(200) #[[ATTR0]] {
 ; CHECK-NEXT:    [[STACKVAL:%.*]] = alloca [[STRUCT_ADDRINFO:%.*]], align 16, addrspace(200)
-; CHECK-NEXT:    [[FIELD:%.*]] = getelementptr inbounds [[STRUCT_ADDRINFO]], [[STRUCT_ADDRINFO]] addrspace(200)* [[STACKVAL]], i64 0, i32 3
-; CHECK-NEXT:    [[AS_CAP:%.*]] = bitcast [[STRUCT_ADDRINFO]] addrspace(200)* [[STACKVAL]] to i8 addrspace(200)* addrspace(200)*
-; CHECK-NEXT:    store i8 addrspace(200)* [[ARG]], i8 addrspace(200)* addrspace(200)* [[AS_CAP]], align 16
-; CHECK-NEXT:    [[RESULT:%.*]] = load i32, i32 addrspace(200)* [[FIELD]], align 4
+; CHECK-NEXT:    [[FIELD:%.*]] = getelementptr inbounds [[STRUCT_ADDRINFO]], ptr addrspace(200) [[STACKVAL]], i64 0, i32 3
+; CHECK-NEXT:    store ptr addrspace(200) [[ARG]], ptr addrspace(200) [[STACKVAL]], align 16
+; CHECK-NEXT:    [[RESULT:%.*]] = load i32, ptr addrspace(200) [[FIELD]], align 4
 ; CHECK-NEXT:    ret i32 [[RESULT]]
 ;
   %stackval = alloca %struct.addrinfo, align 16, addrspace(200)
