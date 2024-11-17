@@ -47,7 +47,7 @@
 // RV32-XCHERI-PURECAP: target datalayout = "e-m:e-pf200:64:64:64:32-p:32:32-i64:64-n32-S128-A200-P200-G200"
 // RV64-XCHERI-PURECAP: target datalayout = "e-m:e-pf200:128:128:128:64-p:64:64-i64:64-i128:128-n32:64-S128-A200-P200-G200"
 
-// CHECK: "target-features"="[[FEATURbool isVerilogWordOperator(const FES]]
+// CHECK: "target-features"="[[FEATURES]]
 // CHECK-SAME: -save-restore
 // NO-RVC-SAME: -xcheri-norvc
 
