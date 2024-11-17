@@ -3652,32 +3652,6 @@ int bar(int n){
 // CHECK3-NEXT:    ret void
 //
 //
-// CHECK-LABEL: define {{[^@]+}}@_Z7get_valv
-// CHECK-SAME: () #[[ATTR0:[0-9]+]] {
-// CHECK-NEXT:  entry:
-// CHECK-NEXT:    ret i64 0
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 // CHECK9-LABEL: define {{[^@]+}}@{{__omp_offloading_[0-9a-z]+_[0-9a-z]+}}__Z3fooi_l103
 // CHECK9-SAME: () #[[ATTR0:[0-9]+]] {
 // CHECK9-NEXT:  entry:
@@ -5206,26 +5180,6 @@ int bar(int n){
 // CHECK11:       omp.loop.exit:
 // CHECK11-NEXT:    call void @__kmpc_for_static_fini(ptr @[[GLOB1]], i32 [[TMP2]])
 // CHECK11-NEXT:    ret void
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 //
 //
 // CHECK17-LABEL: define {{[^@]+}}@_Z7get_valv
@@ -8572,44 +8526,4 @@ int bar(int n){
 // CHECK19-NEXT:  entry:
 // CHECK19-NEXT:    call void @__tgt_register_requires(i64 1)
 // CHECK19-NEXT:    ret void
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 //

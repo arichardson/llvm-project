@@ -4276,14 +4276,6 @@ int main (int argc, char **argv) {
 // CHECK7-NEXT:    ret void
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
 // CHECK13-LABEL: define {{[^@]+}}@main
 // CHECK13-SAME: (i32 noundef signext [[ARGC:%.*]], ptr noundef [[ARGV:%.*]]) #[[ATTR0:[0-9]+]] {
 // CHECK13-NEXT:  entry:
@@ -14818,12 +14810,4 @@ int main (int argc, char **argv) {
 // CHECK19-NEXT:  entry:
 // CHECK19-NEXT:    call void @__tgt_register_requires(i64 1)
 // CHECK19-NEXT:    ret void
-//
-//
-//
-//
-//
-//
-//
-//
 //

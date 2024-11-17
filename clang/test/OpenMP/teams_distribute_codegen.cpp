@@ -969,10 +969,6 @@ int main (int argc, char **argv) {
 // CHECK3-NEXT:    ret void
 //
 //
-//
-//
-//
-//
 // CHECK9-LABEL: define {{[^@]+}}@_Z15teams_local_argv
 // CHECK9-SAME: () #[[ATTR0:[0-9]+]] {
 // CHECK9-NEXT:  entry:
@@ -1406,10 +1402,6 @@ int main (int argc, char **argv) {
 // CHECK11-NEXT:    ret void
 //
 //
-//
-//
-//
-//
 // CHECK17-LABEL: define {{[^@]+}}@_Z21teams_template_structv
 // CHECK17-SAME: () #[[ATTR0:[0-9]+]] {
 // CHECK17-NEXT:  entry:
@@ -1711,10 +1703,6 @@ int main (int argc, char **argv) {
 // CHECK19-NEXT:  entry:
 // CHECK19-NEXT:    call void @__tgt_register_requires(i64 1)
 // CHECK19-NEXT:    ret void
-//
-//
-//
-//
 //
 //
 // CHECK25-LABEL: define {{[^@]+}}@main
@@ -2499,8 +2487,4 @@ int main (int argc, char **argv) {
 // CHECK27-NEXT:  entry:
 // CHECK27-NEXT:    call void @__tgt_register_requires(i64 1)
 // CHECK27-NEXT:    ret void
-//
-//
-//
-//
 //
