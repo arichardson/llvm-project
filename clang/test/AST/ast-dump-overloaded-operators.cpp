@@ -41,4 +41,4 @@ void test() {
 // CHECK-NEXT:       |-ImplicitCastExpr {{.*}} <col:3> 'E' <LValueToRValue>
 // CHECK-NEXT:       | `-DeclRefExpr {{.*}} <col:3> 'E' lvalue Var {{.*}} 'e' 'E'
 // CHECK-NEXT:       `-ImplicitCastExpr {{.*}} <col:7> 'E' <LValueToRValue>
-// CHECK-NEXT:         `-DeclRefExpr {{.*}} <col:7> 'E' lvalue Var {{.*}} 'e' 'E's
+// CHECK-NEXT:         `-DeclRefExpr {{.*}} <col:7> 'E' lvalue Var {{.*}} 'e' 'E'
