@@ -619,13 +619,13 @@ void TypePrinting::print(Type *Ty, raw_ostream &OS) {
     OS << '>';
     return;
   }
+  case Type::SizedCapabilityTyID:
+    OS << 'c' << cast<SizedCapabilityType>(Ty)->getBitWidth();
+    return;
   case Type::TypedPointerTyID: {
     TypedPointerType *TPTy = cast<TypedPointerType>(Ty);
     OS << "typedptr(" << *TPTy->getElementType() << ", "
        << TPTy->getAddressSpace() << ")";
-    return;
-  case Type::SizedCapabilityTyID:
-    OS << 'c' << cast<SizedCapabilityType>(Ty)->getBitWidth();
     return;
   }
   case Type::TargetExtTyID:
