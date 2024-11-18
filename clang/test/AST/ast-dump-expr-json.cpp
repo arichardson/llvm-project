@@ -325,7 +325,6 @@ void TestNonADLCall3() {
 // CHECK-NEXT:    "isUsed": true,
 // CHECK-NEXT:    "name": "obj1",
 // CHECK-NEXT:    "type": {
-// CHECK-NEXT:     "desugaredQualType": "S",
 // CHECK-NEXT:     "qualType": "S"
 // CHECK-NEXT:    }
 // CHECK-NEXT:   },
@@ -462,7 +461,6 @@ void TestNonADLCall3() {
 // CHECK-NEXT:         }
 // CHECK-NEXT:        },
 // CHECK-NEXT:        "type": {
-// CHECK-NEXT:         "desugaredQualType": "S",
 // CHECK-NEXT:         "qualType": "S"
 // CHECK-NEXT:        },
 // CHECK-NEXT:        "valueCategory": "lvalue",
@@ -471,7 +469,6 @@ void TestNonADLCall3() {
 // CHECK-NEXT:         "kind": "ParmVarDecl",
 // CHECK-NEXT:         "name": "obj1",
 // CHECK-NEXT:         "type": {
-// CHECK-NEXT:          "desugaredQualType": "S",
 // CHECK-NEXT:          "qualType": "S"
 // CHECK-NEXT:         }
 // CHECK-NEXT:        }
@@ -733,7 +730,6 @@ void TestNonADLCall3() {
 // CHECK-NEXT:             }
 // CHECK-NEXT:            },
 // CHECK-NEXT:            "type": {
-// CHECK-NEXT:             "desugaredQualType": "S",
 // CHECK-NEXT:             "qualType": "S"
 // CHECK-NEXT:            },
 // CHECK-NEXT:            "valueCategory": "lvalue",
@@ -742,7 +738,6 @@ void TestNonADLCall3() {
 // CHECK-NEXT:             "kind": "ParmVarDecl",
 // CHECK-NEXT:             "name": "obj1",
 // CHECK-NEXT:             "type": {
-// CHECK-NEXT:              "desugaredQualType": "S",
 // CHECK-NEXT:              "qualType": "S"
 // CHECK-NEXT:             }
 // CHECK-NEXT:            }
@@ -2539,7 +2534,6 @@ void TestNonADLCall3() {
 // CHECK-NEXT:    "isUsed": true,
 // CHECK-NEXT:    "name": "a",
 // CHECK-NEXT:    "type": {
-// CHECK-NEXT:     "desugaredQualType": "S",
 // CHECK-NEXT:     "qualType": "S"
 // CHECK-NEXT:    }
 // CHECK-NEXT:   },
@@ -2672,7 +2666,6 @@ void TestNonADLCall3() {
 // CHECK-NEXT:           }
 // CHECK-NEXT:          },
 // CHECK-NEXT:          "type": {
-// CHECK-NEXT:           "desugaredQualType": "S",
 // CHECK-NEXT:           "qualType": "S"
 // CHECK-NEXT:          },
 // CHECK-NEXT:          "valueCategory": "lvalue",
@@ -2681,7 +2674,6 @@ void TestNonADLCall3() {
 // CHECK-NEXT:           "kind": "ParmVarDecl",
 // CHECK-NEXT:           "name": "a",
 // CHECK-NEXT:           "type": {
-// CHECK-NEXT:            "desugaredQualType": "S",
 // CHECK-NEXT:            "qualType": "S"
 // CHECK-NEXT:           }
 // CHECK-NEXT:          }
@@ -2990,7 +2982,6 @@ void TestNonADLCall3() {
 // CHECK-NEXT:           }
 // CHECK-NEXT:          },
 // CHECK-NEXT:          "type": {
-// CHECK-NEXT:           "desugaredQualType": "S",
 // CHECK-NEXT:           "qualType": "S"
 // CHECK-NEXT:          },
 // CHECK-NEXT:          "valueCategory": "lvalue",
@@ -2999,7 +2990,6 @@ void TestNonADLCall3() {
 // CHECK-NEXT:           "kind": "ParmVarDecl",
 // CHECK-NEXT:           "name": "a",
 // CHECK-NEXT:           "type": {
-// CHECK-NEXT:            "desugaredQualType": "S",
 // CHECK-NEXT:            "qualType": "S"
 // CHECK-NEXT:           }
 // CHECK-NEXT:          }
@@ -3167,7 +3157,6 @@ void TestNonADLCall3() {
 // CHECK-NEXT:           }
 // CHECK-NEXT:          },
 // CHECK-NEXT:          "type": {
-// CHECK-NEXT:           "desugaredQualType": "S",
 // CHECK-NEXT:           "qualType": "S"
 // CHECK-NEXT:          },
 // CHECK-NEXT:          "valueCategory": "lvalue",
@@ -3176,7 +3165,6 @@ void TestNonADLCall3() {
 // CHECK-NEXT:           "kind": "ParmVarDecl",
 // CHECK-NEXT:           "name": "a",
 // CHECK-NEXT:           "type": {
-// CHECK-NEXT:            "desugaredQualType": "S",
 // CHECK-NEXT:            "qualType": "S"
 // CHECK-NEXT:           }
 // CHECK-NEXT:          }
@@ -3245,7 +3233,6 @@ void TestNonADLCall3() {
 // CHECK-NEXT:           }
 // CHECK-NEXT:          },
 // CHECK-NEXT:          "type": {
-// CHECK-NEXT:           "desugaredQualType": "S",
 // CHECK-NEXT:           "qualType": "S"
 // CHECK-NEXT:          },
 // CHECK-NEXT:          "valueCategory": "lvalue",
@@ -3254,7 +3241,6 @@ void TestNonADLCall3() {
 // CHECK-NEXT:           "kind": "ParmVarDecl",
 // CHECK-NEXT:           "name": "a",
 // CHECK-NEXT:           "type": {
-// CHECK-NEXT:            "desugaredQualType": "S",
 // CHECK-NEXT:            "qualType": "S"
 // CHECK-NEXT:           }
 // CHECK-NEXT:          }
@@ -3498,7 +3484,6 @@ void TestNonADLCall3() {
 // CHECK-NEXT:         }
 // CHECK-NEXT:        },
 // CHECK-NEXT:        "type": {
-// CHECK-NEXT:         "desugaredQualType": "S",
 // CHECK-NEXT:         "qualType": "S"
 // CHECK-NEXT:        },
 // CHECK-NEXT:        "valueCategory": "lvalue",
@@ -3507,7 +3492,6 @@ void TestNonADLCall3() {
 // CHECK-NEXT:         "kind": "ParmVarDecl",
 // CHECK-NEXT:         "name": "a",
 // CHECK-NEXT:         "type": {
-// CHECK-NEXT:          "desugaredQualType": "S",
 // CHECK-NEXT:          "qualType": "S"
 // CHECK-NEXT:         }
 // CHECK-NEXT:        }
@@ -3535,7 +3519,6 @@ void TestNonADLCall3() {
 // CHECK-NEXT:      },
 // CHECK-NEXT:      "valueCategory": "lvalue",
 // CHECK-NEXT:      "typeArg": {
-// CHECK-NEXT:       "desugaredQualType": "S",
 // CHECK-NEXT:       "qualType": "S"
 // CHECK-NEXT:      }
 // CHECK-NEXT:     },
@@ -3560,11 +3543,9 @@ void TestNonADLCall3() {
 // CHECK-NEXT:      },
 // CHECK-NEXT:      "valueCategory": "lvalue",
 // CHECK-NEXT:      "typeArg": {
-// CHECK-NEXT:       "desugaredQualType": "const volatile S",
 // CHECK-NEXT:       "qualType": "const volatile S"
 // CHECK-NEXT:      },
 // CHECK-NEXT:      "adjustedTypeArg": {
-// CHECK-NEXT:       "desugaredQualType": "S",
 // CHECK-NEXT:       "qualType": "S"
 // CHECK-NEXT:      }
 // CHECK-NEXT:     }
