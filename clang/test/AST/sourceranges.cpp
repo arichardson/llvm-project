@@ -49,7 +49,7 @@ void construct() {
   A a = A(12);
   // CHECK: CXXConstructExpr {{0x[0-9a-fA-F]+}} <col:9, col:13> 'A':'foo::A' 'void (int){{( __attribute__\(\(thiscall\)\))?}}'
   D d = D(12);
-  // CHECK: CXXConstructExpr {{0x[0-9a-fA-F]+}} <col:9, col:13> 'D':'D' 'void (int){{( __attribute__\(\(thiscall\)\))?}}'
+  // CHECK: CXXConstructExpr {{0x[0-9a-fA-F]+}} <col:9, col:13> 'D' 'void (int){{( __attribute__\(\(thiscall\)\))?}}'
 }
 
 namespace PR38987 {
