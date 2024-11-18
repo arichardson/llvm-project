@@ -345,10 +345,10 @@ int DwarfInstructions<A, R>::stepWithDwarf(A &addressSpace, pc_t pc,
           else
             return UNW_EBADREG;
         } else if (i == (int)cieInfo.returnAddressRegister) {
-          // Leaf function keeps the return address in register and there is no
-          // explicit instructions how to restore it.
-          returnAddress = registers.getRegister(cieInfo.returnAddressRegister);
-          CHERI_DBG("GETTING RETURN ADDRESS (leaf) %d (%s): %#p \n", i,
+            // Leaf function keeps the return address in register and there is no
+            // explicit instructions how to restore it.
+            returnAddress = registers.getRegister(cieInfo.returnAddressRegister);
+            CHERI_DBG("GETTING RETURN ADDRESS (leaf) %d (%s): %#p \n", i,
                     registers.getRegisterName(i), (void *)returnAddress);
         }
       }
