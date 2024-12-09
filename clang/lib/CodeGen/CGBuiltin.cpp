@@ -20778,11 +20778,7 @@ Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
         getLLVMContext(), llvm::ConstantAsMetadata::get(Builder.getInt32(1)));
 
     Value *BC = Builder.CreateBitCast(
-        Ops[0],
-        llvm::PointerType::get(
-            getLLVMContext(),
-            CGM.getModule().getDataLayout().getGlobalsAddressSpace()),
-        "cast");
+        Ops[0], llvm::PointerType::getUnqual(Ops[1]->getType()), "cast");
 
     StoreInst *Store = Builder.CreateDefaultAlignedStore(Ops[1], BC);
     Store->setMetadata(llvm::LLVMContext::MD_nontemporal, NontemporalNode);
