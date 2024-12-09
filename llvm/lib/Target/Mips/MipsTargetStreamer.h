@@ -15,7 +15,7 @@
 #include "llvm/MC/MCELFStreamer.h"
 #include "llvm/MC/MCRegisterInfo.h"
 #include "llvm/MC/MCStreamer.h"
-#include "llvm/TargetParser/SubtargetFeature.h"
+#include "llvm/MC/SubtargetFeature.h"
 
 namespace llvm {
 
