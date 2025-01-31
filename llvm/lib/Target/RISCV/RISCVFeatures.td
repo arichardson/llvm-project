@@ -816,6 +816,10 @@ def FeatureRVE
 def IsRVE : Predicate<"Subtarget->isRVE()">,
                         AssemblerPredicate<(all_of FeatureRVE)>;
 
+def FeatureCheriCommon
+    : SubtargetFeature<"cheri-common", "HasCheri", "true",
+                       "Implements CHERI (ISAv9 or standard extension)">;
+
 // TODO: Once all supported CheriBSD branches are ready for the new semantics
 // this feature should be enabled automatically.
 def FeatureCheriISAV9Semantics
@@ -830,12 +834,11 @@ def NotCheriISAv9
                 AssemblerPredicate<(all_of (not FeatureCheriISAV9Semantics)),
                 "CHERI ISAv8 semantics (trapping, DDC/PCC relocation)">;
 
-def FeatureCheri
-    : SubtargetFeature<"xcheri", "HasCheri", "true",
-                       "Implements CHERI extension">;
-def HasCheri : Predicate<"Subtarget->hasCheri()">,
-                         AssemblerPredicate<(all_of FeatureCheri),
-                         "CHERI Extension">;
+def FeatureXCheri
+    : SubtargetFeature<"xcheri", "HasXCheri", "true",
+                       "Implements CHERI extension", [FeatureCheriCommon]>;
+def HasCheri : Predicate<"Subtarget->hasXCheri()">,
+               AssemblerPredicate<(all_of FeatureXCheri), "CHERI Extension">;
 def FeatureCheriNoRVC
     : SubtargetFeature<"xcheri-norvc", "EnableCheriRVCInstrs", "false",
                        "Disable CHERI RVC Instructions.">;
