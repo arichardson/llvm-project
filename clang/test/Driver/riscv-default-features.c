@@ -16,6 +16,16 @@
 // RUN: %clang --target=riscv64-unknown-elf -march=rv64ixcheri -mxcheri-v9-semantics -S -emit-llvm %s -o - | FileCheck %s -check-prefix=RV64-XCHERI-V9
 // RUN: %clang --target=riscv64-unknown-elf -march=rv64ixcheri -mxcheri-v8-compat -S -emit-llvm %s -o - | FileCheck %s -check-prefix=RV64-XCHERI-V8
 
+/// The standards-compatible mode can be enable either using the arch string or the -mxcheri-std-compat flag
+// RUN: %clang --target=riscv64-unknown-elf -march=rv64ixcheri -mxcheri-std-compat -S -emit-llvm %s -o - 2>&1 | FileCheck %s -check-prefix=RV64-XCHERI-STD-COMPAT
+// RUN: %clang --target=riscv64-unknown-elf -march=rv64ixcheri_xcheri-std-compat -S -emit-llvm %s -o - 2>&1 | FileCheck %s -check-prefix=RV64-XCHERI-STD-COMPAT
+// RUN: %clang --target=riscv64-unknown-elf -march=rv64ixcheri-std-compat -S -emit-llvm %s -o - | FileCheck %s -check-prefix=RV64-XCHERI-STD-COMPAT
+/// In the case of rv64i -mxcheri-std-compat, +xcheri is not inferred, but this will be fixed in future upstream merges
+// RUN: %clang --target=riscv64-unknown-elf -march=rv64i -mxcheri-std-compat -S -emit-llvm %s -o - | FileCheck %s -check-prefix=RV64-XCHERI-STD-COMPAT-ONLY
+/// Check that we can override the flag with -mno-xcheri-std-compat
+// RUN: %clang --target=riscv64-unknown-elf -march=rv64ixcheri -mxcheri-std-compat -mno-xcheri-std-compat -S -emit-llvm %s -o - | FileCheck %s -check-prefix=RV64-XCHERI
+
+
 // RV32: "target-features"="+32bit,+a,+c,+m,+relax,
 // RV32-SAME: -save-restore
 // RV64: "target-features"="+64bit,+a,+c,+m,+relax,
@@ -47,6 +57,9 @@
 // RV64-XCHERI-V9: "target-features"="+64bit,+relax,+xcheri
 // RV64-XCHERI-V9-SAME: +xcheri-v9-semantics
 // RV64-XCHERI-V9-SAME: -save-restore
+
+// RV64-XCHERI-STD-COMPAT: "target-features"="+64bit,+relax,+xcheri,+xcheri-std-compat,
+// RV64-XCHERI-STD-COMPAT-ONLY: "target-features"="+64bit,+relax,+xcheri-std-compat,
 
 // Dummy function
 int foo(void){

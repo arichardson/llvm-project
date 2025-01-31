@@ -3919,6 +3919,14 @@ def mno_xcheri_v9_semantics : Flag<["-"], "mno-xcheri-v9-semantics">, Group<m_ri
 // Add an alias with a more sensible name for when the default is flipped.
 def mxcheri_v8_compat : Flag<["-"], "mxcheri-v8-compat">, Alias<mno_xcheri_v9_semantics>;
 
+def mxcheri_std_compat : Flag<["-"], "mxcheri-std-compat">,
+                         Group<m_riscv_Features_Group>,
+                         HelpText<"Enable the subset of CHERI features that "
+                                  "are compatible with the upcoming standard">;
+def mno_xcheri_std_compat : Flag<["-"], "mno-xcheri-std-compat">,
+                            Group<m_riscv_Features_Group>,
+                            HelpText<"Enable non-standard CHERI features">;
+
 def munaligned_access : Flag<["-"], "munaligned-access">, Group<m_Group>,
   HelpText<"Allow memory accesses to be unaligned (AArch32/AArch64/LoongArch only)">;
 def mno_unaligned_access : Flag<["-"], "mno-unaligned-access">, Group<m_Group>,
