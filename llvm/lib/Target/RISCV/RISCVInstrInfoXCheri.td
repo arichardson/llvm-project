@@ -776,6 +776,22 @@ multiclass CPrefixedInstAlias<string Asm, dag Result> {
   def : InstAlias<Asm, Result, 0>;
 }
 
+let hasSideEffects = 1, mayLoad = 0, mayStore = 0 in
+class CheriModeSw<bits<7> funct7, string opcodestr>
+    : RVInst<(outs ), (ins ), opcodestr, "", [], InstFormatR> {
+  let Inst{31-25} = funct7;
+  let Inst{24-20} = 0b00000;
+  let Inst{19-15} = 0b00000;
+  let Inst{14-12} = 0b001;
+  let Inst{11-7}  = 0b00000;
+  let Inst{6-0}   = 0b0110011;
+}
+
+let Predicates = [HasXCheriStdCompat] in {
+def ModeSwitchCap : CheriModeSw<0b0001001, "modesw.cap">;
+def ModeSwitchInt : CheriModeSw<0b0001010, "modesw.int">;
+} // HasXCheriStdCompat
+
 
 let Predicates = [HasCheriCommon, IsCapMode] in {
 defm CLB  : CheriLoad_ri<0b000, "lb">;
