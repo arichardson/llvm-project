@@ -19,7 +19,8 @@ define internal i64 @test(ptr addrspace(200) %cap) addrspace(200) nounwind {
 ; STD-COMPAT-LABEL: test:
 ; STD-COMPAT:       # %bb.0: # %entry
 ; STD-COMPAT-NEXT:    cgettype a0, ca0
-; STD-COMPAT-NEXT:    beqz a0, .LBB0_2
+; STD-COMPAT-NEXT:    li a1, -1
+; STD-COMPAT-NEXT:    beq a0, a1, .LBB0_2
 ; STD-COMPAT-NEXT:  # %bb.1: # %if.then
 ; STD-COMPAT-NEXT:    li a0, 4
 ; STD-COMPAT-NEXT:    cret

@@ -13581,8 +13581,11 @@ SDValue RISCVTargetLowering::PerformDAGCombine(SDNode *N,
             ISD::INTRINSIC_WO_CHAIN, DL, XLenVT,
             DAG.getConstant(Intrinsic::cheri_cap_type_get, DL, MVT::i64),
             N->getOperand(1));
-        // Unsealed capabilities have a zero type, so non-zero means sealed.
-        return DAG.getSetCC(DL, MVT::i1, Type, DAG.getConstant(0, DL, XLenVT),
+        // Note in the RISC-V standard unsealed capabilities have a zero type,
+        // but in ISAv9 unsealed is otype - 1.
+        int64_t UnsealedOtype = Subtarget.hasXCheri() ? -1 : 0;
+        return DAG.getSetCC(DL, MVT::i1, Type,
+                            DAG.getConstant(UnsealedOtype, DL, XLenVT),
                             ISD::SETNE);
       } else {
         SDValue IntRes =
