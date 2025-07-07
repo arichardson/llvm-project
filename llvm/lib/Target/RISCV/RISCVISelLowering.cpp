@@ -14354,7 +14354,8 @@ SDValue RISCVTargetLowering::PerformDAGCombine(SDNode *N,
         // from the existance of the gather), our offsets must be sufficiently
         // aligned.
 
-        const EVT PtrVT = getPointerTy(DAG.getDataLayout());
+        const EVT PtrVT = getPointerTy(DAG.getDataLayout(),
+            DAG.getDataLayout().getDefaultGlobalsAddressSpace());
         assert(MGN->getBasePtr()->getValueType(0) == PtrVT);
         assert(IndexType == ISD::UNSIGNED_SCALED);
         SDValue BasePtr = DAG.getNode(ISD::ADD, DL, PtrVT, MGN->getBasePtr(),
