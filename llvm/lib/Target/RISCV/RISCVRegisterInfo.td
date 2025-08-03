@@ -52,11 +52,9 @@ class RISCVReg64<RISCVReg32 subreg>
 // to express this properly without introducing separate 32/64-bit registers,
 // classes etc.
 def sub_cap_addr : SubRegIndex<-1, -1>;
-class RISCVCapReg<RISCVReg subreg, string n, list<string> alt = []> : Register<n> {
-  let HWEncoding{4-0} = subreg.HWEncoding{4-0};
-  let SubRegs = [subreg];
+class RISCVCapReg<RISCVReg subreg, string n, list<string> alt = []>
+  : RISCVRegWithSubRegs<subreg.HWEncoding{4-0}, n, [subreg], alt> {
   let SubRegIndices = [sub_cap_addr];
-  let AltNames = alt;
 }
 
 class RISCVCapRegPseudo<bits<5> Enc, string n, list<string> alt = []> : Register<n> {

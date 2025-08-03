@@ -226,7 +226,8 @@ class RISCVAsmParser : public MCTargetAsmParser {
   ParseStatus parseImmediate(OperandVector &Operands);
   ParseStatus parseRegister(OperandVector &Operands, bool AllowParens = false);
   ParseStatus parseMemOpBaseReg(OperandVector &Operands);
-  ParseStatus parseZeroOffsetMemOp(OperandVector &Operands);
+  ParseStatus parseZeroOffsetMemOp(OperandVector &Operands, bool IsCheri = false);
+  ParseStatus parseCheriZeroOffsetMemOp(OperandVector &Operands);
   ParseStatus parseOperandWithModifier(OperandVector &Operands);
   ParseStatus parseBareSymbol(OperandVector &Operands);
   ParseStatus parseCallSymbol(OperandVector &Operands);
@@ -236,6 +237,7 @@ class RISCVAsmParser : public MCTargetAsmParser {
   ParseStatus parseMaskReg(OperandVector &Operands);
   ParseStatus parseInsnDirectiveOpcode(OperandVector &Operands);
   ParseStatus parseInsnCDirectiveOpcode(OperandVector &Operands);
+  ParseStatus parseCRegOrXReg(OperandVector &Operands);
   ParseStatus parseGPRAsFPR(OperandVector &Operands);
   ParseStatus parseFRMArg(OperandVector &Operands);
   ParseStatus parseFenceArg(OperandVector &Operands);
@@ -508,6 +510,12 @@ public:
   bool isGPR() const {
     return Kind == KindTy::Register &&
            RISCVMCRegisterClasses[RISCV::GPRRegClassID].contains(Reg.RegNum);
+  }
+
+  bool isCRegOrXReg() const {
+    return Kind == KindTy::Register &&
+           (RISCVMCRegisterClasses[RISCV::GPRRegClassID].contains(Reg.RegNum) ||
+            RISCVMCRegisterClasses[RISCV::GPCRRegClassID].contains(Reg.RegNum));
   }
 
   bool isGPCR() const {
@@ -2406,6 +2414,27 @@ ParseStatus RISCVAsmParser::parseMaskReg(OperandVector &Operands) {
   return ParseStatus::Success;
 }
 
+ParseStatus RISCVAsmParser::parseCRegOrXReg(OperandVector &Operands) {
+  if (getLexer().isNot(AsmToken::Identifier))
+    return ParseStatus::NoMatch;
+
+  StringRef Name = getLexer().getTok().getIdentifier();
+  MCRegister RegNo = matchRegisterNameHelper(isRVE(), Name);
+
+  if (!RegNo)
+    return ParseStatus::NoMatch;
+  SMLoc S = getLoc();
+  SMLoc E = SMLoc::getFromPointer(S.getPointer() + Name.size());
+  getLexer().Lex();
+  if (RegNo >= RISCV::X0 && RegNo <= RISCV::X31) {
+    // Map x register names to c register names
+    RegNo = convertGPRToGPCR(RegNo);
+  }
+  Operands.push_back(RISCVOperand::createReg(RegNo, S, E));
+  return ParseStatus::Success;
+}
+
+
 ParseStatus RISCVAsmParser::parseGPRAsFPR(OperandVector &Operands) {
   if (getLexer().isNot(AsmToken::Identifier))
     return ParseStatus::NoMatch;
@@ -2515,7 +2544,12 @@ ParseStatus RISCVAsmParser::parseMemOpBaseReg(OperandVector &Operands) {
   return ParseStatus::Success;
 }
 
-ParseStatus RISCVAsmParser::parseZeroOffsetMemOp(OperandVector &Operands) {
+ParseStatus RISCVAsmParser::parseCheriZeroOffsetMemOp(OperandVector &Operands) {
+  return parseZeroOffsetMemOp(Operands, /*IsCheri=*/true);
+}
+
+ParseStatus RISCVAsmParser::parseZeroOffsetMemOp(OperandVector &Operands,
+                                                 bool IsCheriOpnd) {
   // Atomic operations such as lr.w, sc.w, and amo*.w accept a "memory operand"
   // as one of their register operands, such as `(a0)`. This just denotes that
   // the register (in this case `a0`) contains a memory address.
@@ -2559,8 +2593,13 @@ ParseStatus RISCVAsmParser::parseZeroOffsetMemOp(OperandVector &Operands) {
                                : "expected '(' or optional integer offset"))
     return ParseStatus::Failure;
 
-  if (!parseRegister(Operands).isSuccess())
-    return Error(getLoc(), "expected register");
+  if (IsCheriOpnd) {
+    if (!parseCRegOrXReg(Operands).isSuccess())
+      return Error(getLoc(), "expected capability register");
+  } else {
+    if (!parseRegister(Operands).isSuccess())
+      return Error(getLoc(), "expected register");
+  }
 
   if (parseToken(AsmToken::RParen, "expected ')'"))
     return ParseStatus::Failure;

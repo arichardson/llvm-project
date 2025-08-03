@@ -1718,7 +1718,7 @@ def : LdPat<zextloadi16, LHU>, Requires<[NotCapMode]>;
 
 /// Stores
 
-class StPat<PatFrag StoreOp, RVInst Inst, RegisterClass StTy,
+class StPat<PatFrag StoreOp, RVInst Inst, DAGOperand StTy,
             ValueType vt>
     : Pat<(StoreOp (vt StTy:$rs2), (AddrRegImm (XLenVT GPR:$rs1),
                    simm12:$imm12)),
@@ -2013,3 +2013,25 @@ include "RISCVInstrInfoXCV.td"
 //===----------------------------------------------------------------------===//
 
 include "RISCVInstrInfoXCheri.td"
+
+
+let Predicates = [NotCapMode] in {
+def : MnemonicAlias<"add.ptr", "add">;
+def : MnemonicAlias<"mv.ptr", "mv">;
+}
+let Predicates = [IsRV64, NotCapMode] in {
+def : MnemonicAlias<"l.ptr", "clc">;
+def : MnemonicAlias<"s.ptr", "csc">;
+}
+let Predicates = [IsRV32, NotCapMode] in {
+def : MnemonicAlias<"l.ptr", "lw">;
+def : MnemonicAlias<"s.ptr", "sw">;
+}
+let Predicates = [HasCheri, IsCapMode] in {
+def : MnemonicAlias<"add.ptr", "cincoffset">;
+def : MnemonicAlias<"l.ptr", "clc">;
+def : MnemonicAlias<"s.ptr", "csc">;
+def : MnemonicAlias<"mv.ptr", "cmove">;
+def : MnemonicAlias<"call", "ccall">;
+def : MnemonicAlias<"ctail", "tail">;
+}

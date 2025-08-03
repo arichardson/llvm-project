@@ -369,6 +369,10 @@ protected: // Can only create subclasses.
   /// AvailableFeatures - The current set of available features.
   FeatureBitset AvailableFeatures;
 
+  /// IgnoreFeatures - Don't report an instruction which has these missing
+  /// features as a potential match.
+  FeatureBitset IgnoreFeatures;
+
   /// ParsingMSInlineAsm - Are we parsing ms-style inline assembly?
   bool ParsingMSInlineAsm = false;
 
@@ -398,6 +402,9 @@ public:
   void setAvailableFeatures(const FeatureBitset& Value) {
     AvailableFeatures = Value;
   }
+
+  const FeatureBitset& getIgnoreFeatures() const { return IgnoreFeatures; }
+  void setIgnoreFeatures(const FeatureBitset& Value) { IgnoreFeatures = Value; }
 
   bool isParsingMSInlineAsm () { return ParsingMSInlineAsm; }
   void setParsingMSInlineAsm (bool Value) { ParsingMSInlineAsm = Value; }
