@@ -2429,6 +2429,8 @@ ParseStatus RISCVAsmParser::parseCRegOrXReg(OperandVector &Operands) {
   if (RegNo >= RISCV::X0 && RegNo <= RISCV::X31) {
     // Map x register names to c register names
     RegNo = convertGPRToGPCR(RegNo);
+  } else {
+    return ParseStatus::NoMatch; // For X regs temporarily
   }
   Operands.push_back(RISCVOperand::createReg(RegNo, S, E));
   return ParseStatus::Success;
