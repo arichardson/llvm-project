@@ -67,7 +67,7 @@ extern "C" int test1(duration<int> &e) {
 // PURECAP-CHERI128-IR-SAME: (ptr addrspace(200) nocapture noundef nonnull readonly align 16 dereferenceable(16) [[E:%.*]]) local_unnamed_addr addrspace(200) #[[ATTR2:[0-9]+]] {
 // PURECAP-CHERI128-IR-NEXT:  entry:
 // PURECAP-CHERI128-IR-NEXT:    [[REF_TMP_SROA_0:%.*]] = alloca i128, align 16, addrspace(200)
-// PURECAP-CHERI128-IR-NEXT:    call void @llvm.lifetime.start.p200(i64 16, ptr addrspace(200) nonnull [[REF_TMP_SROA_0]])
+// PURECAP-CHERI128-IR-NEXT:    call void @llvm.lifetime.start.p200(i64 16, ptr addrspace(200) [[REF_TMP_SROA_0]])
 // PURECAP-CHERI128-IR-NEXT:    [[TMP0:%.*]] = load ptr addrspace(200), ptr addrspace(200) [[E]], align 16, !tbaa [[TBAA6:![0-9]+]]
 // PURECAP-CHERI128-IR-NEXT:    store ptr addrspace(200) [[TMP0]], ptr addrspace(200) [[REF_TMP_SROA_0]], align 16, !tbaa [[TBAA6]]
 // PURECAP-CHERI128-IR-NEXT:    [[REF_TMP_SROA_0_0_REF_TMP_SROA_0_0_REF_TMP_SROA_0_0_REF_TMP_SROA_0_0_:%.*]] = load i128, ptr addrspace(200) [[REF_TMP_SROA_0]], align 16, !tbaa [[TBAA8:![0-9]+]]

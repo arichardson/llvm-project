@@ -13,7 +13,7 @@ define internal void @foo() unnamed_addr addrspace(200) {
 ; CHECK-NEXT:    [[TMP1:%.*]] = call i96 @bar(i32 104)
 ; CHECK-NEXT:    store i96 [[TMP1]], ptr addrspace(200) [[TMP0]], align 16
 ; CHECK-NEXT:    call void @llvm.memcpy.p200.p200.i64(ptr addrspace(200) noundef nonnull align 16 dereferenceable(12) [[_2]], ptr addrspace(200) noundef nonnull align 16 dereferenceable(12) [[TMP0]], i64 12, i1 false)
-; CHECK-NEXT:    call void @baz(ptr addrspace(200) nonnull [[_2]])
+; CHECK-NEXT:    call void @baz(ptr addrspace(200) [[_2]])
 ; CHECK-NEXT:    ret void
 ;
 start:

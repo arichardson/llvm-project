@@ -16,7 +16,7 @@ extern void test(const char*);
 // CHECK-NEXT:    [[SUB:%.*]] = add nsw i64 [[I_04]], -1
 // CHECK-NEXT:    [[ARRAYIDX:%.*]] = getelementptr inbounds i8, ptr addrspace(200) [[VLA]], i64 [[SUB]]
 // CHECK-NEXT:    store i8 0, ptr addrspace(200) [[ARRAYIDX]], align 1, !tbaa [[TBAA2:![0-9]+]]
-// CHECK-NEXT:    call void @test(ptr addrspace(200) noundef nonnull [[VLA]]) #[[ATTR3:[0-9]+]]
+// CHECK-NEXT:    call void @test(ptr addrspace(200) noundef [[VLA]]) #[[ATTR3:[0-9]+]]
 // CHECK-NEXT:    call void @llvm.stackrestore.p200(ptr addrspace(200) [[TMP0]])
 // CHECK-NEXT:    [[INC]] = add nuw nsw i64 [[I_04]], 1
 // CHECK-NEXT:    [[EXITCOND_NOT:%.*]] = icmp eq i64 [[INC]], 32

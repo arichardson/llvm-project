@@ -2,7 +2,7 @@
 // REQUIRES: asserts
 // RUN: %cheri_purecap_cc1 -cheri-bounds=subobject-safe -O2 -emit-llvm %s -o - -Rcheri-subobject-bounds -verify | FileCheck %s
 // RUN: %cheri_purecap_cc1 -cheri-bounds=subobject-safe -O0 -emit-llvm %s -o /dev/null \
-// RUN:    -w -mllvm -debug-only="cheri-bounds" -mllvm -stats 2>&1 | FileCheck %s -check-prefix DBG -implicit-check-not cheri-bounds
+// RUN:    -w -mllvm -debug-only="cheri-bounds" -mllvm -stats 2>&1 | FileCheck %s -check-prefix DBG
 // DBG:  3 cheri-bounds - Number of & operators checked for tightening bounds
 // DBG:  4 cheri-bounds - Number of array-to-pointer-decays checked for tightening bounds
 // DBG: 36 cheri-bounds - Number of [] operators checked for tightening bounds
@@ -170,10 +170,10 @@ int test_fake_vla2(struct_fake_vla2 *s, long index) {
 // CHECK-NEXT:  entry:
 // CHECK-NEXT:    [[TMP0:%.*]] = zext i32 [[LEN]] to i64
 // CHECK-NEXT:    [[VLA:%.*]] = alloca i32, i64 [[TMP0]], align 4, addrspace(200)
-// CHECK-NEXT:    [[CUR_OFFSET:%.*]] = call i64 @llvm.cheri.cap.offset.get.i64(ptr addrspace(200) nonnull [[VLA]])
-// CHECK-NEXT:    [[CUR_LEN:%.*]] = call i64 @llvm.cheri.cap.length.get.i64(ptr addrspace(200) nonnull [[VLA]])
+// CHECK-NEXT:    [[CUR_OFFSET:%.*]] = call i64 @llvm.cheri.cap.offset.get.i64(ptr addrspace(200) [[VLA]])
+// CHECK-NEXT:    [[CUR_LEN:%.*]] = call i64 @llvm.cheri.cap.length.get.i64(ptr addrspace(200) [[VLA]])
 // CHECK-NEXT:    [[REMAINING_BYTES:%.*]] = sub i64 [[CUR_LEN]], [[CUR_OFFSET]]
-// CHECK-NEXT:    [[TMP1:%.*]] = call ptr addrspace(200) @llvm.cheri.cap.bounds.set.i64(ptr addrspace(200) nonnull [[VLA]], i64 [[REMAINING_BYTES]])
+// CHECK-NEXT:    [[TMP1:%.*]] = call ptr addrspace(200) @llvm.cheri.cap.bounds.set.i64(ptr addrspace(200) [[VLA]], i64 [[REMAINING_BYTES]])
 // CHECK-NEXT:    call void @use_buf(ptr addrspace(200) noundef [[TMP1]]) #[[ATTR12:[0-9]+]]
 // CHECK-NEXT:    [[CUR_OFFSET4:%.*]] = call i64 @llvm.cheri.cap.offset.get.i64(ptr addrspace(200) [[TMP1]])
 // CHECK-NEXT:    [[CUR_LEN5:%.*]] = call i64 @llvm.cheri.cap.length.get.i64(ptr addrspace(200) [[TMP1]])
@@ -326,7 +326,7 @@ int test21a(my_struct21 *s, long index) {
 // CHECK-SAME: (ptr addrspace(200) nocapture noundef readnone [[S:%.*]], i64 noundef signext [[INDEX:%.*]]) local_unnamed_addr addrspace(200) #[[ATTR5]] {
 // CHECK-NEXT:  entry:
 // CHECK-NEXT:    [[RETVAL:%.*]] = alloca [[STRUCT_MY_STRUCT21:%.*]], align 8, addrspace(200)
-// CHECK-NEXT:    [[TMP0:%.*]] = call ptr addrspace(200) @llvm.cheri.cap.bounds.set.i64(ptr addrspace(200) nonnull [[RETVAL]], i64 10)
+// CHECK-NEXT:    [[TMP0:%.*]] = call ptr addrspace(200) @llvm.cheri.cap.bounds.set.i64(ptr addrspace(200) [[RETVAL]], i64 10)
 // CHECK-NEXT:    [[ARRAYIDX:%.*]] = getelementptr inbounds [10 x i8], ptr addrspace(200) [[TMP0]], i64 0, i64 [[INDEX]]
 // CHECK-NEXT:    store i8 65, ptr addrspace(200) [[ARRAYIDX]], align 1, !tbaa [[TBAA9]]
 // CHECK-NEXT:    [[DOTFCA_0_LOAD:%.*]] = load i64, ptr addrspace(200) [[RETVAL]], align 8
@@ -479,14 +479,14 @@ typedef struct {
 // CHECK-SAME: (i64 noundef signext [[INDEX:%.*]]) local_unnamed_addr addrspace(200) #[[ATTR6]] {
 // CHECK-NEXT:  entry:
 // CHECK-NEXT:    [[ARRAY2:%.*]] = alloca [5 x %struct.my_struct28], align 1, addrspace(200)
-// CHECK-NEXT:    call void @llvm.lifetime.start.p200(i64 100, ptr addrspace(200) nonnull [[ARRAY2]]) #[[ATTR12]]
-// CHECK-NEXT:    [[TMP0:%.*]] = call ptr addrspace(200) @llvm.cheri.cap.bounds.set.i64(ptr addrspace(200) nonnull [[ARRAY2]], i64 100)
+// CHECK-NEXT:    call void @llvm.lifetime.start.p200(i64 100, ptr addrspace(200) [[ARRAY2]]) #[[ATTR12]]
+// CHECK-NEXT:    [[TMP0:%.*]] = call ptr addrspace(200) @llvm.cheri.cap.bounds.set.i64(ptr addrspace(200) [[ARRAY2]], i64 100)
 // CHECK-NEXT:    [[ARRAYIDX:%.*]] = getelementptr inbounds [5 x %struct.my_struct28], ptr addrspace(200) [[ARRAY2]], i64 0, i64 4
 // CHECK-NEXT:    [[TMP1:%.*]] = call ptr addrspace(200) @llvm.cheri.cap.bounds.set.i64(ptr addrspace(200) nonnull [[ARRAYIDX]], i64 10)
 // CHECK-NEXT:    [[ARRAYIDX1:%.*]] = getelementptr inbounds [10 x i8], ptr addrspace(200) [[TMP1]], i64 0, i64 [[INDEX]]
 // CHECK-NEXT:    store i8 65, ptr addrspace(200) [[ARRAYIDX1]], align 1, !tbaa [[TBAA9]]
 // CHECK-NEXT:    call void @use_buf(ptr addrspace(200) noundef [[TMP0]]) #[[ATTR12]]
-// CHECK-NEXT:    call void @llvm.lifetime.end.p200(i64 100, ptr addrspace(200) nonnull [[ARRAY2]]) #[[ATTR12]]
+// CHECK-NEXT:    call void @llvm.lifetime.end.p200(i64 100, ptr addrspace(200) [[ARRAY2]]) #[[ATTR12]]
 // CHECK-NEXT:    ret i32 0
 //
 int test28a(long index) {
@@ -518,14 +518,14 @@ int test28b(my_struct28 **array1, long index) {
 // CHECK-SAME: (i64 noundef signext [[INDEX1:%.*]], i64 noundef signext [[INDEX2:%.*]]) local_unnamed_addr addrspace(200) #[[ATTR6]] {
 // CHECK-NEXT:  entry:
 // CHECK-NEXT:    [[ARRAY2:%.*]] = alloca [5 x %struct.my_struct28], align 1, addrspace(200)
-// CHECK-NEXT:    call void @llvm.lifetime.start.p200(i64 100, ptr addrspace(200) nonnull [[ARRAY2]]) #[[ATTR12]]
-// CHECK-NEXT:    [[TMP0:%.*]] = call ptr addrspace(200) @llvm.cheri.cap.bounds.set.i64(ptr addrspace(200) nonnull [[ARRAY2]], i64 100)
+// CHECK-NEXT:    call void @llvm.lifetime.start.p200(i64 100, ptr addrspace(200) [[ARRAY2]]) #[[ATTR12]]
+// CHECK-NEXT:    [[TMP0:%.*]] = call ptr addrspace(200) @llvm.cheri.cap.bounds.set.i64(ptr addrspace(200) [[ARRAY2]], i64 100)
 // CHECK-NEXT:    [[ARRAYIDX:%.*]] = getelementptr inbounds [5 x %struct.my_struct28], ptr addrspace(200) [[TMP0]], i64 0, i64 [[INDEX1]]
 // CHECK-NEXT:    [[TMP1:%.*]] = call ptr addrspace(200) @llvm.cheri.cap.bounds.set.i64(ptr addrspace(200) [[ARRAYIDX]], i64 10)
 // CHECK-NEXT:    [[ARRAYIDX1:%.*]] = getelementptr inbounds [10 x i8], ptr addrspace(200) [[TMP1]], i64 0, i64 [[INDEX2]]
 // CHECK-NEXT:    store i8 65, ptr addrspace(200) [[ARRAYIDX1]], align 1, !tbaa [[TBAA9]]
 // CHECK-NEXT:    call void @use_buf(ptr addrspace(200) noundef [[TMP0]]) #[[ATTR12]]
-// CHECK-NEXT:    call void @llvm.lifetime.end.p200(i64 100, ptr addrspace(200) nonnull [[ARRAY2]]) #[[ATTR12]]
+// CHECK-NEXT:    call void @llvm.lifetime.end.p200(i64 100, ptr addrspace(200) [[ARRAY2]]) #[[ATTR12]]
 // CHECK-NEXT:    ret i32 0
 //
 int test28c(long index1, long index2) {

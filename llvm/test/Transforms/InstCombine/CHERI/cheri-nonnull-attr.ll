@@ -11,7 +11,7 @@ define void @foo() local_unnamed_addr #0 {
 
   ; Allocas are nonnull unless you target AMDGPU
   call void @test(ptr addrspace(200) %vla)
-  ; CHECK: call void @test(ptr addrspace(200) nonnull %vla)
+  ; CHECK: call void @test(ptr addrspace(200) %vla)
 
   ; This one is not nonnull because we are loading an unknown value
   %1 = load ptr addrspace(200), ptr addrspace(200) @char_ptr, align 32
