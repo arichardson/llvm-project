@@ -38,7 +38,7 @@ def createTempdir(args):
         debug(args, "Created local tmp dir:", localTmp)
         debug(args, "Assuming remote path is:", remoteTmp)
         return localTmp, remoteTmp
-    remoteTmp = subprocess.check_output(ssh(args, 'mktemp -d {}/libcxx.XXXXXXXXXX'.format(args.tempdir)),
+    remoteTmp = subprocess.check_output(ssh('mktemp -d {}/libcxx.XXXXXXXXXX'.format(args.tempdir)),
                                         universal_newlines=True).strip()
     debug(args, "Create remote tmp dir:", remoteTmp)
     return None, remoteTmp
@@ -52,7 +52,7 @@ def cleanupTempdir(args, localTmp, remoteTmp):
         shutil.rmtree(localTmp)
     else:
         debug(args, "Deleting remote tmp dir:", remoteTmp)
-        subprocess.check_call(ssh(args, 'rm -r {}'.format(remoteTmp)))
+        subprocess.check_call(ssh('rm -r {}'.format(remoteTmp)))
 
 
 def uploadTarball(args, src, dst):
@@ -195,30 +195,12 @@ def main():
         remoteCommands.append(subprocess.list2cmdline(commandLine))
 
         # Finally, SSH to the remote host and execute all the commands.
-<<<<<<< HEAD
-<<<<<<< HEAD
-        executeRemoteCommand = ssh(args, ' && '.join(remoteCommands))
-        debug(args, "Executing test using", executeRemoteCommand)
-        rc = subprocess.call(executeRemoteCommand)
-=======
-        rc = runCommand(ssh(args, " && ".join(remoteCommands))).returncode
->>>>>>> 77d8ce5bb841a30f570bcbe63b570f19493c6a05
-=======
         rc = runCommand(ssh(" && ".join(remoteCommands))).returncode
->>>>>>> 1ce70139ff280e57c31e8be3f70a67251b3bc23a
         return rc
 
     finally:
         # Make sure the temporary directory is removed when we're done.
-<<<<<<< HEAD
-<<<<<<< HEAD
-        cleanupTempdir(args, localTmp, remoteTmp)
-=======
-        runCommand(ssh(args, "rm -r {}".format(tmp)), check=True)
->>>>>>> 77d8ce5bb841a30f570bcbe63b570f19493c6a05
-=======
         runCommand(ssh("rm -r {}".format(tmp)), check=True)
->>>>>>> 1ce70139ff280e57c31e8be3f70a67251b3bc23a
 
 
 if __name__ == "__main__":
