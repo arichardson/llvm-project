@@ -120,23 +120,15 @@ else()
   serialize_lit_string_param(SERIALIZED_LIT_PARAMS target_triple "${LLVM_DEFAULT_TARGET_TRIPLE}")
 endif()
 
-<<<<<<< HEAD
 if (LIBUNWIND_TEST_TARGET_FLAGS)
-  serialize_lit_param(target_flags "\"${LIBUNWIND_TEST_TARGET_FLAGS}\"")
+  serialize_lit_param(SERIALIZED_LIT_PARAMS target_flags "\"${LIBUNWIND_TEST_TARGET_FLAGS}\"")
 endif()
 
 if (NOT LIBUNWIND_TEST_ENABLE_EXCEPTIONS)
-  serialize_lit_param(enable_exceptions False)
+  serialize_lit_param(SERIALIZED_LIT_PARAMS enable_exceptions False)
 endif()
 
-foreach(param IN LISTS LIBUNWIND_TEST_PARAMS)
-  string(REGEX REPLACE "(.+)=(.+)" "\\1" name "${param}")
-  string(REGEX REPLACE "(.+)=(.+)" "\\2" value "${param}")
-  serialize_lit_param("${name}" "\"${value}\"")
-endforeach()
-=======
 serialize_lit_params_list(SERIALIZED_LIT_PARAMS LIBUNWIND_TEST_PARAMS)
->>>>>>> e5994229541bbe78c3e6eb548224b46f8c3c91be
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/configs/cmake-bridge.cfg.in"
                "${CMAKE_CURRENT_BINARY_DIR}/cmake-bridge.cfg"

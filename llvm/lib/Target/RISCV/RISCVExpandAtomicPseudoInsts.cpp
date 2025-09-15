@@ -1002,48 +1002,6 @@ bool RISCVExpandAtomicPseudo::expandAtomicMinMaxOp(
         .addReg(RISCV::X0)
         .addMBB(LoopHeadMBB);
   }
-//<<<<<<< HEAD
-//=======
-//  case AtomicRMWInst::Min: {
-//    insertSext(TII, DL, LoopHeadMBB, Scratch2Reg, MI.getOperand(6).getReg());
-//    BuildMI(LoopHeadMBB, DL, TII->get(RISCV::BGE))
-//        .addReg(IncrReg)
-//        .addReg(Scratch2Reg)
-//        .addMBB(LoopTailMBB);
-//    break;
-//  }
-//  case AtomicRMWInst::UMax:
-//    BuildMI(LoopHeadMBB, DL, TII->get(RISCV::BGEU))
-//        .addReg(Scratch2Reg)
-//        .addReg(IncrReg)
-//        .addMBB(LoopTailMBB);
-//    break;
-//  case AtomicRMWInst::UMin:
-//    BuildMI(LoopHeadMBB, DL, TII->get(RISCV::BGEU))
-//        .addReg(IncrReg)
-//        .addReg(Scratch2Reg)
-//        .addMBB(LoopTailMBB);
-//    break;
-//  }
-//
-//  // .loopifbody:
-//  //   xor scratch1, destreg, incr
-//  //   and scratch1, scratch1, mask
-//  //   xor scratch1, destreg, scratch1
-//  insertMaskedMerge(TII, DL, LoopIfBodyMBB, Scratch1Reg, DestReg, IncrReg,
-//                    MaskReg, Scratch1Reg);
-//
-//  // .looptail:
-//  //   sc.w scratch1, scratch1, (addr)
-//  //   bnez scratch1, loop
-//  BuildMI(LoopTailMBB, DL, TII->get(getSCForRMW32(Ordering, STI)), Scratch1Reg)
-//      .addReg(AddrReg)
-//      .addReg(Scratch1Reg);
-//  BuildMI(LoopTailMBB, DL, TII->get(RISCV::BNE))
-//      .addReg(Scratch1Reg)
-//      .addReg(RISCV::X0)
-//      .addMBB(LoopHeadMBB);
-//>>>>>>> fcad2bbcfc1f0acaa91fe03b71ff069975f80c8e
 
   NextMBBI = MBB.end();
   MI.eraseFromParent();
