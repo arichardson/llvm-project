@@ -1945,6 +1945,13 @@ static void removeUnusedSyntheticSections() {
   });
 }
 
+static Defined *addAbsolute(StringRef name) {
+  Symbol *sym = symtab.addSymbol(Defined{nullptr, name, STB_GLOBAL, STV_HIDDEN,
+                                         STT_NOTYPE, 0, 0, nullptr});
+  sym->isUsedInRegularObj = true;
+  return cast<Defined>(sym);
+}
+
 // Create output section objects and add them to OutputSections.
 template <class ELFT> void Writer<ELFT>::finalizeSections() {
   StringRef captableSym = "_CHERI_CAPABILITY_TABLE_";
