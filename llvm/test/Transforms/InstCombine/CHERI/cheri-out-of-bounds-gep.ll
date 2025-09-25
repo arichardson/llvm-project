@@ -6,7 +6,7 @@ define ptr addrspace(200) @foo(ptr addrspace(200) %a, i32 %x) {
 ; CHECK-LABEL: define ptr addrspace(200) @foo(
 ; CHECK-SAME: ptr addrspace(200) [[A:%.*]], i32 [[X:%.*]]) addrspace(200) #[[ATTR0:[0-9]+]] {
 ; CHECK-NEXT:  entry:
-; CHECK-NEXT:    [[GEP0:%.*]] = getelementptr inbounds i32, ptr addrspace(200) [[A]], i64 1
+; CHECK-NEXT:    [[GEP0:%.*]] = getelementptr inbounds i8, ptr addrspace(200) [[A]], i64 4
 ; CHECK-NEXT:    [[ADD0:%.*]] = add nsw i32 [[X]], 147456
 ; CHECK-NEXT:    [[DIV0:%.*]] = sdiv i32 [[ADD0]], 9
 ; CHECK-NEXT:    [[SUB0:%.*]] = add nsw i32 [[DIV0]], -16384
