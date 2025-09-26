@@ -114,7 +114,7 @@ let hasDelaySlot=1, isTerminator=1 in {
 let isBranch=1, Defs = [AT] in {
 def CBTS : CheriFmtCBT<0x0a, (outs), (ins CheriOpnd:$cb, brtarget:$offset),
                         "cbts\t$cb, $offset",
-                        [(brcond (i32 (setne (assertzext (CapTagGet CheriOpnd:$cb)), (i64 0))), bb:$offset)]>;
+                        [(brcond (i32 (trunc (assertzext (CapTagGet CheriOpnd:$cb)))), bb:$offset)]>;
 def CBTU : CheriFmtCBT<0x09, (outs), (ins CheriOpnd:$cb, brtarget:$offset),
                         "cbtu\t$cb, $offset",
                         [(brcond (i32 (seteq (assertzext (CapTagGet CheriOpnd:$cb)), (i64 0))), bb:$offset)]>;
