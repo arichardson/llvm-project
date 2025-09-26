@@ -27,7 +27,7 @@
 // XCHERI-RVC-SAME: ,-xcheri-norvc,
 // RV64-XCHERI-EXPLICIT-RVC: "target-features"="+64bit,+xcheri
 
-// XCHERI-NOT: xcheri
+// XCHERI: xcheri
 
 // Dummy function
 int foo(void){

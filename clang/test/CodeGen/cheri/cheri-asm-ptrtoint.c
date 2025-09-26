@@ -5,14 +5,14 @@
 // RV32-LABEL: define dso_local i32 @ptr_to_int
 // RV32-SAME: (ptr addrspace(200) noundef [[P:%.*]]) addrspace(200) #[[ATTR0:[0-9]+]] {
 // RV32-NEXT:  entry:
-// RV32-NEXT:    [[TMP0:%.*]] = call ptr addrspace(200) asm "", "=C,0"(ptr addrspace(200) [[P]]) #[[ATTR1:[0-9]+]], !srcloc !4
+// RV32-NEXT:    [[TMP0:%.*]] = call ptr addrspace(200) asm "", "=C,0"(ptr addrspace(200) [[P]]) #[[ATTR1:[0-9]+]], !srcloc [[META6:![0-9]+]]
 // RV32-NEXT:    [[TMP1:%.*]] = ptrtoint ptr addrspace(200) [[TMP0]] to i32
 // RV32-NEXT:    ret i32 [[TMP1]]
 //
 // RV64-LABEL: define dso_local signext i32 @ptr_to_int
 // RV64-SAME: (ptr addrspace(200) noundef [[P:%.*]]) addrspace(200) #[[ATTR0:[0-9]+]] {
 // RV64-NEXT:  entry:
-// RV64-NEXT:    [[TMP0:%.*]] = call ptr addrspace(200) asm "", "=C,0"(ptr addrspace(200) [[P]]) #[[ATTR1:[0-9]+]], !srcloc !4
+// RV64-NEXT:    [[TMP0:%.*]] = call ptr addrspace(200) asm "", "=C,0"(ptr addrspace(200) [[P]]) #[[ATTR1:[0-9]+]], !srcloc [[META6:![0-9]+]]
 // RV64-NEXT:    [[TMP1:%.*]] = ptrtoint ptr addrspace(200) [[TMP0]] to i64
 // RV64-NEXT:    [[TMP2:%.*]] = trunc i64 [[TMP1]] to i32
 // RV64-NEXT:    ret i32 [[TMP2]]
