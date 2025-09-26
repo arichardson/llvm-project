@@ -2246,18 +2246,18 @@ static TemplateDeductionResult DeduceTemplateArgumentsByTypeMatch(
 
       if (const auto *PointerArg = dyn_cast<DependentPointerType>(A)) {
         // Perform deduction on the pointer type.
-        if (Sema::TemplateDeductionResult Result =
-                DeduceTemplateArgumentsByTypeMatch(
-                    S, TemplateParams, PointerParam->getPointerType(),
-                    PointerArg->getPointerType(), Info, Deduced, TDF))
+        if (TemplateDeductionResult Result = DeduceTemplateArgumentsByTypeMatch(
+                S, TemplateParams, PointerParam->getPointerType(),
+                PointerArg->getPointerType(), Info, Deduced, TDF);
+            Result != TemplateDeductionResult::Success)
           return Result;
 
         // Check that the interpretations are the same.
         if (PointerParam->getPointerInterpretation() !=
             PointerArg->getPointerInterpretation())
-          return Sema::TDK_NonDeducedMismatch;
+          return TemplateDeductionResult::NonDeducedMismatch;
 
-        return Sema::TDK_Success;
+        return TemplateDeductionResult::Success;
       }
 
       if (const auto *PointerArg = dyn_cast<PointerType>(A)) {
@@ -2265,18 +2265,18 @@ static TemplateDeductionResult DeduceTemplateArgumentsByTypeMatch(
             S.Context.getPointerType(PointerArg->getPointeeType());
 
         // Perform deduction on the pointer type.
-        if (Sema::TemplateDeductionResult Result =
-                DeduceTemplateArgumentsByTypeMatch(
-                    S, TemplateParams, PointerParam->getPointerType(),
-                    DefaultPointerArg, Info, Deduced, TDF))
+        if (TemplateDeductionResult Result = DeduceTemplateArgumentsByTypeMatch(
+                S, TemplateParams, PointerParam->getPointerType(),
+                DefaultPointerArg, Info, Deduced, TDF);
+            Result != TemplateDeductionResult::Success)
           return Result;
 
         // Check that the interpretations are the same.
         if (PointerParam->getPointerInterpretation() !=
             PointerArg->getPointerInterpretation())
-          return Sema::TDK_NonDeducedMismatch;
+          return TemplateDeductionResult::NonDeducedMismatch;
 
-        return Sema::TDK_Success;
+        return TemplateDeductionResult::Success;
       }
 
       if (const auto *ReferenceArg = dyn_cast<ReferenceType>(A)) {
@@ -2290,21 +2290,21 @@ static TemplateDeductionResult DeduceTemplateArgumentsByTypeMatch(
         }
 
         // Perform deduction on the pointer (reference) type.
-        if (Sema::TemplateDeductionResult Result =
-                DeduceTemplateArgumentsByTypeMatch(
-                    S, TemplateParams, PointerParam->getPointerType(),
-                    DefaultReferenceArg, Info, Deduced, TDF))
+        if (TemplateDeductionResult Result = DeduceTemplateArgumentsByTypeMatch(
+                S, TemplateParams, PointerParam->getPointerType(),
+                DefaultReferenceArg, Info, Deduced, TDF);
+            Result != TemplateDeductionResult::Success)
           return Result;
 
         // Check that the interpretations are the same.
         if (PointerParam->getPointerInterpretation() !=
             ReferenceArg->getPointerInterpretation())
-          return Sema::TDK_NonDeducedMismatch;
+          return TemplateDeductionResult::NonDeducedMismatch;
 
-        return Sema::TDK_Success;
+        return TemplateDeductionResult::Success;
       }
 
-      return Sema::TDK_NonDeducedMismatch;
+      return TemplateDeductionResult::NonDeducedMismatch;
     }
     case Type::DependentBitInt: {
       const auto *IP = P->castAs<DependentBitIntType>();
