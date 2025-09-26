@@ -100,7 +100,7 @@ void RISCVTargetELFStreamer::finish() {
   if (STI.hasFeature(RISCV::FeatureStdExtZtso))
     EFlags |= ELF::EF_RISCV_TSO;
 
-  if (Features[RISCV::FeatureCapMode])
+  if (STI.hasFeature(RISCV::FeatureCapMode))
     EFlags |= ELF::EF_RISCV_CAP_MODE;
 
   switch (ABI) {
