@@ -11,11 +11,11 @@ define void @below_threshold(i32 %in, i32 addrspace(200)* %out) nounwind {
 ; CHECK-NEXT:    addiu $1, $zero, 2
 ; CHECK-NEXT:    beq $2, $1, .LBB0_3
 ; CHECK-NEXT:    nop
-; CHECK-NEXT:  .LBB0_1: # %entry
+; CHECK-NEXT:  # %bb.1: # %entry
 ; CHECK-NEXT:    addiu $1, $zero, 1
 ; CHECK-NEXT:    bne $2, $1, .LBB0_4
 ; CHECK-NEXT:    nop
-; CHECK-NEXT:  .LBB0_2: # %bb1
+; CHECK-NEXT:  # %bb.2: # %bb1
 ; CHECK-NEXT:    addiu $1, $zero, 4
 ; CHECK-NEXT:    cjr $c17
 ; CHECK-NEXT:    csw $1, $zero, 0($c3)
@@ -51,7 +51,7 @@ define void @above_threshold_mips(i32 %in, i32 addrspace(200)* %out) nounwind {
 ; CHECK-NEXT:    dsll $2, $1, 32
 ; CHECK-NEXT:    beqz $3, .LBB1_3
 ; CHECK-NEXT:    nop
-; CHECK-NEXT:  .LBB1_1: # %entry
+; CHECK-NEXT:  # %bb.1: # %entry
 ; CHECK-NEXT:    lui $1, %pcrel_hi(_CHERI_CAPABILITY_TABLE_-8)
 ; CHECK-NEXT:    daddiu $1, $1, %pcrel_lo(_CHERI_CAPABILITY_TABLE_-4)
 ; CHECK-NEXT:    cgetpccincoffset $c1, $1
@@ -123,7 +123,7 @@ define void @above_threshold_all(i32 %in, i32 addrspace(200)* %out) nounwind {
 ; CHECK-NEXT:    dsll $2, $1, 32
 ; CHECK-NEXT:    beqz $3, .LBB2_3
 ; CHECK-NEXT:    nop
-; CHECK-NEXT:  .LBB2_1: # %entry
+; CHECK-NEXT:  # %bb.1: # %entry
 ; CHECK-NEXT:    lui $1, %pcrel_hi(_CHERI_CAPABILITY_TABLE_-8)
 ; CHECK-NEXT:    daddiu $1, $1, %pcrel_lo(_CHERI_CAPABILITY_TABLE_-4)
 ; CHECK-NEXT:    cgetpccincoffset $c1, $1

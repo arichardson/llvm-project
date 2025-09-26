@@ -15,7 +15,7 @@ define void @b(i8 %a) local_unnamed_addr addrspace(200) {
 ; CHECK-NEXT:    dsll $2, $1, 32
 ; CHECK-NEXT:    beqz $3, .LBB0_2
 ; CHECK-NEXT:    nop
-; CHECK-NEXT:  .LBB0_1: # %entry
+; CHECK-NEXT:  %bb.1: # %entry
 ; CHECK-NEXT:    dsrl $1, $2, 32
 ; CHECK-NEXT:    daddiu $2, $zero, 1
 ; CHECK-NEXT:    dsllv $1, $2, $1

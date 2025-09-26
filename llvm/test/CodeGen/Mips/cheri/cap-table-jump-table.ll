@@ -35,7 +35,7 @@ sw.bb1:
 ; CHECK-NEXT:	beqz	$1, .LBB0_4
 ; CHECK-NEXT:	nop
 
-; CHECK-LABEL: .LBB0_1:                                # %entry
+; CHECK-LABEL: %bb.1:                                 # %entry
 ; CHECK-NEXT:	lui	$1, %captab_hi(.LJTI0_0)
 ; CHECK-NEXT:	daddiu	$1, $1, %captab_lo(.LJTI0_0)
 ; CHECK-NEXT:	clc	$c1, $1, 0($c26)
@@ -91,7 +91,7 @@ sw.bb1:
 ; NO-OPT-NEXT:	csd	$4, $zero, [[#CAP_SIZE * 2 - 8]]($c11)     # 8-byte Folded Spill
 ; NO-OPT-NEXT:	beqz	$1, .LBB0_2
 ; NO-OPT-NEXT:	nop
-; NO-OPT-LABEL: .LBB0_1:                                # %entry
+; NO-OPT-LABEL: %bb.1:                                 # %entry
 ; NO-OPT-NEXT:	clc	[[CAPTABLE:\$c[0-9]+]], $zero, 0($c11)    # [[#CAP_SIZE]]-byte Folded Reload
 ; NO-OPT-NEXT:	cld	[[JT_INDEX:\$[0-9]+]],  $zero, [[#CAP_SIZE * 2 - 8]]($c11)
 ; NO-OPT-NEXT:	dsll	[[JT_ENTRY_OFFSET:\$[0-9]+]], [[JT_INDEX]], 2
