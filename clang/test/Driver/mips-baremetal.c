@@ -23,5 +23,5 @@
 // CHERIABI-SAME: "-L{{.+}}/lib/clang-runtimes/mips64-none-elf/lib"
 // CXX-SAME: "-lc++" "-lc++abi" "-lunwind"
 // CHECK-SAME: "-lc" "-lm"
-// CHECK-SAME: "{{.+}}libclang_rt.builtins-mips64.a"
+// CHECK-SAME: "{{.+}}libclang_rt.builtins.a"
 // CHECK-SAME: "-o" "{{.+}}/mips-baremetal.c.tmp"
