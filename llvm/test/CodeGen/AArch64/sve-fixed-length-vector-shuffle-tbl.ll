@@ -483,6 +483,7 @@ define <8 x i8> @shuffle_index_size_op1_maxhw(ptr %a, ptr %b) "target-features"=
 ; SVE2_128_NOMAX-NEXT:        .hword  1                               // 0x1
 ; SVE2_128_NOMAX-NEXT:        .hword  1                               // 0x1
 ; SVE2_128_NOMAX-NEXT:        .hword  1                               // 0x1
+; SVE2_128_NOMAX-NEXT:.size .LCPI7_0, 16
 ; SVE2_128_NOMAX-NEXT:.LCPI7_1:
 ; SVE2_128_NOMAX-NEXT:        .hword  1                               // 0x1
 ; SVE2_128_NOMAX-NEXT:        .hword  1                               // 0x1
@@ -502,6 +503,7 @@ define <8 x i8> @shuffle_index_size_op1_maxhw(ptr %a, ptr %b) "target-features"=
 ; SVE2_NOMIN_NOMAX-NEXT:        .hword  1                               // 0x1
 ; SVE2_NOMIN_NOMAX-NEXT:        .hword  1                               // 0x1
 ; SVE2_NOMIN_NOMAX-NEXT:        .hword  1                               // 0x1
+; SVE2_NOMIN_NOMAX-NEXT:.size .LCPI7_0, 16
 ; SVE2_NOMIN_NOMAX-NEXT:.LCPI7_1:
 ; SVE2_NOMIN_NOMAX-NEXT:        .hword  1                               // 0x1
 ; SVE2_NOMIN_NOMAX-NEXT:        .hword  1                               // 0x1
@@ -529,6 +531,7 @@ define <8 x i8> @shuffle_index_size_op1_maxhw(ptr %a, ptr %b) "target-features"=
 ; SVE2_MIN_256_NOMAX-NEXT:        .hword  0                               // 0x0
 ; SVE2_MIN_256_NOMAX-NEXT:        .hword  0                               // 0x0
 ; SVE2_MIN_256_NOMAX-NEXT:        .hword  0                               // 0x0
+; SVE2_MIN_256_NOMAX-NEXT:.size .LCPI7_0, 32
 ; SVE2_MIN_256_NOMAX-NEXT:.LCPI7_1:
 ; SVE2_MIN_256_NOMAX-NEXT:        .hword  1                               // 0x1
 ; SVE2_MIN_256_NOMAX-NEXT:        .hword  1                               // 0x1
