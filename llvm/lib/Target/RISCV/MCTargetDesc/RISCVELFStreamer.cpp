@@ -15,6 +15,7 @@
 #include "RISCVBaseInfo.h"
 #include "RISCVFixupKinds.h"
 #include "RISCVMCTargetDesc.h"
+#include "RISCVSubtarget.h"
 #include "llvm/BinaryFormat/ELF.h"
 #include "llvm/MC/MCAsmBackend.h"
 #include "llvm/MC/MCAssembler.h"
@@ -100,7 +101,7 @@ void RISCVTargetELFStreamer::finish() {
   if (hasTSO())
     EFlags |= ELF::EF_RISCV_TSO;
 
-  if (STI.hasFeature(RISCV::FeatureCapMode))
+  if (isCapMode())
     EFlags |= ELF::EF_RISCV_CAP_MODE;
 
   switch (ABI) {
