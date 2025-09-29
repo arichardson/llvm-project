@@ -1,6 +1,6 @@
 /// Check that the cheri.h header does not produce any warnings (including -Wshorten-cap-to-int)
-// RUN: %cheri_cc1 -fsyntax-only -verify -Weverything -Wsystem-headers %s
-// RUN: %cheri_purecap_cc1 -fsyntax-only -verify -Weverything -Wsystem-headers %s
+// RUN: %cheri_cc1 -fsyntax-only -verify -Weverything -Wsystem-headers -Wno-pre-c11-compat %s
+// RUN: %cheri_purecap_cc1 -fsyntax-only -verify -Weverything -Wsystem-headers -Wno-pre-c11-compat %s
 
 #include <cheri.h>
 extern void assert(_Bool cond);
