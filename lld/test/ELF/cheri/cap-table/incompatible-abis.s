@@ -3,7 +3,7 @@
 # RUN: %cheri128_purecap_llvm-mc -cheri-cap-table-abi=fn-desc -filetype=obj %s -o %t-fn-desc.o
 # RUN: %cheri128_purecap_llvm-mc -filetype=obj %s -o %t-default.o
 # RUN: yaml2obj -o %t-non-cheri.o %S/Inputs/non-cheri-isa-ext.yaml
-# RUN: not ld.lld %t-pcrel.o %t-plt.o %t-fn-desc.o %t-default.o %t-non-cheri.o 2>&1 | FileCheck %s
+# RUN: not ld.lld %t-pcrel.o %t-plt.o %t-fn-desc.o %t-default.o %t-non-cheri.o --no-warn-mismatch 2>&1 | FileCheck %s
 
 # CHECK:      error: incompatible pure-capability ABIs:
 # CHECK-NEXT: >>> {{.+}}incompatible-abis.s.tmp-pcrel.o uses EXT_CHERI_ABI_PCREL
