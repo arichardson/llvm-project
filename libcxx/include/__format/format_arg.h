@@ -182,6 +182,13 @@ _LIBCPP_HIDE_FROM_ABI _Rp __visit_format_arg(_Visitor&& __vis, basic_format_arg<
 #    else
     __libcpp_unreachable();
 #    endif
+  case __format::__arg_t::__signed_intcap:
+#    if __has_feature(capabilities)
+    return std::invoke_r<_Rp>(std::forward<_Visitor>(__vis), __arg.__value_.__signed_intcap);
+#    else
+    __libcpp_unreachable();
+#    endif
+
   case __format::__arg_t::__unsigned:
     return std::invoke_r<_Rp>(std::forward<_Visitor>(__vis), __arg.__value_.__unsigned_);
   case __format::__arg_t::__unsigned_long_long:
@@ -189,6 +196,12 @@ _LIBCPP_HIDE_FROM_ABI _Rp __visit_format_arg(_Visitor&& __vis, basic_format_arg<
   case __format::__arg_t::__u128:
 #    ifndef _LIBCPP_HAS_NO_INT128
     return std::invoke_r<_Rp>(std::forward<_Visitor>(__vis), __arg.__value_.__u128_);
+#    else
+    __libcpp_unreachable();
+#    endif
+  case __format::__arg_t::__unsigned_intcap:
+#    if __has_feature(capabilities)
+    return std::invoke_r<_Rp>(std::forward<_Visitor>(__vis), __arg.__value_.__unsigned_intcap);
 #    else
     __libcpp_unreachable();
 #    endif
