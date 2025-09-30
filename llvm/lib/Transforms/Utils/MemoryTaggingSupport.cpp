@@ -245,8 +245,9 @@ bool isLifetimeIntrinsic(Value *V) {
 
 Value *readRegister(IRBuilder<> &IRB, StringRef Name) {
   Module *M = IRB.GetInsertBlock()->getParent()->getParent();
+  unsigned AS = M->getDataLayout().getAllocaAddrSpace();
   Function *ReadRegister = Intrinsic::getDeclaration(
-      M, Intrinsic::read_register, IRB.getIntPtrTy(M->getDataLayout()));
+      M, Intrinsic::read_register, IRB.getIntPtrTy(M->getDataLayout(), AS));
   MDNode *MD =
       MDNode::get(M->getContext(), {MDString::get(M->getContext(), Name)});
   Value *Args[] = {MetadataAsValue::get(M->getContext(), MD)};
@@ -255,22 +256,24 @@ Value *readRegister(IRBuilder<> &IRB, StringRef Name) {
 
 Value *getPC(const Triple &TargetTriple, IRBuilder<> &IRB) {
   Module *M = IRB.GetInsertBlock()->getParent()->getParent();
+  unsigned AS = M->getDataLayout().getProgramAddressSpace();
   if (TargetTriple.getArch() == Triple::aarch64)
     return memtag::readRegister(IRB, "pc");
   return IRB.CreatePtrToInt(IRB.GetInsertBlock()->getParent(),
-                            IRB.getIntPtrTy(M->getDataLayout()));
+                            IRB.getIntPtrTy(M->getDataLayout(), AS));
 }
 
 Value *getFP(IRBuilder<> &IRB) {
   Function *F = IRB.GetInsertBlock()->getParent();
   Module *M = F->getParent();
+  unsigned AS = M->getDataLayout().getAllocaAddrSpace();
   auto *GetStackPointerFn = Intrinsic::getDeclaration(
       M, Intrinsic::frameaddress,
       IRB.getPtrTy(M->getDataLayout().getAllocaAddrSpace()));
   return IRB.CreatePtrToInt(
       IRB.CreateCall(GetStackPointerFn,
                      {Constant::getNullValue(IRB.getInt32Ty())}),
-      IRB.getIntPtrTy(M->getDataLayout()));
+      IRB.getIntPtrTy(M->getDataLayout(), AS));
 }
 
 } // namespace memtag
