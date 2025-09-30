@@ -286,7 +286,9 @@ void AIXTargetCodeGenInfo::setTargetAttributes(
       ((M.getCodeGenOpts().AllTocData) &&
        !llvm::binary_search(M.getCodeGenOpts().NoTocDataVars, GVId))) {
     const unsigned long PointerSize =
-        GV->getParent()->getDataLayout().getPointerSizeInBits() / 8;
+        GV->getParent()->getDataLayout().getPointerSizeInBits(
+            M.getDataLayout().getDefaultGlobalsAddressSpace()) /
+        8;
     auto *VarD = dyn_cast<VarDecl>(D);
     assert(VarD && "Invalid declaration of global variable.");
 
