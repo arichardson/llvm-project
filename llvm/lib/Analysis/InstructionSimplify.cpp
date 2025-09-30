@@ -6809,8 +6809,8 @@ Value *llvm::simplifyBinaryIntrinsic(Intrinsic::ID IID, Type *ReturnType,
       if (auto *ConstOp1 = dyn_cast<Constant>(Op1)) {
         if (ConstOp1->isZeroValue())
           return Null; // simplify setoffset(NULL, 0) -> null
-        return ConstantExpr::getGetElementPtr(Type::getInt8Ty(F->getContext()),
-                                              Null, ConstOp1);
+        return ConstantExpr::getGetElementPtr(
+            Type::getInt8Ty(ReturnType->getContext()), Null, ConstOp1);
       }
     }
     // setaddr(arg, getaddr(arg)) -> arg

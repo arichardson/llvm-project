@@ -5,8 +5,8 @@
 ; RUN: verify-uselistorder %s
 
 ;; Confirm we're producing RemoveDI records from various tools.
-; RUN: opt %s -o - --write-experimental-debuginfo-iterators-to-bitcode=true | llvm-bcanalyzer - | FileCheck %s --check-prefix=BITCODE
-; RUN: llvm-as %s -o - --write-experimental-debuginfo-iterators-to-bitcode=true | llvm-bcanalyzer - | FileCheck %s --check-prefix=BITCODE
+; RUN: opt %s -o - --write-experimental-debuginfo-iterators-to-bitcode=true -try-experimental-debuginfo-iterators | llvm-bcanalyzer - | FileCheck %s --check-prefix=BITCODE
+; RUN: llvm-as %s -o - --write-experimental-debuginfo-iterators-to-bitcode=true --experimental-debuginfo-iterators| llvm-bcanalyzer - | FileCheck %s --check-prefix=BITCODE
 ; BITCODE-DAG: DEBUG_RECORD_LABEL
 ; BITCODE-DAG: DEBUG_RECORD_VALUE
 ; BITCODE-DAG: DEBUG_RECORD_ASSIGN
