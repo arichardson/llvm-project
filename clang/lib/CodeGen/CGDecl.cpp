@@ -1261,28 +1261,35 @@ static void emitStoresForConstant(CodeGenModule &CGM, const VarDecl &D,
   }
 
   // If the initializer is small, use a handful of stores.
+  bool IsTrivialAutoVarInitPattern =
+      CGM.getContext().getLangOpts().getTrivialAutoVarInit() ==
+      LangOptions::TrivialAutoVarInitKind::Pattern;
   if (shouldSplitConstantStore(CGM, ConstantSize)) {
     if (auto *STy = dyn_cast<llvm::StructType>(Ty)) {
-      // FIXME: handle the case when STy != Loc.getElementType().
-      if (STy == Loc.getElementType()) {
+      if (STy == Loc.getElementType() ||
+          (STy != Loc.getElementType() && IsTrivialAutoVarInitPattern)) {
+        const llvm::StructLayout *Layout =
+            CGM.getDataLayout().getStructLayout(STy);
         for (unsigned i = 0; i != constant->getNumOperands(); i++) {
-          Address EltPtr = Builder.CreateStructGEP(Loc, i);
-          emitStoresForConstant(
-              CGM, D, EltPtr, isVolatile, Builder,
-              cast<llvm::Constant>(Builder.CreateExtractValue(constant, i)),
-	      ContainsCaps, IsAutoInit);
+          CharUnits CurOff =
+              CharUnits::fromQuantity(Layout->getElementOffset(i));
+          Address EltPtr = Builder.CreateConstInBoundsByteGEP(
+              Loc.withElementType(CGM.Int8Ty), CurOff);
+          emitStoresForConstant(CGM, D, EltPtr, isVolatile, Builder,
+                                constant->getAggregateElement(i), ContainsCaps,
+                                IsAutoInit);
         }
         return;
       }
     } else if (auto *ATy = dyn_cast<llvm::ArrayType>(Ty)) {
-      // FIXME: handle the case when ATy != Loc.getElementType().
-      if (ATy == Loc.getElementType()) {
+      if (ATy == Loc.getElementType() ||
+          (ATy != Loc.getElementType() && IsTrivialAutoVarInitPattern)) {
         for (unsigned i = 0; i != ATy->getNumElements(); i++) {
-          Address EltPtr = Builder.CreateConstArrayGEP(Loc, i);
-          emitStoresForConstant(
-              CGM, D, EltPtr, isVolatile, Builder,
-              cast<llvm::Constant>(Builder.CreateExtractValue(constant, i)),
-	      ContainsCaps, IsAutoInit);
+          Address EltPtr = Builder.CreateConstGEP(
+              Loc.withElementType(ATy->getElementType()), i);
+          emitStoresForConstant(CGM, D, EltPtr, isVolatile, Builder,
+                                constant->getAggregateElement(i), ContainsCaps,
+                                IsAutoInit);
         }
         return;
       }
