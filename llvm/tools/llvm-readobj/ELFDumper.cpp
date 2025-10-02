@@ -3431,19 +3431,19 @@ template <class ELFT> void ELFDumper<ELFT>::printCheriCapRelocs() {
     const uint64_t CurrentOffset = entry_size * i;
     const uint8_t *entry = Data.data() + CurrentOffset;
     uint64_t Target =
-        support::endian::read<TargetUint, ELFT::TargetEndianness, 1>(
+        support::endian::read<TargetUint, ELFT::Endianness, 1>(
                 entry);
     uint64_t Base =
-        support::endian::read<TargetUint, ELFT::TargetEndianness, 1>(
+        support::endian::read<TargetUint, ELFT::Endianness, 1>(
                 entry + sizeof(TargetUint));
     int64_t Offset =
-        support::endian::read<TargetInt,  ELFT::TargetEndianness, 1>(
+        support::endian::read<TargetInt,  ELFT::Endianness, 1>(
                 entry + 2*sizeof(TargetUint));
     uint64_t Length =
-        support::endian::read<TargetUint, ELFT::TargetEndianness, 1>(
+        support::endian::read<TargetUint, ELFT::Endianness, 1>(
                 entry + 3*sizeof(TargetUint));
     uint64_t Perms =
-        support::endian::read<TargetUint, ELFT::TargetEndianness, 1>(
+        support::endian::read<TargetUint, ELFT::Endianness, 1>(
                 entry + 4*sizeof(TargetUint));
     const uint64_t Function = UINT64_C(1) << ((sizeof(TargetUint) * 8) - 1);
     const uint64_t Constant = UINT64_C(1) << ((sizeof(TargetUint) * 8) - 2);
@@ -3699,13 +3699,13 @@ template <class ELFT> void ELFDumper<ELFT>::printCheriCapTableMapping() {
        CurrentOffset += EntrySize) {
     const uint8_t *CurrentEntry = Data.data() + CurrentOffset;
     uint64_t FunctionStart =
-        support::endian::read64<ELFT::TargetEndianness>(CurrentEntry);
+        support::endian::read64<ELFT::Endianness>(CurrentEntry);
     uint64_t FunctionEnd =
-        support::endian::read64<ELFT::TargetEndianness>(CurrentEntry + 8);
+        support::endian::read64<ELFT::Endianness>(CurrentEntry + 8);
     uint32_t TableOffset =
-        support::endian::read32<ELFT::TargetEndianness>(CurrentEntry + 16);
+        support::endian::read32<ELFT::Endianness>(CurrentEntry + 16);
     uint32_t SubTableLength =
-        support::endian::read32<ELFT::TargetEndianness>(CurrentEntry + 20);
+        support::endian::read32<ELFT::Endianness>(CurrentEntry + 20);
     auto& OS = W.startLine();
     OS << "Function start: " << W.hex(FunctionStart);
     // Try to find a matching symbol

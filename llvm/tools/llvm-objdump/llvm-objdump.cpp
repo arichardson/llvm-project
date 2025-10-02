@@ -2572,19 +2572,19 @@ printELFCapRelocations(const ELFObjectFile<ELFT> *Obj) {
   for (int i = 0, e = Data.size() / entry_size; i < e; i++) {
     const char *entry = Data.data() + (entry_size * i);
     uint64_t Target =
-        support::endian::read<TargetUint, ELFT::TargetEndianness, 1>(
+        support::endian::read<TargetUint, ELFT::Endianness, 1>(
                 entry);
     uint64_t Base =
-        support::endian::read<TargetUint, ELFT::TargetEndianness, 1>(
+        support::endian::read<TargetUint, ELFT::Endianness, 1>(
                 entry + sizeof(TargetUint));
     uint64_t Offset =
-        support::endian::read<TargetUint, ELFT::TargetEndianness, 1>(
+        support::endian::read<TargetUint, ELFT::Endianness, 1>(
                 entry + 2*sizeof(TargetUint));
     uint64_t Length =
-        support::endian::read<TargetUint, ELFT::TargetEndianness, 1>(
+        support::endian::read<TargetUint, ELFT::Endianness, 1>(
                 entry + 3*sizeof(TargetUint));
     uint64_t Perms =
-        support::endian::read<TargetUint, ELFT::TargetEndianness, 1>(
+        support::endian::read<TargetUint, ELFT::Endianness, 1>(
                 entry + 4*sizeof(TargetUint));
     const uint64_t Function = UINT64_C(1) << ((sizeof(TargetUint) * 8) - 1);
     const uint64_t Constant = UINT64_C(1) << ((sizeof(TargetUint) * 8) - 2);

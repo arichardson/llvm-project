@@ -33,7 +33,7 @@ template <class ELFT> struct InMemoryCapRelocEntry {
   static constexpr size_t relocSize = fieldSize * 5;
   using NativeUint = typename ELFT::uint;
   using CapRelocUint = llvm::support::detail::packed_endian_specific_integral<
-      NativeUint, ELFT::TargetEndianness, llvm::support::aligned>;
+      NativeUint, ELFT::Endianness, llvm::support::aligned>;
   InMemoryCapRelocEntry(NativeUint loc, NativeUint obj, NativeUint off,
                         NativeUint s, NativeUint perms)
       : capability_location(loc), object(obj), offset(off), size(s),
