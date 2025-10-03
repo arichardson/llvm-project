@@ -194,7 +194,7 @@ extern IntAndLong extern_int_and_long();
 // CHECK-NEXT:    [[CALL:%.*]] = tail call inreg { i64, i64 } @extern_int_and_long() #[[ATTR6:[0-9]+]]
 // CHECK-NEXT:    [[TMP0:%.*]] = extractvalue { i64, i64 } [[CALL]], 0
 // CHECK-NEXT:    [[COERCE_SROA_0_0_EXTRACT_SHIFT:%.*]] = lshr i64 [[TMP0]], 32
-// CHECK-NEXT:    [[COERCE_SROA_0_0_EXTRACT_TRUNC:%.*]] = trunc i64 [[COERCE_SROA_0_0_EXTRACT_SHIFT]] to i32
+// CHECK-NEXT:    [[COERCE_SROA_0_0_EXTRACT_TRUNC:%.*]] = trunc nuw i64 [[COERCE_SROA_0_0_EXTRACT_SHIFT]] to i32
 // CHECK-NEXT:    ret i32 [[COERCE_SROA_0_0_EXTRACT_TRUNC]]
 //
 int read_int_and_long_1() {
@@ -544,7 +544,7 @@ typedef struct {
 // CHECK-NEXT:    [[IN_SROA_2_0_INSERT_EXT:%.*]] = zext i64 [[IN_COERCE1]] to i128
 // CHECK-NEXT:    [[IN_SROA_0_0_INSERT_INSERT:%.*]] = add nuw nsw i128 [[IN_SROA_2_0_INSERT_EXT]], 1
 // CHECK-NEXT:    [[TMP0:%.*]] = lshr i128 [[IN_SROA_0_0_INSERT_INSERT]], 64
-// CHECK-NEXT:    [[DOTTR:%.*]] = trunc i128 [[TMP0]] to i64
+// CHECK-NEXT:    [[DOTTR:%.*]] = trunc nuw nsw i128 [[TMP0]] to i64
 // CHECK-NEXT:    [[DOTNARROW:%.*]] = add i64 [[DOTTR]], [[IN_COERCE0]]
 // CHECK-NEXT:    [[RETVAL_SROA_2_0_EXTRACT_TRUNC:%.*]] = trunc i128 [[IN_SROA_0_0_INSERT_INSERT]] to i64
 // CHECK-NEXT:    [[DOTFCA_0_INSERT:%.*]] = insertvalue { i64, i64 } poison, i64 [[DOTNARROW]], 0

@@ -30,7 +30,7 @@ extern void* foo;
 // PURECAP_IR-LABEL: @test(
 // PURECAP_IR-NEXT:  entry:
 // PURECAP_IR-NEXT:    [[TMP0:%.*]] = load i8, ptr addrspace(200) @cancel, align 1, !tbaa [[TBAA2:![0-9]+]], !range [[RNG6:![0-9]+]], !noundef [[META7:![0-9]+]]
-// PURECAP_IR-NEXT:    [[TOBOOL_I:%.*]] = trunc i8 [[TMP0]] to i1
+// PURECAP_IR-NEXT:    [[TOBOOL_I:%.*]] = trunc nuw i8 [[TMP0]] to i1
 // PURECAP_IR-NEXT:    tail call void asm sideeffect "", "=*r|m,0,~{memory},~{$1}"(ptr addrspace(200) nonnull elementtype(i8) @cancel, i1 [[TOBOOL_I]]) #[[ATTR1:[0-9]+]], !srcloc [[META8:![0-9]+]]
 // PURECAP_IR-NEXT:    [[TMP1:%.*]] = load ptr addrspace(200), ptr addrspace(200) @foo, align 16, !tbaa [[TBAA9:![0-9]+]]
 // PURECAP_IR-NEXT:    tail call void asm sideeffect "", "=*r|m,0,~{memory},~{$1}"(ptr addrspace(200) nonnull elementtype(ptr addrspace(200)) @foo, ptr addrspace(200) [[TMP1]]) #[[ATTR1]], !srcloc [[META8]]
@@ -39,7 +39,7 @@ extern void* foo;
 // N64_IR-LABEL: @test(
 // N64_IR-NEXT:  entry:
 // N64_IR-NEXT:    [[TMP0:%.*]] = load i8, ptr @cancel, align 1, !tbaa [[TBAA2:![0-9]+]], !range [[RNG6:![0-9]+]], !noundef [[META7:![0-9]+]]
-// N64_IR-NEXT:    [[TOBOOL_I:%.*]] = trunc i8 [[TMP0]] to i1
+// N64_IR-NEXT:    [[TOBOOL_I:%.*]] = trunc nuw i8 [[TMP0]] to i1
 // N64_IR-NEXT:    tail call void asm sideeffect "", "=*r|m,0,~{memory},~{$1}"(ptr nonnull elementtype(i8) @cancel, i1 [[TOBOOL_I]]) #[[ATTR1:[0-9]+]], !srcloc [[META8:![0-9]+]]
 // N64_IR-NEXT:    [[TMP1:%.*]] = load ptr, ptr @foo, align 8, !tbaa [[TBAA9:![0-9]+]]
 // N64_IR-NEXT:    tail call void asm sideeffect "", "=*r|m,0,~{memory},~{$1}"(ptr nonnull elementtype(ptr) @foo, ptr [[TMP1]]) #[[ATTR1]], !srcloc [[META8]]
@@ -71,7 +71,7 @@ inline void DoNotOptimize2(Tp& value) {
 // PURECAP_IR-LABEL: @test2(
 // PURECAP_IR-NEXT:  entry:
 // PURECAP_IR-NEXT:    [[TMP0:%.*]] = load i8, ptr addrspace(200) @cancel, align 1, !tbaa [[TBAA2]], !range [[RNG6]], !noundef [[META7]]
-// PURECAP_IR-NEXT:    [[TOBOOL_I:%.*]] = trunc i8 [[TMP0]] to i1
+// PURECAP_IR-NEXT:    [[TOBOOL_I:%.*]] = trunc nuw i8 [[TMP0]] to i1
 // PURECAP_IR-NEXT:    tail call void asm sideeffect "", "=*C|m,0,~{memory},~{$1}"(ptr addrspace(200) nonnull elementtype(i8) @cancel, i1 [[TOBOOL_I]]) #[[ATTR1]], !srcloc [[META11:![0-9]+]]
 // PURECAP_IR-NEXT:    [[TMP1:%.*]] = load ptr addrspace(200), ptr addrspace(200) @foo, align 16, !tbaa [[TBAA9]]
 // PURECAP_IR-NEXT:    tail call void asm sideeffect "", "=*C|m,0,~{memory},~{$1}"(ptr addrspace(200) nonnull elementtype(ptr addrspace(200)) @foo, ptr addrspace(200) [[TMP1]]) #[[ATTR1]], !srcloc [[META11]]
