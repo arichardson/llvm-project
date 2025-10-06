@@ -107,10 +107,10 @@ declare dso_local void @__cxa_end_catch() local_unnamed_addr addrspace(200)
 @IF-MIPS@; RELOCS-NEXT:    R_MIPS_CHERI_CAPABILITY/R_MIPS_NONE/R_MIPS_NONE  .L_Z8do_catchv$local 0x40
 @IF-MIPS@; RELOCS-NEXT:    R_MIPS_PC32/R_MIPS_NONE/R_MIPS_NONE .L_ZTIi.DW.stub 0x0
 @IF-RISCV@; RELOCS-NEXT:   R_RISCV_CHERI_CAPABILITY_CODE .L_Z8do_catchv$local 0x24
-@IF-RISCV@; RELOCS-NEXT:   R_RISCV_ADD32 <null> 0x0
-@IF-RISCV@; RELOCS-NEXT:   R_RISCV_SUB32 <null> 0x0
+@IF-RISCV@; RELOCS-NEXT:   R_RISCV_ADD32 .L0 0x0
+@IF-RISCV@; RELOCS-NEXT:   R_RISCV_SUB32 .L0 0x0
 @IF-RISCV@; RELOCS-NEXT:   R_RISCV_ADD32 .L_ZTIi.DW.stub 0x0
-@IF-RISCV@; RELOCS-NEXT:   R_RISCV_SUB32 <null> 0x0
+@IF-RISCV@; RELOCS-NEXT:   R_RISCV_SUB32 .L0 0x0
 ; RELOCS-NEXT:  }
 
 ; The local alias should have the same type and non-zero size as the real function:
