@@ -1,5 +1,5 @@
 // RUN: %cheri_cc1 -std=c11 -fsyntax-only -verify %s -target-abi purecap
-// RUN: %cheri_cc1 -std=c11 -fsyntax-only %s -w -target-abi purecap -emit-llvm -DSKIP_ERRORS -o - | %cheri_FileCheck %s -check-prefix IR
+// RUN: %cheri_cc1 -std=c11 %s -w -target-abi purecap -emit-llvm -DSKIP_ERRORS -o - | %cheri_FileCheck %s -check-prefix IR
 
 // On a variable declaration __attribute__((aligned(4))) sets the alignment to 4
 __attribute__((aligned(4))) void *data; // expected-warning-re{{alignment (4) of 'void *' is less than the required capability alignment ({{8|16|32}})}}
