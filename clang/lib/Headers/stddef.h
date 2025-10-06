@@ -39,6 +39,7 @@
     !defined(__need_rsize_t) && !defined(__need_wchar_t) &&                    \
     !defined(__need_NULL) && !defined(__need_nullptr_t) &&                     \
     !defined(__need_unreachable) && !defined(__need_max_align_t) &&            \
+    !defined(__need_offsetof) && !defined(__need_wint_t) && !defined(__need_ptraddr_t)
 #include <__stddef_header_macro.h>
 #define __need_ptrdiff_t
 #define __need_size_t
