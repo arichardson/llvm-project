@@ -395,11 +395,11 @@ CodeGenModule::CodeGenModule(ASTContext &C,
       llvm::PointerType::get(LLVMContext, DL.getAllocaAddrSpace());
   GlobalsInt8PtrTy =
       llvm::PointerType::get(LLVMContext, DL.getDefaultGlobalsAddressSpace());
+  ProgramInt8PtrTy =
+      llvm::PointerType::get(LLVMContext, DL.getProgramAddressSpace());
   ConstGlobalsPtrTy = llvm::PointerType::get(
       LLVMContext, C.getTargetAddressSpace(GetGlobalConstantAddressSpace()));
   ASTAllocaAddressSpace = getTargetCodeGenInfo().getASTAllocaAddressSpace();
-  ProgramInt8PtrTy = llvm::PointerType::get(LLVMContext, DL.getProgramAddressSpace());
-
   // Build C++20 Module initializers.
   // TODO: Add Microsoft here once we know the mangling required for the
   // initializers.
