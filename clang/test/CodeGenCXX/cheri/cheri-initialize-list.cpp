@@ -34,11 +34,10 @@ extern int foo(std::initializer_list<int>& l);
 // CHECK-NEXT:  entry:
 // CHECK-NEXT:    [[L1:%.*]] = alloca %"class.std::initializer_list", align 16, addrspace(200)
 // CHECK-NEXT:    [[REF_TMP:%.*]] = alloca [3 x i32], align 4, addrspace(200)
-// CHECK-NEXT:    [[ARRAYINIT_BEGIN:%.*]] = getelementptr inbounds [3 x i32], ptr addrspace(200) [[REF_TMP]], i64 0, i64 0
-// CHECK-NEXT:    store i32 1, ptr addrspace(200) [[ARRAYINIT_BEGIN]], align 4
-// CHECK-NEXT:    [[ARRAYINIT_ELEMENT:%.*]] = getelementptr inbounds i32, ptr addrspace(200) [[ARRAYINIT_BEGIN]], i64 1
+// CHECK-NEXT:    store i32 1, ptr addrspace(200) [[REF_TMP]], align 4
+// CHECK-NEXT:    [[ARRAYINIT_ELEMENT:%.*]] = getelementptr inbounds i32, ptr addrspace(200) [[REF_TMP]], i64 1
 // CHECK-NEXT:    store i32 2, ptr addrspace(200) [[ARRAYINIT_ELEMENT]], align 4
-// CHECK-NEXT:    [[ARRAYINIT_ELEMENT1:%.*]] = getelementptr inbounds i32, ptr addrspace(200) [[ARRAYINIT_ELEMENT]], i64 1
+// CHECK-NEXT:    [[ARRAYINIT_ELEMENT1:%.*]] = getelementptr inbounds i32, ptr addrspace(200) [[REF_TMP]], i64 2
 // CHECK-NEXT:    store i32 3, ptr addrspace(200) [[ARRAYINIT_ELEMENT1]], align 4
 // CHECK-NEXT:    [[__BEGIN_:%.*]] = getelementptr inbounds %"class.std::initializer_list", ptr addrspace(200) [[L1]], i32 0, i32 0
 // CHECK-NEXT:    store ptr addrspace(200) [[REF_TMP]], ptr addrspace(200) [[__BEGIN_]], align 16
