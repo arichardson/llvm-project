@@ -36,6 +36,7 @@
 #include "llvm/IR/Function.h"
 #include "llvm/IR/GlobalVariable.h"
 #include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/Instructions.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/MDBuilder.h"
 #include "llvm/IR/Metadata.h"
@@ -2394,7 +2395,7 @@ void OpenMPIRBuilder::emitReductionListCopy(
         Builder.CreateMemCpy(
             DestElementAddr, M.getDataLayout().getPrefTypeAlign(RI.ElementType),
             SrcElementAddr, M.getDataLayout().getPrefTypeAlign(RI.ElementType),
-            SizeVal, false);
+            SizeVal, PreserveCheriTags::TODO, false);
         break;
       }
       };
@@ -2907,7 +2908,7 @@ Function *OpenMPIRBuilder::emitListToGlobalCopyFunction(
           Builder.getInt64(M.getDataLayout().getTypeStoreSize(RI.ElementType));
       Builder.CreateMemCpy(
           GlobVal, M.getDataLayout().getPrefTypeAlign(RI.ElementType), ElemPtr,
-          M.getDataLayout().getPrefTypeAlign(RI.ElementType), SizeVal, false);
+          M.getDataLayout().getPrefTypeAlign(RI.ElementType), SizeVal, PreserveCheriTags::TODO, false);
       break;
     }
     }
@@ -3098,7 +3099,7 @@ Function *OpenMPIRBuilder::emitGlobalToListCopyFunction(
       Builder.CreateMemCpy(
           ElemPtr, M.getDataLayout().getPrefTypeAlign(RI.ElementType),
           GlobValPtr, M.getDataLayout().getPrefTypeAlign(RI.ElementType),
-          SizeVal, false);
+          SizeVal, PreserveCheriTags::TODO, false);
       break;
     }
     }
