@@ -156,9 +156,6 @@ static void EmitDeclInvariant(CodeGenFunction &CGF, const VarDecl &D,
 }
 
 void CodeGenFunction::EmitInvariantStart(llvm::Constant *Addr, CharUnits Size) {
-  // If the address space isn't 0, do we can't mark it as invariant
-  if (Addr->getType()->getPointerAddressSpace() != 0)
-    return;
   // Do not emit the intrinsic if we're not optimizing.
   if (!CGM.getCodeGenOpts().OptimizationLevel)
     return;
