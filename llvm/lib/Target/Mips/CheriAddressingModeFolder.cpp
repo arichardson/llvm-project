@@ -39,10 +39,10 @@ struct CheriAddressingModeFolder : public MachineFunctionPass {
 
   void getAnalysisUsage(AnalysisUsage &AU) const override {
     AU.setPreservesCFG();
-    AU.addRequired<MachineLoopInfo>();
+    AU.addRequired<MachineLoopInfoWrapperPass>();
     AU.addRequired<MachineDominatorTreeWrapperPass>();
     AU.addRequired<MachinePostDominatorTreeWrapperPass>();
-    AU.addPreserved<MachineLoopInfo>();
+    AU.addPreserved<MachineLoopInfoWrapperPass>();
     MachineFunctionPass::getAnalysisUsage(AU);
   }
 
@@ -509,7 +509,7 @@ struct CheriAddressingModeFolder : public MachineFunctionPass {
       return false;
     InstrInfo = MF.getSubtarget<MipsSubtarget>().getInstrInfo();
     bool modified = false;
-    MachineLoopInfo &MLI = getAnalysis<MachineLoopInfo>();
+    MachineLoopInfo &MLI = getAnalysis<MachineLoopInfoWrapperPass>().getLI();
     MachineDominatorTree &MDT = getAnalysis<MachineDominatorTreeWrapperPass>().getDomTree();
     // Try iterating as long as we are making changs but add a cut-off at 1000
     // to find inifite loops
@@ -531,7 +531,7 @@ struct CheriAddressingModeFolder : public MachineFunctionPass {
 char CheriAddressingModeFolder::ID = 0;
 INITIALIZE_PASS_BEGIN(CheriAddressingModeFolder, DEBUG_TYPE,
                     "CHERI addressing mode folder", false, false)
-INITIALIZE_PASS_DEPENDENCY(MachineLoopInfo)
+INITIALIZE_PASS_DEPENDENCY(MachineLoopInfoWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(MachineDominatorTreeWrapperPass)
 INITIALIZE_PASS_DEPENDENCY(MachinePostDominatorTreeWrapperPass)
 INITIALIZE_PASS_END(CheriAddressingModeFolder, DEBUG_TYPE,

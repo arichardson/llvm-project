@@ -20,6 +20,7 @@ target triple = "aarch64-linux"
 ; CHECK-NEXT:  .byte    255
 ; CHECK-NEXT:  .byte    255
 ; CHECK-NEXT:  .byte    7
+; CHECK-NEXT:  .size .LCPI0_0, 16
 ; CHECK-NEXT:  .LCPI0_1:
 ; CHECK-NEXT:  .byte    255
 ; CHECK-NEXT:  .byte    255
@@ -95,6 +96,7 @@ exit:
 ; CHECK-NEXT: .byte    255
 ; CHECK-NEXT: .byte    255
 ; CHECK-NEXT: .byte    15
+; CHECK-NEXT: .size .LCPI1_0, 16
 ; CHECK-NEXT: .LCPI1_1:
 ; CHECK-NEXT: .byte    255
 ; CHECK-NEXT: .byte    255
@@ -112,6 +114,7 @@ exit:
 ; CHECK-NEXT: .byte    255
 ; CHECK-NEXT: .byte    255
 ; CHECK-NEXT: .byte    11
+; CHECK-NEXT: .size .LCPI1_1, 16
 ; CHECK-NEXT: .LCPI1_2:
 ; CHECK-NEXT: .byte    255
 ; CHECK-NEXT: .byte    255
@@ -129,6 +132,7 @@ exit:
 ; CHECK-NEXT: .byte    255
 ; CHECK-NEXT: .byte    255
 ; CHECK-NEXT: .byte    7
+; CHECK-NEXT: .size .LCPI1_2, 16
 ; CHECK-NEXT: .LCPI1_3:
 ; CHECK-NEXT: .byte    255
 ; CHECK-NEXT: .byte    255

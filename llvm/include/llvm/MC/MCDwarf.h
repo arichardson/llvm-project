@@ -696,7 +696,7 @@ public:
     // HACK: this is needed for MIPS/CHERI to update the initial stack register
     // from SP to C11 since we don't have the ABI information in the triple.
     assert(Operation == OpDefCfa || Operation == OpDefCfaRegister);
-    Register = NewReg;
+    U.RI.Register = NewReg;
   }
 
   unsigned getRegister2() const {

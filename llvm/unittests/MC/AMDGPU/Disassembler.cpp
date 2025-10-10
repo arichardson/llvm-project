@@ -77,7 +77,9 @@ TEST(AMDGPUDisassembler, MultiDisassembler) {
   if (!TheTarget)
     GTEST_SKIP();
 
-  std::unique_ptr<MCRegisterInfo> MRI(TheTarget->createMCRegInfo(TripleName));
+  MCTargetOptions MCOpts;
+  std::unique_ptr<MCRegisterInfo> MRI(
+      TheTarget->createMCRegInfo(TripleName, MCOpts));
   std::unique_ptr<MCAsmInfo> MAI(
       TheTarget->createMCAsmInfo(*MRI, TripleName, MCTargetOptions()));
   std::unique_ptr<const MCInstrInfo> MII(TheTarget->createMCInstrInfo());
@@ -147,7 +149,9 @@ TEST(AMDGPUDisassembler, UCVersionOverride) {
   if (!TheTarget)
     GTEST_SKIP();
 
-  std::unique_ptr<MCRegisterInfo> MRI(TheTarget->createMCRegInfo(TripleName));
+  MCTargetOptions MCOpts;
+  std::unique_ptr<MCRegisterInfo> MRI(
+      TheTarget->createMCRegInfo(TripleName, MCOpts));
   std::unique_ptr<MCAsmInfo> MAI(
       TheTarget->createMCAsmInfo(*MRI, TripleName, MCTargetOptions()));
   std::unique_ptr<const MCInstrInfo> MII(TheTarget->createMCInstrInfo());
