@@ -5109,3 +5109,8 @@ template void elf::createSyntheticSections<ELF32LE>();
 template void elf::createSyntheticSections<ELF32BE>();
 template void elf::createSyntheticSections<ELF64LE>();
 template void elf::createSyntheticSections<ELF64BE>();
+
+template class elf::MipsAbiFlagsSection<ELF32LE>;
+template class elf::MipsAbiFlagsSection<ELF32BE>;
+template class elf::MipsAbiFlagsSection<ELF64LE>;
+template class elf::MipsAbiFlagsSection<ELF64BE>;
