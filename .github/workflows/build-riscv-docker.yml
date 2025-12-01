@@ -1,0 +1,69 @@
+name: Build and Package
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main", "dev", "github-actions-test" ]
+
+jobs:
+  build_docker_image:
+    name: Build Docker Image for CI
+    # if: github.repository_owner == 'CTSRD-CHERI' || github.repository_owner == 'arichardson'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v6
+
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ninja-build cmake build-essential lld
+    - name: ccache
+      uses: hendrikmuhs/ccache-action@v1.2
+
+    - name: Configure CMake
+      run: |
+        # Build a minimal version of LLVM with features we do not need disabled
+        cmake -G Ninja -S llvm -B build \
+          -DLLVM_ENABLE_ASSERTIONS=TRUE \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/install \
+          -DLLVM_ENABLE_PROJECTS="clang;lld" \
+          -DLLVM_TARGETS_TO_BUILD="RISCV;X86" \
+          -DLLVM_CCACHE_BUILD=TRUE \
+          -DLLVM_ENABLE_LLD=TRUE \
+          -DCLANG_ENABLE_STATIC_ANALYZER=FALSE -DCLANG_ENABLE_ARCMT=FALSE -DLLVM_ENABLE_Z3_SOLVER=FALSE \
+          -DLLVM_TOOL_LLVM_MCA_BUILD=FALSE -DLLVM_TOOL_LLVM_EXEGESIS_BUILD=FALSE -DLLVM_TOOL_LLVM_RC_BUILD=FALSE
+
+    - name: Build
+      run: cmake --build build
+
+    - name: Install
+      run: cmake --install build
+
+    - name: Create Dockerfile
+      run: |
+        echo "FROM ubuntu:24.04" > Dockerfile
+        echo "RUN apt-get update && apt-get install -y --no-install-recommends ninja-build cmake build-essential" >> Dockerfile
+        echo "COPY --chown=root install /usr/local" >> Dockerfile
+
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and Push Docker Image
+      run: |
+        IMAGE_ID=ghcr.io/${{ github.repository }}
+        # Change all uppercase to lowercase
+        IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+        # Sanitize branch name for use as a docker tag (replace / with -)
+        TAG_NAME=$(echo "${{ github.ref_name }}" | tr '/' '-')
+        echo "Building and pushing $IMAGE_ID:$TAG_NAME"
+        docker build -t $IMAGE_ID:$TAG_NAME .
+        docker push $IMAGE_ID:$TAG_NAME
