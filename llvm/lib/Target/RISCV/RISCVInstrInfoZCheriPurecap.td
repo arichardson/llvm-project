@@ -384,6 +384,13 @@ def : PatGpcrGpcr<riscv_cap_equal_exact, SCEQ, XLenVT>;
 let Predicates = [HasZCheriPurecap, HasZCheriHybrid] in
 def : Pat<(int_cheri_ddc_get), (CHERI_CSRRC CSR_DDC.Encoding, (XLenVT X0))>;
 
+let Predicates = [HasZCheriHybrid, NotCapMode] in {
+  let Size = 12 in
+  def PseudoPCCGet : Pseudo<(outs GPCR:$dst), (ins), []>;
+
+  def : Pat<(int_cheri_pcc_get), (PseudoPCCGet)>;
+}
+
 /// Capability loads
 
 let Predicates = [HasZCheriPurecap, NotCapMode, HasStdExtD, IsRV32] in
