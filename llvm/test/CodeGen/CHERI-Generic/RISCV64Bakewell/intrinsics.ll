@@ -334,6 +334,21 @@ define i64 @diff(i8 addrspace(200)* %cap1, i8 addrspace(200)* %cap2) nounwind {
   %diff = call i64 @llvm.cheri.cap.diff(i8 addrspace(200)* %cap1, i8 addrspace(200)* %cap2)
   ret i64 %diff
 }
+define i8 addrspace(200)* @pcc_get() nounwind {
+; PURECAP-LABEL: pcc_get:
+; PURECAP:       # %bb.0:
+; PURECAP-NEXT:    auipc ca0, 0
+; PURECAP-NEXT:    ret
+;
+; HYBRID-LABEL: pcc_get:
+; HYBRID:       # %bb.0:
+; HYBRID-NEXT:    modesw.cap
+; HYBRID-NEXT:    auipc ca0, 0
+; HYBRID-NEXT:    modesw.int
+; HYBRID-NEXT:    ret
+  %cap = call i8 addrspace(200)* @llvm.cheri.pcc.get()
+  ret i8 addrspace(200)* %cap
+}
 ; Assertion Instructions
 declare i1 @llvm.cheri.cap.subset.test(i8 addrspace(200)* %cap1, i8 addrspace(200)* %cap2)
 define i64 @subset_test(i8 addrspace(200)* %cap1, i8 addrspace(200)* %cap2) nounwind {

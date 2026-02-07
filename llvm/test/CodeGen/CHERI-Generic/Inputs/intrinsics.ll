@@ -219,12 +219,12 @@ define i8 addrspace(200)* @ddc_get() nounwind {
   %cap = call i8 addrspace(200)* @llvm.cheri.ddc.get()
   ret i8 addrspace(200)* %cap
 }
+#endif
 
 define i8 addrspace(200)* @pcc_get() nounwind {
   %cap = call i8 addrspace(200)* @llvm.cheri.pcc.get()
   ret i8 addrspace(200)* %cap
 }
-#endif
 
 ; Assertion Instructions
 
