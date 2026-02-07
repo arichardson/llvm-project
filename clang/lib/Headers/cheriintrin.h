@@ -42,12 +42,12 @@
 
 /* Object types, sealing and unsealing: */
 typedef long cheri_otype_t;
-#if defined(__mips__) || defined(__riscv)
+#if defined(__mips__) || defined(__riscv_xcheri)
 /* CHERI-MIPS and CHERI-RISC-V use negative numbers for hardware-interpreted
  * otypes */
 #define CHERI_OTYPE_UNSEALED ((cheri_otype_t)-1)
 #define CHERI_OTYPE_SENTRY ((cheri_otype_t)-2)
-#elif defined(__aarch64__)
+#elif defined(__aarch64__) || defined(__riscv_zcheripurecap)
 #define CHERI_OTYPE_UNSEALED ((cheri_otype_t)0)
 #define CHERI_OTYPE_SENTRY ((cheri_otype_t)1)
 #else
