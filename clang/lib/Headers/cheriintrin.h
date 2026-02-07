@@ -25,9 +25,7 @@
 #define cheri_length_get(x) __builtin_cheri_length_get(x)
 #define cheri_offset_get(x) __builtin_cheri_offset_get(x)
 #define cheri_offset_set(x, y) __builtin_cheri_offset_set((x), (y))
-#if !defined(__riscv_zcheripurecap)
 #define cheri_tag_clear(x) __builtin_cheri_tag_clear(x)
-#endif
 #define cheri_tag_get(x) __builtin_cheri_tag_get(x)
 #define cheri_is_valid(x) __builtin_cheri_tag_get(x)
 #define cheri_is_invalid(x) (!__builtin_cheri_tag_get(x))

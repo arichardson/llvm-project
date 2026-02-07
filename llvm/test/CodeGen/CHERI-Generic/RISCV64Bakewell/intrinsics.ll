@@ -249,6 +249,21 @@ define i8 addrspace(200)* @bounds_set_immediate(i8 addrspace(200)* %cap) nounwin
   %newcap = call i8 addrspace(200)* @llvm.cheri.cap.bounds.set.i64(i8 addrspace(200)* %cap, i64 42)
   ret i8 addrspace(200)* %newcap
 }
+define i8 addrspace(200)* @tag_clear(i8 addrspace(200)* %cap) nounwind {
+; PURECAP-LABEL: tag_clear:
+; PURECAP:       # %bb.0:
+; PURECAP-NEXT:    gchi a1, ca0
+; PURECAP-NEXT:    schi ca0, ca0, a1
+; PURECAP-NEXT:    ret
+;
+; HYBRID-LABEL: tag_clear:
+; HYBRID:       # %bb.0:
+; HYBRID-NEXT:    gchi a1, ca0
+; HYBRID-NEXT:    schi ca0, ca0, a1
+; HYBRID-NEXT:    ret
+  %untagged = call i8 addrspace(200)* @llvm.cheri.cap.tag.clear(i8 addrspace(200)* %cap)
+  ret i8 addrspace(200)* %untagged
+}
 define i8 addrspace(200)* @build(i8 addrspace(200)* %cap1, i8 addrspace(200)* %cap2) nounwind {
 ; PURECAP-LABEL: build:
 ; PURECAP:       # %bb.0:
@@ -301,21 +316,21 @@ define i64 @to_pointer(i8 addrspace(200)* %cap1, i8 addrspace(200)* %cap2) nounw
 define i8 addrspace(200)* @from_pointer(i8 addrspace(200)* %cap, i64 %ptr) nounwind {
 ; PURECAP-LABEL: from_pointer:
 ; PURECAP:       # %bb.0:
-; PURECAP-NEXT:    bnez a1, .LBB19_2
+; PURECAP-NEXT:    bnez a1, .LBB20_2
 ; PURECAP-NEXT:  # %bb.1:
 ; PURECAP-NEXT:    cmv ca0, cnull
 ; PURECAP-NEXT:    ret
-; PURECAP-NEXT:  .LBB19_2:
+; PURECAP-NEXT:  .LBB20_2:
 ; PURECAP-NEXT:    scaddr ca0, ca0, a1
 ; PURECAP-NEXT:    ret
 ;
 ; HYBRID-LABEL: from_pointer:
 ; HYBRID:       # %bb.0:
-; HYBRID-NEXT:    bnez a1, .LBB19_2
+; HYBRID-NEXT:    bnez a1, .LBB20_2
 ; HYBRID-NEXT:  # %bb.1:
 ; HYBRID-NEXT:    cmv ca0, cnull
 ; HYBRID-NEXT:    ret
-; HYBRID-NEXT:  .LBB19_2:
+; HYBRID-NEXT:  .LBB20_2:
 ; HYBRID-NEXT:    scaddr ca0, ca0, a1
 ; HYBRID-NEXT:    ret
   %newcap = call i8 addrspace(200)* @llvm.cheri.cap.from.pointer(i8 addrspace(200)* %cap, i64 %ptr)

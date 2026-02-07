@@ -146,12 +146,10 @@ define i8 addrspace(200)* @bounds_set_immediate(i8 addrspace(200)* %cap) nounwin
   ret i8 addrspace(200)* %newcap
 }
 
-#if !(defined(RISCV32BAKEWELL) | defined(RISCV64BAKEWELL))
 define i8 addrspace(200)* @tag_clear(i8 addrspace(200)* %cap) nounwind {
   %untagged = call i8 addrspace(200)* @llvm.cheri.cap.tag.clear(i8 addrspace(200)* %cap)
   ret i8 addrspace(200)* %untagged
 }
-#endif
 
 define i8 addrspace(200)* @build(i8 addrspace(200)* %cap1, i8 addrspace(200)* %cap2) nounwind {
   %built = call i8 addrspace(200)* @llvm.cheri.cap.build(i8 addrspace(200)* %cap1, i8 addrspace(200)* %cap2)
