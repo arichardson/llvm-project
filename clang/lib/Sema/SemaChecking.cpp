@@ -322,7 +322,6 @@ static bool VerifyBakewellBuiltins(Sema &S, unsigned BuiltinID, CallExpr *TheCal
   case Builtin::BI__builtin_cheri_cap_type_copy:
   case Builtin::BI__builtin_cheri_unseal:
   case Builtin::BI__builtin_cheri_conditional_seal:
-  case Builtin::BI__builtin_cheri_tag_clear:
   case Builtin::BI__builtin_cheri_seal:
   case Builtin::BI__builtin_cheri_cap_load_tags:
     S.Diag(TheCall->getBeginLoc(), diag::err_bakewell_unsupported_builtin)
