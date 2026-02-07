@@ -114,9 +114,11 @@ typedef enum __attribute__((flag_enum, enum_extensibility(open))) {
 
 /* Partially portable builtins: */
 /* Note: {get,set}flags does nothing for MIPS, but can still be used. */
-#if !defined(__riscv_zcheripurecap)
+#if defined(__riscv_zcherihybrid) || defined(__riscv_xcheri)
 #define cheri_flags_get(x) __builtin_cheri_flags_get(x)
 #define cheri_flags_set(x, y) __builtin_cheri_flags_set((x), (y))
+#endif
+#if !defined(__riscv_zcheripurecap)
 #define cheri_tags_load(x) __builtin_cheri_cap_load_tags(x)
 #endif
 
